@@ -1,12 +1,8 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
-//#include <bluevk/BlueVK.h>
+#include "Volk/volk.h"
 
 #include <array>
-
-//using namespace bluevk;
 
 #include "vk_mem_alloc.h"
 

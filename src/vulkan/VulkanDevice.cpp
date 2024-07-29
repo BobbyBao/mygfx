@@ -13,6 +13,9 @@
 #include "VulkanStagePool.h"
 #include "api/CommandStreamDispatcher.h"
 
+#define VOLK_IMPLEMENTATION
+#include "Volk/volk.h"
+
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 #include "vulkan/ShaderCompiler.h"
@@ -39,7 +42,7 @@ namespace mygfx
 		mSwapchainDesc.fullscreen = settings.fullscreen;
 		mSwapchainDesc.vsync = settings.vsync;
 		
-		//bluevk::initialize();
+		volkInitialize();
 
 		// Vulkan instance
 		VkResult err = createInstance(settings.name, settings.validation);
@@ -48,7 +51,7 @@ namespace mygfx
 			return false;
 		}
 
-		//bluevk::bindInstance(instance);
+		volkLoadInstance(instance);
 
 		if (!selectPhysicalDevice()) {
 			return false;
