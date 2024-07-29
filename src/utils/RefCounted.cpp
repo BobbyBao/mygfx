@@ -24,9 +24,13 @@ namespace utils {
     void RefCounted::releaseRef()
     {
 		if (--mRefCount == 0) {
-			delete this;
+			deleteThis();
 		}
     }
+
+	void RefCounted::deleteThis() {
+		delete this;
+	}
 
     int RefCounted::refs() const
     {

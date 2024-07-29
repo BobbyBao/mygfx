@@ -1,7 +1,8 @@
 #pragma once
+
+#include "utils/SharedPtr.h"
+
 #include <imgui/imgui.h>
-#include "Program.h"
-#include "Texture.h"
 
 struct SDL_Window;
 union SDL_Event;
@@ -9,6 +10,8 @@ union SDL_Event;
 namespace mygfx {
 
 	class GraphicsApi;
+	class Program;
+	class Texture;
 
 	class UIOverlay : public utils::RefCounted
 	{
@@ -26,8 +29,8 @@ namespace mygfx {
         ImFont* iconFont = nullptr;
 	private:
 		void freeResources();
-		Ref<Program> mProgram;
-		Ref<Texture> mFontTexture;
+		utils::Ref<Program> mProgram;
+		utils::Ref<Texture> mFontTexture;
 
 		bool visible = true;
 		bool updated = false;

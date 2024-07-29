@@ -12,6 +12,9 @@ namespace utils {
 
 	template <class T>
 	class SharedPtr;
+	
+	template <class T>
+	using Ref = SharedPtr<T>;
 
 }
 
@@ -24,9 +27,6 @@ namespace mygfx {
     template<typename T>
     using Span = std::span<T>;
 	
-	template <class T>
-	using Ref = SharedPtr<T>;
-
 	template <class T>
 	using Vector = std::vector<T>;
 

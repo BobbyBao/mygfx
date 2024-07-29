@@ -7,6 +7,15 @@
 
 namespace utils {
 
+    inline void addRef_(RefCounted* ptr) {
+        ptr->addRef();
+    }
+
+    /// Release the object reference and delete it if necessary.
+    inline void releaseRef_(RefCounted* ptr) {
+        ptr->releaseRef();        
+    }
+
     /// Shared pointer template class with intrusive reference counting.
     template <class T>
     class SharedPtr
@@ -234,16 +243,18 @@ namespace utils {
         /// Add a reference to the object pointed to.
         void addRef()
         {
-            if (ptr_)
-                ptr_->addRef();
+            if (ptr_) {
+                addRef_(ptr_);
+            }
         }
 
         /// Release the object reference and delete it if necessary.
         void releaseRef()
         {
+           
             if (ptr_)
             {
-                ptr_->releaseRef();
+                releaseRef_(ptr_);
                 ptr_ = nullptr;
             }
         }
@@ -295,7 +306,7 @@ namespace utils {
     {
         return *new T(std::forward<Args>(args)...);
     }
-    
+        
 
 }
 

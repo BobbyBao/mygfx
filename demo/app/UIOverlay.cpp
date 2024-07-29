@@ -1,6 +1,8 @@
 #include "UIOverlay.h"
 #include "GraphicsApi.h"
 #include "utils/FileUtils.h"
+#include "Program.h"
+#include "Texture.h"
 
 #include <SDL.h>
 

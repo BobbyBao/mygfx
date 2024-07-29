@@ -2,7 +2,7 @@
 #include "DemoApp.h"
 
 int main() {
-	mygfx::DemoApp app;
+	mygfx::demo::DemoApp app;
 	app.start();
 	return 0;
 }

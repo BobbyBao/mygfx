@@ -6,24 +6,11 @@ namespace mygfx {
 
 	static std::recursive_mutex mLock;
 	static std::deque<std::pair<HwObject*, int>> mDisposables;
+	        
+	void HwObject::deleteThis() {
 
-
-	void HwObject::addRef()
-	{
-		++mRefCount;
-	}
-
-	void HwObject::releaseRef()
-	{
-		if (--mRefCount == 0) {
-			std::lock_guard<std::recursive_mutex> locker(mLock);
-			mDisposables.emplace_back(this, 4);
-		}
-	}
-
-	int HwObject::refs() const
-	{
-		return mRefCount;
+		std::lock_guard<std::recursive_mutex> locker(mLock);
+		mDisposables.emplace_back(this, 4);
 	}
 
 	void HwObject::gc(bool force)

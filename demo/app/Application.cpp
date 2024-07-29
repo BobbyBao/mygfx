@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "vulkan/VulkanDevice.h"
 #include "utils/FileUtils.h"
+#include "Texture.h"
 
 #ifdef _WIN32
 
@@ -325,7 +326,6 @@ namespace mygfx {
 			onGUI();
 		}
 
-		ImGui::ShowDemoWindow();
 	}
 
 	void  Application::onStart()

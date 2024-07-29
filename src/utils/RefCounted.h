@@ -1,6 +1,5 @@
 #pragma once
 #include <atomic>
-#include "utils/RefCounted.h"
 
 namespace utils {
 
@@ -25,6 +24,8 @@ namespace utils {
         void releaseRef();
 		int refs() const;
 		//WeakRefCount* getWeakRefCount() const;
+    protected:
+        virtual void deleteThis();
     private:
 		std::atomic<int> mRefCount = 0;
 		//mutable Handle<WeakRefCount> mWeakRefCount;

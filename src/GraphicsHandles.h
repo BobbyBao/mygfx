@@ -1,21 +1,17 @@
 #pragma once
 #include "utils/SharedPtr.h"
 #include "GraphicsDefs.h"
-#include "GfxObject.h"
 #include <vector>
 
 namespace mygfx {
 
-	class HwObject : public GfxObject {
+	class HwObject : public RefCounted {
 	public:
-
-        void addRef();
-        void releaseRef();
-		int refs() const;
 
 		static void gc(bool force = false);
 	protected:
-		
+        void deleteThis() override;
+
         std::atomic<int> mRefCount = 0;
 
 		friend class GraphicsDevice;
