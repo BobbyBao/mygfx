@@ -127,12 +127,13 @@ namespace mygfx {
 		mDevice->init(mSettings);
 		mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice, mCommandBufferQueue.getCircularBuffer());
 
+		mDevice->create(windowInstance, window);
 		Texture::staticInit();
 
-		mDevice->create(windowInstance, window);
 		mSwapchain = mDevice->getSwapChain();
 
 		mUI = new UIOverlay(mSdlWindow);
+		mUI->init();
 
 		onStart();
 
@@ -202,6 +203,7 @@ namespace mygfx {
 	void Application::updateFrame()
 	{
 		auto tStart = std::chrono::high_resolution_clock::now();
+		updateGUI();
 
 		auto& cmd = getGraphicsApi();
 
@@ -218,6 +220,8 @@ namespace mygfx {
 		cmd.beginRendering(mSwapchain->renderTarget, renderInfo);
 
 		onDraw(cmd);
+		
+		mUI->draw(cmd);
 
 		cmd.endRendering(mSwapchain->renderTarget);
 
@@ -321,6 +325,7 @@ namespace mygfx {
 			onGUI();
 		}
 
+		ImGui::ShowDemoWindow();
 	}
 
 	void  Application::onStart()
@@ -333,7 +338,6 @@ namespace mygfx {
 
 	void Application::onGUI()
 	{
-		//ImGui::ShowDemoWindow();
 	}
 
 	void Application::onUpdate(double delta)

@@ -32,7 +32,18 @@ namespace mygfx
 		mShaderModules.push_back(sm);
 		return true;
 	}
-	
+
+	void Program::create(const String& vsCode, const String& psCode, const DefineList* macros) {	
+		addShader(ShaderStage::Vertex, vsCode, ShaderSourceType::GLSL, "", "", macros);
+		addShader(ShaderStage::Fragment, psCode, ShaderSourceType::GLSL, "", "", macros);
+		init();
+	}
+
+	void Program::create(const String& csCode) {
+		addShader(ShaderStage::Compute, csCode, ShaderSourceType::GLSL, "", "", nullptr);
+		init();
+	}
+
 	void Program::loadShader(const String& vs, const String& ps, const DefineList* macros) {
 		auto vsSource = FileUtils::readAllText(vs);
 

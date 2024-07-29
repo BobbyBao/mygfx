@@ -13,7 +13,10 @@ namespace mygfx {
 		void init();
 
 		bool addShader(ShaderStage shaderStage, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros = nullptr);
-		
+
+		void create(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
+		void create(const String& csCode);
+
 		void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
 		void loadShader(const String& cs);
 
