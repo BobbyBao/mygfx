@@ -6,6 +6,7 @@
 #include "utils/RefCounted.h"
 
 struct SDL_Window;
+union SDL_Event;
 
 namespace mygfx {
 
@@ -15,13 +16,15 @@ namespace mygfx {
 	class Application : public utils::RefCounted
 	{
 	public:
-		Application(const char* title = "");
+		Application();
 		virtual ~Application();
-		
-		void init();
+
 		void start();
 
-		void mainLoop();
+		void init();
+		void updateFrame();
+		void handleEvent(const SDL_Event& e);
+		void destroy();
 
 		GraphicsApi& getGraphicsApi() noexcept {
 			return *mGraphicsApi;
@@ -45,20 +48,17 @@ namespace mygfx {
 		virtual void mouseWheel(float wheelDelta);
 		virtual void mouseMove(float x, float y);
 	private:
-		std::string getWindowTitle();
 		void setupConsole(std::string title);
 		void setupDPIAwareness();
-		void updateFrame();
+		void mainLoop();
 		void renderLoop();
 
-		std::string mTitle = "Demo";
+		std::string mTitle;
 		Settings mSettings;
 		uint32_t mWidth = 1920;
 		uint32_t mHeight = 1080;
 
-		SDL_Window* sdlWindow;
-		void* window;
-		void* windowInstance;
+		SDL_Window* mSdlWindow;
 
 		std::unique_ptr<GraphicsDevice> mDevice;
 		CommandBufferQueue mCommandBufferQueue;
@@ -70,6 +70,7 @@ namespace mygfx {
 		std::unique_ptr<std::thread> mRenderThread;
 		bool mRendering = false;
 		bool mPrepared = false;
+		bool mQuit = false;
 		double mFrameTimer = 0.01;
 		uint32_t mFrameCounter = 0;
 		uint32_t mLastFPS = 0;

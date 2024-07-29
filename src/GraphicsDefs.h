@@ -27,6 +27,9 @@ namespace mygfx {
 	template <class T>
 	using Ref = SharedPtr<T>;
 
+	template <class T>
+	using Vector = std::vector<T>;
+
 	using ByteArray = std::vector<uint8_t>;
 
 	enum class BufferUsage : uint16_t {
@@ -76,13 +79,13 @@ namespace mygfx {
 	{
 		None = 0,
 		Position = (1 << 0),
-		//Normal = (1 << 1),
-		Tangents = (1 << 1),
-		Color = (1 << 2),  
-		UV0 = (1 << 3), 
-		UV1 = (1 << 4), 
-		BoneIndices = (1 << 5),
-		BoneWeights = (1 << 6),
+		Normal = (1 << 1),
+		Tangents = (1 << 2),
+		Color = (1 << 3),  
+		UV0 = (1 << 4), 
+		UV1 = (1 << 5), 
+		BoneIndices = (1 << 6),
+		BoneWeights = (1 << 7),
 
 		Custom1 = (1 << 8),
 		Custom2 = (1 << 9),

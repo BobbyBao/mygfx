@@ -7,7 +7,7 @@
 
 namespace mygfx {
 	
-    using MemoryBlock = std::vector<uint8_t>;
+    using MemoryBlock = std::span<uint8_t>;
 	
     template<typename T>
     struct ImageFace

@@ -1,0 +1,68 @@
+#pragma once
+#include "GraphicsHandles.h"
+#include "TextureData.h"
+#include "Sampler.h"
+#include "MathTypes.h"
+
+namespace mygfx {
+	
+	class Texture : public RefCounted {
+	public:
+		Texture();
+		
+		size_t getWidth(uint8_t level = 0) const noexcept;
+		size_t getHeight(uint8_t level = 0) const noexcept;
+		size_t getDepth(uint8_t level = 0) const noexcept;
+
+		size_t getLevelCount() const noexcept { return mTextureData.mipMapCount; }
+		SamplerInfo getSampler() const noexcept { return mSamplerInfo; }
+		Format getFormat() const noexcept { return mTextureData.format; }
+		TextureUsage getUsage() const noexcept { return mTextureData.usage; }
+
+		int index() const;
+		TextureData& textureData() { return mTextureData; }
+		const Ref<HwTexture>& getHwTexture() const { return mHwTexture; }
+		
+		bool create(const TextureData& textureData, SamplerInfo samplerInfo = {});
+
+		void copyData(TextureDataProvider* dataProvider);
+
+		void setData(uint32_t level,
+			uint32_t xoffset,
+			uint32_t yoffset,
+			uint32_t zoffset,
+			uint32_t width,
+			uint32_t height,
+			uint32_t depth,
+			const void* data,
+			size_t size);
+
+        static void staticInit();
+        static void staticDeinit();
+		
+		static Ref<Texture> create2D(uint16_t width, uint16_t height, Format format, const MemoryBlock& memoryBlock, SamplerInfo samplerInfo = {});
+		static Ref<Texture> createFromData(const TextureData& imageInfo, SamplerInfo sampler = {});
+		static Ref<Texture> createRenderTarget(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::None, SampleCount msaa = SampleCount::_1);
+		static Ref<Texture> createDepthStencil(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::None, bool isShadowMap = false, SampleCount msaa = SampleCount::_1);
+	
+		static Ref<Texture> createByColor(const char* name, const float4& color);
+
+		static Ref<Texture> White;
+		static Ref<Texture> Black;
+		static Ref<Texture> Gray;
+        static Ref<Texture> Red;
+        static Ref<Texture> Green;
+        static Ref<Texture> Blue;
+        static Ref<Texture> Yellow;
+		static Ref<Texture> Cyan;
+		static Ref<Texture> Magenta;
+        static Ref<Texture> Normal;
+        static Ref<Texture> Shadow;
+
+	private:
+		bool onCreate();
+		TextureData mTextureData;
+		SamplerInfo mSamplerInfo;
+		Ref<HwTexture> mHwTexture;
+	};
+}

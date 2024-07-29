@@ -1,5 +1,6 @@
 #include "Application.h"
 #include "vulkan/VulkanDevice.h"
+#include "utils/FileUtils.h"
 
 #ifdef _WIN32
 
@@ -36,23 +37,30 @@ namespace mygfx {
 		return nullptr;
 	}
 
-	Application::Application(const char* title) : mTitle(title)
-		, mCommandBufferQueue(MIN_COMMAND_BUFFERS_SIZE_IN_MB * 1024 * 1024, COMMAND_BUFFER_SIZE_IN_MB * 1024 * 1024)
+	std::string readAllText(const std::string& filePath) {
+		auto file = SDL_IOFromFile(filePath.c_str(), "rb");
+		auto fileSize = SDL_GetIOSize(file);
+		std::string str;
+		str.resize(fileSize);
+		SDL_ReadIO(file, str.data(), fileSize);
+		SDL_CloseIO(file);
+		return str;
+	}
+
+	Application::Application() : mTitle("mygfx"),
+		mCommandBufferQueue(MIN_COMMAND_BUFFERS_SIZE_IN_MB * 1024 * 1024, COMMAND_BUFFER_SIZE_IN_MB * 1024 * 1024)
 	{
 		SDL_Init(SDL_INIT_VIDEO);
 
-		// Validation for all samples can be forced at compile time using the FORCE_VALIDATION define
-#if defined(FORCE_VALIDATION)
 #ifndef NDEBUG
 		mSettings.validation = true;
 #endif
-#endif
 
 #if defined(_WIN32)
-		setupConsole(title);
+		setupConsole(mTitle);
 		setupDPIAwareness();
 #endif
-
+		FileUtils::readFileFn = readAllText;
 	}
 
 	Application::~Application()
@@ -100,44 +108,43 @@ namespace mygfx {
 
 #endif
 
-	std::string Application::getWindowTitle()
-	{
-		std::string windowTitle;
-		windowTitle = mTitle;
-		windowTitle += " - " + std::to_string(mFrameCounter) + " fps";
-		return windowTitle;
-	}
-
 	void Application::init()
 	{
 		mSettings.name = mTitle.c_str();
 		mSettings.width = mWidth;
 		mSettings.height = mHeight;
 
-		sdlWindow = SDL_CreateWindow(mTitle.c_str(), mWidth, mHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
-		window = getNativeWindow(sdlWindow);
+		void* window;
+		void* windowInstance;
+
+		mSdlWindow = SDL_CreateWindow(mTitle.c_str(), mWidth, mHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
+		window = getNativeWindow(mSdlWindow);
 
 #if defined(WIN32)
-		windowInstance = SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+		windowInstance = SDL_GetProperty(SDL_GetWindowProperties(mSdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
 #endif
 		mDevice = std::make_unique<VulkanDevice>();
 		mDevice->init(mSettings);
-
 		mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice, mCommandBufferQueue.getCircularBuffer());
+
+		Texture::staticInit();
 
 		mDevice->create(windowInstance, window);
 		mSwapchain = mDevice->getSwapChain();
 
-		mUI = new UIOverlay(sdlWindow);
+		mUI = new UIOverlay(mSdlWindow);
+
+		onStart();
+
+		mPrepared = true;
+
+		mLastTimestamp = std::chrono::high_resolution_clock::now();
+		mTimePrevEnd = mLastTimestamp;
 	}
 
 	void Application::start()
 	{
 		init();
-
-		onStart();
-
-		mPrepared = true;
 
 		mainLoop();
 	}
@@ -145,52 +152,51 @@ namespace mygfx {
 
 	void Application::mainLoop()
 	{
-		mLastTimestamp = std::chrono::high_resolution_clock::now();
-		mTimePrevEnd = mLastTimestamp;
-
-		bool close = false;
-		while (!close) {
+		while (!mQuit) {
 			SDL_Event event;
 			while (SDL_PollEvent(&event)) {
-
-				mUI->handleEvent(event);
-
-				switch (event.type) {
-				case SDL_EVENT_QUIT:
-					// handling of close button
-					close = true;
-					break;
-				case SDL_EVENT_WINDOW_RESIZED:
-				case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
-					windowResize(event.window.data1, event.window.data2);
-					break;				
-				case SDL_EVENT_KEY_DOWN:
-					keyDown(event.key.keysym.sym);
-					break;
-				case SDL_EVENT_KEY_UP:
-					keyUp(event.key.keysym.sym);
-					break;
-				case SDL_EVENT_MOUSE_BUTTON_DOWN:
-					mouseDown(event.button.button, event.button.x, event.button.y);
-					break;
-				case SDL_EVENT_MOUSE_BUTTON_UP:
-					mouseUp(event.button.button, event.button.x, event.button.y);
-					break;
-				case SDL_EVENT_MOUSE_WHEEL:
-					mouseWheel(event.wheel.y);
-					break;
-				case SDL_EVENT_MOUSE_MOTION:
-					mouseMove(event.motion.x, event.motion.y);
-					break;
-				}
+				handleEvent(event);
 			}
 
 			updateFrame();
 		}
 
-		onDestroy();
+		destroy();
 
+	}
 
+	void Application::handleEvent(const SDL_Event& event) {
+
+		mUI->handleEvent(event);
+
+		switch (event.type) {
+		case SDL_EVENT_QUIT:
+			// handling of close button
+			mQuit = true;
+			break;
+		case SDL_EVENT_WINDOW_RESIZED:
+		case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+			windowResize(event.window.data1, event.window.data2);
+			break;
+		case SDL_EVENT_KEY_DOWN:
+			keyDown(event.key.keysym.sym);
+			break;
+		case SDL_EVENT_KEY_UP:
+			keyUp(event.key.keysym.sym);
+			break;
+		case SDL_EVENT_MOUSE_BUTTON_DOWN:
+			mouseDown(event.button.button, event.button.x, event.button.y);
+			break;
+		case SDL_EVENT_MOUSE_BUTTON_UP:
+			mouseUp(event.button.button, event.button.x, event.button.y);
+			break;
+		case SDL_EVENT_MOUSE_WHEEL:
+			mouseWheel(event.wheel.y);
+			break;
+		case SDL_EVENT_MOUSE_MOTION:
+			mouseMove(event.motion.x, event.motion.y);
+			break;
+		}
 	}
 
 	void Application::updateFrame()
@@ -202,8 +208,7 @@ namespace mygfx {
 		cmd.beginFrame();
 		cmd.prepareFrame();
 
-		RenderPassInfo renderInfo
-		{ 
+		RenderPassInfo renderInfo { 
 			.clearFlags = TargetBufferFlags::ALL,
 			.clearColor = {0.25f, 0.25f, 0.25f, 1.0f}
 		};
@@ -282,12 +287,10 @@ namespace mygfx {
 		}
 	}
 
-	void  Application::onStart()
-	{
-	}
+	void Application::destroy() {
+		
+		onDestroy();
 
-	void Application::onDestroy()
-	{
 		mRendering = false;
 
 		device().mainSemPost();
@@ -299,10 +302,11 @@ namespace mygfx {
 
 		if (mRenderThread != nullptr)
 			mRenderThread->join();
+		
+		Texture::staticDeinit();
 
 		mDevice.release();
 		mGraphicsApi.release();
-
 	}
 
 	void Application::updateGUI()
@@ -312,11 +316,19 @@ namespace mygfx {
 		if (mShowProfiler) {
 
 		}
-		
+
 		if (mShowGUI) {
 			onGUI();
 		}
 
+	}
+
+	void  Application::onStart()
+	{
+	}
+
+	void Application::onDestroy()
+	{
 	}
 
 	void Application::onGUI()

@@ -1,6 +1,7 @@
 #pragma once
-#include "imgui/ImGui.h"
+#include <imgui/imgui.h>
 #include "Program.h"
+#include "Texture.h"
 
 struct SDL_Window;
 union SDL_Event;
@@ -26,7 +27,7 @@ namespace mygfx {
 	private:
 		void freeResources();
 		Ref<Program> mProgram;
-		//Ref<Texture> mFontTexture;
+		Ref<Texture> mFontTexture;
 
 		bool visible = true;
 		bool updated = false;

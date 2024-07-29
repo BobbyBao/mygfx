@@ -96,8 +96,8 @@ namespace mygfx
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.ScaleAllSizes(scale);
 
-		//mFontTexture = Texture::create2D(texWidth, texHeight, Format::R8G8B8A8_UNORM, MemoryBlock(fontData, dataSize));
-		//io.Fonts->TexID = (void*)mFontTexture->index();
+		mFontTexture = Texture::create2D(texWidth, texHeight, Format::R8G8B8A8_UNORM, MemoryBlock(fontData, dataSize));
+		io.Fonts->TexID = (void*)mFontTexture->index();
 
 	}
 	
@@ -208,7 +208,7 @@ namespace mygfx
 
 	void UIOverlay::freeResources()
 	{
-		//mProgram.reset();
+		mProgram.reset();
 		//mFontTexture.reset();
 	}
 
