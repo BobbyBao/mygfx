@@ -33,13 +33,13 @@ namespace mygfx
 		return true;
 	}
 
-	void Program::create(const String& vsCode, const String& psCode, const DefineList* macros) {	
+	Program::Program(const String& vsCode, const String& psCode, const DefineList* macros) {	
 		addShader(ShaderStage::Vertex, vsCode, ShaderSourceType::GLSL, "", "", macros);
 		addShader(ShaderStage::Fragment, psCode, ShaderSourceType::GLSL, "", "", macros);
 		init();
 	}
 
-	void Program::create(const String& csCode) {
+	Program::Program(const String& csCode) {
 		addShader(ShaderStage::Compute, csCode, ShaderSourceType::GLSL, "", "", nullptr);
 		init();
 	}

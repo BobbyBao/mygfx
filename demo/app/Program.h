@@ -10,12 +10,8 @@ namespace mygfx {
 		Program();
 		~Program();
 
-		void init();
-
-		bool addShader(ShaderStage shaderStage, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros = nullptr);
-
-		void create(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
-		void create(const String& csCode);
+		Program(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
+		Program(const String& csCode);
 
 		void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
 		void loadShader(const String& cs);
@@ -31,6 +27,9 @@ namespace mygfx {
 		PipelineState pipelineState;
 		
 	protected:
+		void init();
+		bool addShader(ShaderStage shaderStage, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros = nullptr);
+
 		std::vector<Ref<HwShaderModule>> mShaderModules;
 		Ref<HwVertexInput> mVertexInput;
 		Ref<HwProgram> mProgram;		

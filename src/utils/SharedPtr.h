@@ -244,7 +244,7 @@ namespace utils {
         void addRef()
         {
             if (ptr_) {
-                addRef_(ptr_);
+                addRef_((RefCounted*)ptr_);
             }
         }
 
@@ -254,7 +254,7 @@ namespace utils {
            
             if (ptr_)
             {
-                releaseRef_(ptr_);
+                releaseRef_((RefCounted*)ptr_);
                 ptr_ = nullptr;
             }
         }

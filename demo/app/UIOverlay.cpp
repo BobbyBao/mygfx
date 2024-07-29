@@ -144,8 +144,7 @@ namespace mygfx
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
-		mProgram = new Program();
-		mProgram->create(vsCode, fsCode);
+		mProgram = new Program(vsCode, fsCode);
 		mProgram->setVertexInput({Format::R32G32_SFLOAT, Format::R32G32_SFLOAT, Format::R8G8B8A8_UNORM });
 		mProgram->setBlendMode(BlendMode::Alpha);
 		mProgram->pipelineState.rasterState.cullMode = CullMode::None;

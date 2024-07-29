@@ -25,13 +25,13 @@ namespace mygfx {
 		void draw(GraphicsApi& cmd);
 		void resize(uint32_t width, uint32_t height);
 		
-        ImFont* font = nullptr;
-        ImFont* iconFont = nullptr;
 	private:
 		void freeResources();
 		utils::Ref<Program> mProgram;
 		utils::Ref<Texture> mFontTexture;
 
+        ImFont* font = nullptr;
+        ImFont* iconFont = nullptr;
 		bool visible = true;
 		bool updated = false;
 		float scale = 1.0f;
