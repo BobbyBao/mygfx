@@ -1,5 +1,5 @@
 #include "GraphicsApi.h"
 
-namespace phantom {
+namespace mygfx {
 
 }

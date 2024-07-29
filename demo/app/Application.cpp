@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "vulkan/VulkanDevice.h"
 
 #ifdef _WIN32
 
@@ -11,6 +12,14 @@
 
 #include "imgui/ImGui.h"
 
+#ifndef MIN_COMMAND_BUFFERS_SIZE_IN_MB
+#    define MIN_COMMAND_BUFFERS_SIZE_IN_MB 2
+#endif
+
+#ifndef COMMAND_BUFFER_SIZE_IN_MB
+#    define COMMAND_BUFFER_SIZE_IN_MB (MIN_COMMAND_BUFFERS_SIZE_IN_MB * 3)
+#endif
+
 namespace mygfx {
 
 	std::vector<const char*> Application::args;
@@ -18,22 +27,24 @@ namespace mygfx {
 
 	void* getNativeWindow(SDL_Window* sdlWindow)
 	{
+		
 #if defined(WIN32) && !defined(__WINRT__)
-		return (HWND)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), "SDL.window.win32.hwnd", nullptr);
+		return (HWND)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 #elif defined(__APPLE__) && defined(SDL_VIDEO_DRIVER_COCOA)
-		return (void*)SDL_GetProperty(SDL_GetWindowProperties(window), "SDL.window.cocoa.window", nullptr);
+		return (void*)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
 #endif
 		return nullptr;
 	}
 
 	Application::Application(const char* title) : mTitle(title)
+		, mCommandBufferQueue(MIN_COMMAND_BUFFERS_SIZE_IN_MB * 1024 * 1024, COMMAND_BUFFER_SIZE_IN_MB * 1024 * 1024)
 	{
 		SDL_Init(SDL_INIT_VIDEO);
 
 		// Validation for all samples can be forced at compile time using the FORCE_VALIDATION define
 #if defined(FORCE_VALIDATION)
 #ifndef NDEBUG
-		settings.validation = true;
+		mSettings.validation = true;
 #endif
 #endif
 
@@ -93,38 +104,49 @@ namespace mygfx {
 	{
 		std::string windowTitle;
 		windowTitle = mTitle;
-		windowTitle += " - " + std::to_string(frameCounter) + " fps";
+		windowTitle += " - " + std::to_string(mFrameCounter) + " fps";
 		return windowTitle;
 	}
 
-	void Application::init(void* hinstance)
+	void Application::init()
 	{
-		settings.name = mTitle.c_str();
-		settings.width = width;
-		settings.height = height;
+		mSettings.name = mTitle.c_str();
+		mSettings.width = mWidth;
+		mSettings.height = mHeight;
 
-		windowInstance = hinstance;
-		sdlWindow = SDL_CreateWindow(mTitle.c_str(), width, height, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
-		window = getNativeWindow(sdlWindow);		
+		sdlWindow = SDL_CreateWindow(mTitle.c_str(), mWidth, mHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
+		window = getNativeWindow(sdlWindow);
+
+#if defined(WIN32)
+		windowInstance = SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+#endif
+		mDevice = std::make_unique<VulkanDevice>();
+		mDevice->init(mSettings);
+
+		mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice, mCommandBufferQueue.getCircularBuffer());
+
+		mDevice->create(windowInstance, window);
+		mSwapchain = mDevice->getSwapChain();
+
 		mUI = new UIOverlay(sdlWindow);
 	}
 
 	void Application::start()
 	{
-		
+		init();
 
 		onStart();
 
-		prepared = true;
+		mPrepared = true;
 
-		renderLoop();
+		mainLoop();
 	}
 
 
-	void Application::renderLoop()
+	void Application::mainLoop()
 	{
-		lastTimestamp = std::chrono::high_resolution_clock::now();
-		tPrevEnd = lastTimestamp;
+		mLastTimestamp = std::chrono::high_resolution_clock::now();
+		mTimePrevEnd = mLastTimestamp;
 
 		bool close = false;
 		while (!close) {
@@ -175,33 +197,89 @@ namespace mygfx {
 	{
 		auto tStart = std::chrono::high_resolution_clock::now();
 
-		frameCounter++;
+		auto& cmd = getGraphicsApi();
+
+		cmd.beginFrame();
+		cmd.prepareFrame();
+
+		RenderPassInfo renderInfo
+		{ 
+			.clearFlags = TargetBufferFlags::ALL,
+			.clearColor = {0.25f, 0.25f, 0.25f, 1.0f}
+		};
+
+		renderInfo.viewport = { .left = 0, .top = 0, .width = mWidth, .height = mHeight };
+
+		cmd.beginRendering(mSwapchain->renderTarget, renderInfo);
+
+		onDraw(cmd);
+
+		cmd.endRendering(mSwapchain->renderTarget);
+
+		cmd.submitFrame();
+		cmd.endFrame();
+
+		auto& gfx = device();
+		if (gfx.singleLoop()) {
+			gfx.swapContext();
+		}
+		else {
+
+			gfx.waitRender();
+
+			mCommandBufferQueue.flush();
+
+			gfx.swapContext();
+
+			if (mRenderThread == nullptr) {
+				mRendering = true;
+				mRenderThread = std::make_unique<std::thread>(&Application::renderLoop, this);
+			}
+
+			gfx.mainSemPost();
+		}
+
+
+		mFrameCounter++;
 
 		auto tEnd = std::chrono::high_resolution_clock::now();
 		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
 
-		frameTimer = tDiff / 1000.0f;
+		mFrameTimer = tDiff / 1000.0f;
 
-		// Convert to clamped timer value
-		if (!paused)
-		{
-			timer += timerSpeed * frameTimer;
-			if (timer > 1.0)
-			{
-				timer -= 1.0f;
-			}
-		}
-
-		float fpsTimer = (float)(std::chrono::duration<double, std::milli>(tEnd - lastTimestamp).count());
+		float fpsTimer = (float)(std::chrono::duration<double, std::milli>(tEnd - mLastTimestamp).count());
 		if (fpsTimer > 1000.0f)
 		{
-			lastFPS = static_cast<uint32_t>((float)frameCounter * (1000.0f / fpsTimer));
-			frameCounter = 0;
-			lastTimestamp = tEnd;
+			mLastFPS = static_cast<uint32_t>((float)mFrameCounter * (1000.0f / fpsTimer));
+			mFrameCounter = 0;
+			mLastTimestamp = tEnd;
 		}
 
-		tPrevEnd = tEnd;
+		mTimePrevEnd = tEnd;
 
+	}
+
+	void Application::renderLoop()
+	{
+		GraphicsDevice::renderThreadID = std::this_thread::get_id();
+
+		while (mRendering) {
+			auto buffers = mCommandBufferQueue.waitForCommands();
+			if (UTILS_UNLIKELY(buffers.empty())) {
+				continue;
+			}
+
+			device().beginRender();
+			// execute all command buffers
+			auto& driver = getGraphicsApi();
+			for (auto& item : buffers) {
+				if (UTILS_LIKELY(item.begin)) {
+					driver.execute(item.begin);
+					mCommandBufferQueue.releaseBuffer(item);
+				}
+			}
+			device().endRender();
+		}
 	}
 
 	void  Application::onStart()
@@ -210,6 +288,21 @@ namespace mygfx {
 
 	void Application::onDestroy()
 	{
+		mRendering = false;
+
+		device().mainSemPost();
+
+		device().waitRender();
+
+		// now wait for all pending commands to be executed and the thread to exit
+		mCommandBufferQueue.requestExit();
+
+		if (mRenderThread != nullptr)
+			mRenderThread->join();
+
+		mDevice.release();
+		mGraphicsApi.release();
+
 	}
 
 	void Application::updateGUI()
@@ -220,7 +313,7 @@ namespace mygfx {
 
 		}
 		
-		if (mShowSampleUI) {
+		if (mShowGUI) {
 			onGUI();
 		}
 
@@ -242,7 +335,7 @@ namespace mygfx {
 	void Application::keyDown(uint32_t key)
 	{
 		if (key == SDLK_F1) {
-			mShowSampleUI = !mShowSampleUI;
+			mShowGUI = !mShowGUI;
 		}
 
 		if (key == SDLK_F2) {
@@ -253,22 +346,24 @@ namespace mygfx {
 
 	void Application::windowResize(int w, int h)
 	{
-		if (!prepared)
+		if (!mPrepared)
 		{
 			return;
 		}
 
-		prepared = false;
-		resized = true;
+		mPrepared = false;
 
-		width = w;
-		height = h;
+		auto& cmd = getGraphicsApi();
+		cmd.reload(w, h);
 
-		mUI->resize(width, height);
+		mWidth = w;
+		mHeight = h;
+
+		mUI->resize(mWidth, mHeight);
 
 		onResized(w, h);
 
-		prepared = true;
+		mPrepared = true;
 	}
 		
 	void Application::onResized(int w, int h) {

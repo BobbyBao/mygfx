@@ -107,7 +107,7 @@ namespace mygfx {
 			colorAttachment[0].loadOp = any(renderInfo.clearFlags & TargetBufferFlags::COLOR0) ? VK_ATTACHMENT_LOAD_OP_CLEAR 
 				: any(renderInfo.loadFlags & TargetBufferFlags::COLOR0) ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			colorAttachment[0].storeOp = any(renderInfo.storeFlags & TargetBufferFlags::COLOR0) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			colorAttachment[0].clearValue.color = { 0.0f,0.0f,0.0f,0.0f };
+			std::memcpy(&colorAttachment[0].clearValue.color, renderInfo.clearColor, sizeof(float) * 4);
 		} else {
 			//todo:
 			for (size_t i = 0; i < pVkRT->colorAttachments.size(); i++) {				
@@ -117,7 +117,7 @@ namespace mygfx {
 				colorAttachment[i].loadOp = any(renderInfo.clearFlags & TargetBufferFlags(1 << i)) ? VK_ATTACHMENT_LOAD_OP_CLEAR 
 				: any(renderInfo.loadFlags & TargetBufferFlags(1 << i)) ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 				colorAttachment[i].storeOp = any(renderInfo.storeFlags & TargetBufferFlags(1 << i)) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
-				colorAttachment[i].clearValue.color = { 0.0f,0.0f,0.0f,0.0f };
+				std::memcpy(&colorAttachment[i].clearValue.color, renderInfo.clearColor, sizeof(float) * 4);
 			}
 		}
 		// A single depth stencil attachment info can be used, but they can also be specified separately.
