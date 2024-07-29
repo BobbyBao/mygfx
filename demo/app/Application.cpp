@@ -109,7 +109,7 @@ namespace mygfx {
 
 #endif
 
-	void Application::init()
+	bool Application::init()
 	{
 		mSettings.name = mTitle.c_str();
 		mSettings.width = mWidth;
@@ -119,16 +119,24 @@ namespace mygfx {
 		void* windowInstance;
 
 		mSdlWindow = SDL_CreateWindow(mTitle.c_str(), mWidth, mHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
+		if (!mSdlWindow) {
+			return false;
+		}
+
 		window = getNativeWindow(mSdlWindow);
 
 #if defined(WIN32)
 		windowInstance = SDL_GetProperty(SDL_GetWindowProperties(mSdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
 #endif
 		mDevice = std::make_unique<VulkanDevice>();
-		mDevice->init(mSettings);
+		if (!mDevice->init(mSettings)) {
+			return false;
+		}
+
 		mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice, mCommandBufferQueue.getCircularBuffer());
 
 		mDevice->create(windowInstance, window);
+
 		Texture::staticInit();
 
 		mSwapchain = mDevice->getSwapChain();
@@ -142,6 +150,7 @@ namespace mygfx {
 
 		mLastTimestamp = std::chrono::high_resolution_clock::now();
 		mTimePrevEnd = mLastTimestamp;
+		return true;
 	}
 
 	void Application::start()

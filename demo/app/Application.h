@@ -21,9 +21,10 @@ namespace mygfx {
 
 		void start();
 
-		void init();
+		bool init();
 		void updateFrame();
 		void handleEvent(const SDL_Event& e);
+		void quit() { mQuit = true; }
 		void destroy();
 
 		GraphicsApi& getGraphicsApi() noexcept {
@@ -33,7 +34,7 @@ namespace mygfx {
 		static std::vector<const char*> args;
 		static Application* msInstance;
 	protected:
-		virtual void onStart();
+		virtual void onStart();	
 		virtual void onDestroy();
 		void updateGUI();
 		virtual void onGUI();
