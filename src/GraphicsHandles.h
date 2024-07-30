@@ -7,17 +7,12 @@ namespace mygfx {
 
 	class HwObject : public RefCounted {
 	public:
-
 		static void gc(bool force = false);
 	protected:
         void deleteThis() override;
 
-        std::atomic<int> mRefCount = 0;
-
 		friend class GraphicsDevice;
 	};
-
-	//static_assert(sizeof(HwObject) == 4);
 
 	class HwResource : public HwObject {
 	public:
@@ -138,7 +133,7 @@ namespace mygfx {
 		bool isSwapchain = false;
 	};
 
-	struct RenderPassInfo{
+	struct RenderPassInfo {
 		Viewport viewport {};
 		uint32_t passID = 0;
 		TargetBufferFlags clearFlags = TargetBufferFlags::NONE;
@@ -297,9 +292,7 @@ namespace mygfx {
 	}
 
 	inline void Uniforms::push_back(uint32_t v) {
-		if (v > 0) {
-			mValues[mSize++] = v;
-		}
+		mValues[mSize++] = v;
 	}
 
 	inline void Uniforms::pop_back() {

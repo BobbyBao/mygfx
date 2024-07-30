@@ -3,7 +3,7 @@
 namespace mygfx::demo {
 	
 
-	class  ImGuiDemo : public Demo {
+	class ImGuiDemo : public Demo {
 	public:		
 		void gui() override {
 			ImGui::ShowDemoWindow();

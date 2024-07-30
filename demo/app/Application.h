@@ -1,4 +1,5 @@
 #pragma once
+#include "GraphicsHandles.h"
 #include "GraphicsApi.h"
 #include "api/CommandBufferQueue.h"
 #include "UIOverlay.h"

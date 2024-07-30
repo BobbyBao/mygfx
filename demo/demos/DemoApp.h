@@ -1,9 +1,12 @@
 #pragma once
 
-#include "GraphicsDefs.h"
 #include "Application.h"
+#include "ShaderLibs.h"
+#include "MathTypes.h"
 
 namespace mygfx::demo {
+
+	using namespace math;
 
 	class Demo : public utils::RefCounted {
 	public:

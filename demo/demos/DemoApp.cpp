@@ -92,4 +92,6 @@ void DemoApp::onDestroy() {
 	if (mActiveDemo) {
 		mActiveDemo->stop();
 	}
+
+	ShaderLibs::clean();
 }
