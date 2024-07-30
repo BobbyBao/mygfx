@@ -12,8 +12,6 @@ namespace mygfx {
     Ref<Texture> Texture::Yellow;
 	Ref<Texture> Texture::Cyan;
 	Ref<Texture> Texture::Magenta;
-    Ref<Texture> Texture::Normal;
-    Ref<Texture> Texture::Shadow;
 
 	void Texture::staticInit()
 	{
@@ -40,8 +38,6 @@ namespace mygfx {
 		Yellow = nullptr;
 		Cyan = nullptr;
 		Magenta = nullptr;
-		Normal = nullptr;
-		Shadow = nullptr;
 	}
 	
 	Texture::Texture() = default;

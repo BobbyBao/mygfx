@@ -17,20 +17,19 @@ namespace mygfx::demo {
 			mShader = ShaderLibs::getColorShader();
 
 			VertexColored pos[] = {
-				{{1000.0f, 0.0f, 0.0f}, 0xff0000ff },
-				{{0.0f, 1000.0f, 0.0f}, 0xff00ff00 },
-				{{2000.0f, 1000.0f, 0.0f}, 0xffff0000 }
+				{{0.0f, -1.0f, 0.0f}, 0xff0000ff },
+				{{-1.0f, 1.0f, 0.0f}, 0xff00ff00 },
+				{{1.0f, 1.0f, 0.0f}, 0xffff0000 }
 			};
 			
 			mVB = device().createBuffer1(BufferUsage::Vertex, MemoryUsage::GpuOnly, 3, pos);
 		}
 
 		void draw(GraphicsApi& cmd) override {
-
-			float L = 0.0f;
-			float R = ImGui::GetIO().DisplaySize.x;
-			float B = ImGui::GetIO().DisplaySize.y;
-			float T = 0.0f;
+			float L = -1;
+			float R = 1;
+			float B = 1;
+			float T = -1.0f;
 			float mvp[4][4] =
 			{
 				{ 2.0f / (R - L),   0.0f,           0.0f,       0.0f },

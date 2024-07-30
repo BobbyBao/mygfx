@@ -1,7 +1,6 @@
 #pragma once
 #include "GraphicsHandles.h"
 #include "TextureData.h"
-#include "Sampler.h"
 #include "MathTypes.h"
 
 namespace mygfx {
@@ -10,10 +9,6 @@ namespace mygfx {
 	public:
 		Texture();
 		
-		size_t getWidth(uint8_t level = 0) const noexcept;
-		size_t getHeight(uint8_t level = 0) const noexcept;
-		size_t getDepth(uint8_t level = 0) const noexcept;
-
 		size_t getLevelCount() const noexcept { return mTextureData.mipMapCount; }
 		SamplerInfo getSampler() const noexcept { return mSamplerInfo; }
 		Format getFormat() const noexcept { return mTextureData.format; }
@@ -56,11 +51,9 @@ namespace mygfx {
         static Ref<Texture> Yellow;
 		static Ref<Texture> Cyan;
 		static Ref<Texture> Magenta;
-        static Ref<Texture> Normal;
-        static Ref<Texture> Shadow;
-
 	private:
 		bool onCreate();
+
 		TextureData mTextureData;
 		SamplerInfo mSamplerInfo;
 		Ref<HwTexture> mHwTexture;

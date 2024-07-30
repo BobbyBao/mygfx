@@ -3,7 +3,14 @@
 namespace mygfx::demo {
 
 	static utils::Ref<Program> sColorShader;
-	static utils::Ref<Program> sBasicShader;
+	static utils::Ref<Program> sUnlitShader;
+	static utils::Ref<Program> sLightShader;
+	
+	void ShaderLibs::clean() {
+		sColorShader.reset();
+		sUnlitShader.reset();
+		sLightShader.reset();
+	}
 
 	utils::Ref<Program> ShaderLibs::getColorShader() {
 		if (sColorShader) {
@@ -46,9 +53,9 @@ namespace mygfx::demo {
 		return sColorShader;
 	}
 
-	utils::Ref<Program> ShaderLibs::getBasicShader() {
-		if (sBasicShader) {
-			return sBasicShader;
+	utils::Ref<Program> ShaderLibs::getUnlitShader() {
+		if (sUnlitShader) {
+			return sUnlitShader;
 		}
 
 		const char* vsCode = R"(
@@ -95,13 +102,70 @@ namespace mygfx::demo {
 			}
 		)";
 
-		sBasicShader = new Program(vsCode, fsCode);
-		sBasicShader->setVertexInput({Format::R32G32B32_SFLOAT, Format::R8G8B8A8_UNORM, Format::R32G32_SFLOAT, Format::R32_SINT });
-		return sBasicShader;
+		sUnlitShader = new Program(vsCode, fsCode);
+		sUnlitShader->setVertexInput({Format::R32G32B32_SFLOAT, Format::R8G8B8A8_UNORM, Format::R32G32_SFLOAT, Format::R32_SINT });
+		return sUnlitShader;
 	}
 
-	void ShaderLibs::clean() {
-		sColorShader.reset();
-		sBasicShader.reset();
+	utils::Ref<Program> ShaderLibs::getSimpleLightShader() {
+		if (sLightShader) {
+			return sLightShader;
+		}
+
+		const char* vsCode = R"(
+			#version 450
+			
+			layout (binding = 0) uniform PerView {
+				mat4 viewProj;
+			} frameUniforms;
+
+			layout (binding = 1) uniform PerRenderable {
+				mat4 world;
+			} objectUniforms;
+
+			layout(location = 0) in vec3 inPos;
+			layout(location = 1) in vec2 inUV;
+			layout(location = 2) in vec3 inNorm;
+
+			layout(location = 0) out vec2 outUV;
+			layout(location = 1) out vec3 outNorm;
+
+			void main()
+			{
+				outUV = inUV;
+				outNorm = inNorm;
+				gl_Position = frameUniforms.viewProj * objectUniforms.world * vec4(inPos.xyz, 1.0);
+			}
+		)";
+
+		const char* fsCode = R"(
+			#version 450
+
+			#extension GL_EXT_nonuniform_qualifier : require
+
+			layout (binding = 2) uniform ProjConstants {
+				int baseColor;
+			} materialUniforms;
+
+			layout(set = 1, binding = 0) uniform sampler2D textures[];
+
+			layout(location = 0) in vec2 inUV;
+			layout(location = 1) in vec3 inNorm;
+
+			layout(location = 0) out vec4 outFragColor;
+
+			void main()
+			{
+				outFragColor = textureLod(textures[nonuniformEXT(materialUniforms.baseColor)], inUV, 0);
+			}
+		)";
+
+		sLightShader = new Program(vsCode, fsCode);
+		sLightShader->setVertexInput({
+			Format::R32G32B32_SFLOAT, Format::END,
+			Format::R32G32_SFLOAT, Format::END, 
+			Format::R32G32B32_SFLOAT });
+		return sLightShader;
 	}
+
 }
