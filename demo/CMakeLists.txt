@@ -2,8 +2,7 @@
 include_directories(external)
 
 add_subdirectory(external/stb)
-
-add_subdirectory(external/VulkanMemoryAllocator)
+add_subdirectory(external/glm)
 
 add_subdirectory(external/imgui)
 
