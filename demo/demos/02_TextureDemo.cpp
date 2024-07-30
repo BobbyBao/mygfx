@@ -29,28 +29,13 @@ namespace mygfx::demo {
 		void draw(GraphicsApi& cmd) override {
 
 			float aspect = ImGui::GetIO().DisplaySize.x / ImGui::GetIO().DisplaySize.y;
-			float L = -aspect;
-			float R = aspect;
-			float B = 1;
-			float T = -1.0f;
-			float vp[4][4] =
-			{
-				{ 2.0f / (R - L),   0.0f,           0.0f,       0.0f },
-				{ 0.0f,         2.0f / (T - B),     0.0f,       0.0f },
-				{ 0.0f,         0.0f,           0.5f,       0.0f },
-				{ (R + L) / (L - R),  (T + B) / (B - T),    0.5f,       1.0f },
-			};
+			auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
 
 			uint32_t perView = device().allocConstant(vp);
-			float m[4][4] =
-			{
-				{ 1.0f, 0.0f, 0.0f, 0.0f },
-				{ 0.0f, 1.0f, 0.0f, 0.0f },
-				{ 0.0f, 0.0f, 1.0f, 0.0f },
-				{ 0.0f, 0.0f, 0.0f,	1.0f },
-			};
 
-			uint32_t perDraw = device().allocConstant(m);		
+			auto world = identity<mat4>();
+
+			uint32_t perDraw = device().allocConstant(world);
 			uint32_t perMaterial = device().allocConstant(Texture::Red->index());
 
 			cmd.bindPipelineState(mShader->pipelineState);

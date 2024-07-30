@@ -3,9 +3,9 @@
 #include "utils/FileUtils.h"
 #include "Program.h"
 #include "Texture.h"
+#include "MathTypes.h"
 
 #include <SDL.h>
-
 #include <SDL3/SDL_iostream.h>
 
 #include <imgui/backends/imgui_impl_sdl3.h>
@@ -165,7 +165,7 @@ namespace mygfx
 		style.ScaleAllSizes(scale);
 
 		mFontTexture = Texture::create2D(texWidth, texHeight, Format::R8G8B8A8_UNORM, MemoryBlock(fontData, dataSize));
-		io.Fonts->TexID = (void*)mFontTexture->index();
+		io.Fonts->TexID = (void*)(int64_t)mFontTexture->index();
 
 	}
 	
@@ -229,15 +229,10 @@ namespace mygfx
 		float R = ImGui::GetIO().DisplaySize.x;
 		float B = ImGui::GetIO().DisplaySize.y;
 		float T = 0.0f;
-		float mvp[4][4] =
-		{
-			{ 2.0f / (R - L),   0.0f,           0.0f,       0.0f },
-			{ 0.0f,         2.0f / (T - B),     0.0f,       0.0f },
-			{ 0.0f,         0.0f,           0.5f,       0.0f },
-			{ (R + L) / (L - R),  (T + B) / (B - T),    0.5f,       1.0f },
-		};
 
-		uint32_t perView = device().allocConstant(mvp);
+		auto m = glm::ortho(L, R, B, T, -1.0f, 1.0f);
+
+		uint32_t perView = device().allocConstant(m);
 		
 		cmd.bindPipelineState(mProgram->pipelineState);
 		cmd.bindUniforms({perView});

@@ -26,18 +26,8 @@ namespace mygfx::demo {
 		}
 
 		void draw(GraphicsApi& cmd) override {
-			float L = -1;
-			float R = 1;
-			float B = 1;
-			float T = -1.0f;
-			float mvp[4][4] =
-			{
-				{ 2.0f / (R - L),   0.0f,           0.0f,       0.0f },
-				{ 0.0f,         2.0f / (T - B),     0.0f,       0.0f },
-				{ 0.0f,         0.0f,           0.5f,       0.0f },
-				{ (R + L) / (L - R),  (T + B) / (B - T),    0.5f,       1.0f },
-			};
-
+		
+			auto mvp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 			uint32_t perView = device().allocConstant(mvp);
 
 			cmd.bindPipelineState(mShader->pipelineState);

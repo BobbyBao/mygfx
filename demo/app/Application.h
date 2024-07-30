@@ -65,7 +65,6 @@ namespace mygfx {
 		std::unique_ptr<GraphicsDevice> mDevice;
 		CommandBufferQueue mCommandBufferQueue;
 		std::unique_ptr<GraphicsApi> mGraphicsApi;
-
 		Ref<HwSwapchain> mSwapchain;
 		Ref<UIOverlay>	mUI;
 
