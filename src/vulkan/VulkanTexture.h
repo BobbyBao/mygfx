@@ -9,7 +9,6 @@
 #include "VulkanTools.h"
 #include "../GraphicsHandles.h"
 #include "../TextureData.h"
-#include "../Sampler.h"
 
 namespace mygfx
 {
@@ -30,8 +29,6 @@ namespace mygfx
 		const VulkanTextureView* srv() const { return (VulkanTextureView*)mSRV.get(); }
 		const VulkanTextureView* rtv() const { return (VulkanTextureView*)mRTV.get(); }
 		const VulkanTextureView* dsv() const { return (VulkanTextureView*)mDSV.get(); }
-
-		//const VkDescriptorImageInfo& descriptorInfo() const;
 
 		int index() const;
 		bool create(const TextureData& textureData);

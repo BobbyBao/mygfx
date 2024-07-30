@@ -1,7 +1,6 @@
 #pragma once
 #include "VulkanObjects.h"
 #include "../GraphicsHandles.h"
-#include "../Sampler.h"
 
 namespace mygfx
 {

@@ -3,6 +3,8 @@
 #include "../GraphicsDefs.h"
 #include "../GraphicsHandles.h"
 #include "../PipelineState.h"
+#include "../Uniforms.h"
+
 #include <span>
 
 #define VULKAN_HPP_NOEXCEPT noexcept

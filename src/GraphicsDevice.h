@@ -1,12 +1,12 @@
 #pragma once
 
 #include "GraphicsHandles.h"
-#include "Sampler.h"
 #include "DynamicBufferPool.h"
 #include "RenderQueue.h"
 #include "SyncContext.h"
 #include "PipelineState.h"
-#include "Sampler.h"
+#include "Uniforms.h"
+
 #include <span>
 
 namespace mygfx {
