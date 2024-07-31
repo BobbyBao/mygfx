@@ -37,5 +37,5 @@ namespace mygfx::demo {
 		}
 	};
 
-	DEF_DEMO(TriangleDemo, "Triangle demo");	
+	DEF_DEMO(TriangleDemo, "Triangle Demo");	
 }

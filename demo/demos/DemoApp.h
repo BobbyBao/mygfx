@@ -7,17 +7,23 @@
 namespace mygfx::demo {
 
 	using namespace math;
+	
+	class DemoApp;
 
 	class Demo : public utils::RefCounted {
 	public:
 		virtual void start() {}
 		virtual void gui() {}
 		virtual void update(double delta) {}
+		virtual void preDraw(GraphicsApi& cmd) {}
 		virtual void draw(GraphicsApi& cmd) {}
 		virtual void stop() {}
 	protected:
+		mygfx::GraphicsApi& getGraphicsApi();
+
 		const char* mName = "";
 		String mDesc;
+		DemoApp* mApp = nullptr;
 
 		friend class DemoApp;
 	};
@@ -42,6 +48,7 @@ namespace mygfx::demo {
 		void onDestroy() override;
 		void onGUI() override;
 		void onUpdate(double delta) override;
+		void onPreDraw(GraphicsApi& cmd) override;
 		void onDraw(GraphicsApi& cmd) override;
 
 		int mActiveDemoIndex = -1;

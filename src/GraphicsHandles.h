@@ -113,9 +113,14 @@ namespace mygfx {
 	public:
 	};
 
+	class HwDescriptorSet : public HwObject {
+	public:
+	};
+
 	class HwProgram : public HwObject {
 	public:
 		ShaderResourceInfo* getShaderResource(const String& name);
+		HwDescriptorSet* getDescriptorSet(uint32_t index);
 		HwVertexInput* vertexInput;
 	};
 
@@ -194,14 +199,5 @@ namespace mygfx {
 		Ref<VertexData> mGeometry;
 	};
 
-
-
-	class HwDescriptorSet : public HwObject {
-	public:
-		virtual void bind(uint32_t dstBinding, const BufferInfo& buffer) = 0;
-		virtual void bind(uint32_t dstBinding, HwTextureView* texView) = 0;
-		virtual void bind(uint32_t dstBinding, HwBuffer* buffer) = 0;
-	};
-	
 }
 

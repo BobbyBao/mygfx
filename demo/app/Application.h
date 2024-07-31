@@ -13,6 +13,8 @@ namespace mygfx {
 
 	class Engine;
 	class CameraController;
+	using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+	using Clock = std::chrono::high_resolution_clock;
 
 	class Application : public utils::RefCounted
 	{
@@ -31,6 +33,17 @@ namespace mygfx {
 		GraphicsApi& getGraphicsApi() noexcept {
 			return *mGraphicsApi;
 		}
+		
+		uint32_t getWidth() const { return mWidth; }
+		uint32_t getHeight() const { return mHeight; }
+
+		auto getDeltaTime() const {
+			return mFrameTimer;
+		}
+
+		double getTime() const {
+			return std::chrono::duration<double, std::ratio<1>>(Clock::now() - mStartTime).count();
+		}
 
 		static std::vector<const char*> args;
 		static Application* msInstance;
@@ -40,6 +53,7 @@ namespace mygfx {
 		void updateGUI();
 		virtual void onGUI();
 		virtual void onUpdate(double delta);
+		virtual void onPreDraw(GraphicsApi& cmd);
 		virtual void onDraw(GraphicsApi& cmd);
 		void windowResize(int w, int h);
 		virtual void onResized(int w, int h);
@@ -75,7 +89,8 @@ namespace mygfx {
 		double mFrameTimer = 0.01;
 		uint32_t mFrameCounter = 0;
 		uint32_t mLastFPS = 0;
-		std::chrono::time_point<std::chrono::high_resolution_clock> mLastTimestamp, mTimePrevEnd;
+		TimePoint mStartTime;
+		TimePoint mLastTimestamp, mTimePrevEnd;
 		bool mShowProfiler = false;
 		bool mShowGUI = true;
 	};

@@ -16,9 +16,10 @@ namespace mygfx {
 		void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
 		void loadShader(const String& cs);
 
-		inline const std::vector<Ref<HwShaderModule>>& shaderModules() const { return mShaderModules; }
-		inline VertexAttribute getVertexSemantic() const { return pipelineState.vertexSemantic; }
-		
+		const std::vector<Ref<HwShaderModule>>& shaderModules() const { return mShaderModules; }
+		VertexAttribute getVertexSemantic() const { return pipelineState.vertexSemantic; }
+		HwProgram* getProgram() { return mProgram; }
+
 		void setVertexInput(const FormatList& fmts, const FormatList& fmts1 = {});
 		void setVertexSemantic(VertexAttribute vertexSemantic);
 		void setBlendMode(BlendMode blendMode);

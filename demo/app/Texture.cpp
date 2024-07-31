@@ -1,7 +1,33 @@
 #include "Texture.h"
 #include "GraphicsDevice.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+#include "utils/FileUtils.h"
+#include <ktx.h>
 
 namespace mygfx {
+
+	struct KtxTextureLoader : public TextureDataProvider {
+
+		char* mData = nullptr;
+
+		KtxTextureLoader() = default;
+		~KtxTextureLoader();
+		Ref<Texture> load(const String& fileName, SamplerInfo samplerInfo);
+		void copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level) override;
+
+	};
+
+	struct StbTextureLoader : public TextureDataProvider {
+
+		char* mData = nullptr;
+		StbTextureLoader() = default;
+		~StbTextureLoader();
+		Ref<Texture> load(const String& fileName, SamplerInfo samplerInfo);
+		void copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level) override;
+		void mipImage(uint32_t width, uint32_t height);
+		
+	};
 
 	Ref<Texture> Texture::White;
 	Ref<Texture> Texture::Black;
@@ -115,6 +141,17 @@ namespace mygfx {
 		return tex;
 	}
 
+	Ref<Texture> Texture::createFromFile(const String& fileName, SamplerInfo samplerInfo)
+	{
+		if (fileName.ends_with(".ktx")) {
+			KtxTextureLoader dataProvider;
+			return dataProvider.load(fileName, samplerInfo);
+		}
+
+		StbTextureLoader dataProvider;
+		return dataProvider.load(fileName, samplerInfo);
+	}
+
 	Ref<Texture> Texture::createRenderTarget(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa) {
 		auto textureData = TextureData::Texture2D(width, height, format);
 		textureData.sampleCount = msaa;
@@ -137,4 +174,98 @@ namespace mygfx {
 
 		return createFromData(textureData, samplerInfo);
 	}
+
+
+	StbTextureLoader::~StbTextureLoader() {
+		if (mData)
+			stbi_image_free(mData);
+	}
+
+	Ref<Texture> StbTextureLoader::load(const String& fileName, SamplerInfo samplerInfo) {
+		TextureData textureData;
+		auto content = FileUtils::readAll(fileName);
+
+		int32_t width, height, channels;
+		mData = (char*)stbi_load_from_memory(content.data(), (int)content.size(), &width, &height, &channels, STBI_rgb_alpha);
+		if (!mData) {
+			return nullptr;
+		}
+
+		// compute number of mips
+		//
+		uint32_t mipWidth = width;
+		uint32_t mipHeight = height;
+		uint32_t mipCount = 0;
+		for (;;) {
+			mipCount++;
+			if (mipWidth > 1) mipWidth >>= 1;
+			if (mipHeight > 1) mipHeight >>= 1;
+			if (mipWidth == 1 && mipHeight == 1)
+				break;
+		}
+
+		// fill img struct
+		//
+		textureData.layerCount = 1;
+		textureData.width = width;
+		textureData.height = height;
+		textureData.depth = 1;
+		textureData.mipMapCount = mipCount;
+		textureData.format = Format::R8G8B8A8_UNORM;
+
+		Ref<Texture> tex(new Texture());
+		if (!tex->create(textureData, samplerInfo)) {
+			return nullptr;
+		}
+
+		tex->copyData(this);
+		return tex;
+	}
+
+	void StbTextureLoader::copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level) {
+
+		memcpy((char*)pDest, mData, imageSize);
+		mipImage(width, height);
+	}
+
+
+	void StbTextureLoader::mipImage(uint32_t width, uint32_t height)
+	{
+		//compute mip so next call gets the lower mip
+		int offsetsX[] = { 0,1,0,1 };
+		int offsetsY[] = { 0,0,1,1 };
+
+		uint32_t* pImg = (uint32_t*)mData;
+
+#define GetByte(color, component) (((color) >> (8 * (component))) & 0xff)
+#define GetColor(ptr, x,y) (ptr[(x)+(y)*width])
+#define SetColor(ptr, x,y, col) ptr[(x)+(y)*width/2]=col;
+
+		for (uint32_t y = 0; y < height; y += 2) {
+			for (uint32_t x = 0; x < width; x += 2) {
+				uint32_t ccc = 0;
+				for (uint32_t c = 0; c < 4; c++) {
+					uint32_t cc = 0;
+					for (uint32_t i = 0; i < 4; i++)
+						cc += GetByte(GetColor(pImg, x + offsetsX[i], y + offsetsY[i]), 3 - c);
+
+					ccc = (ccc << 8) | (cc / 4);
+				}
+				SetColor(pImg, x / 2, y / 2, ccc);
+			}
+		}
+	}
+
+	KtxTextureLoader::~KtxTextureLoader() {
+
+	}
+
+	Ref<Texture> KtxTextureLoader::load(const String& fileName, SamplerInfo samplerInfo) {
+		return nullptr;
+	}
+
+	void KtxTextureLoader::copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level) {
+	}
+
+
 }

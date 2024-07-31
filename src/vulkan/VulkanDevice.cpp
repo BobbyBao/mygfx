@@ -474,15 +474,15 @@ namespace mygfx
 	}
 	
 	void VulkanDevice::updateDescriptorSet1(HwDescriptorSet* descriptorSet,uint32_t dstBinding, HwTextureView* texView) {
-		descriptorSet->bind(dstBinding, texView);
+		static_cast<DescriptorSet*>(descriptorSet)->bind(dstBinding, texView);
 	}
 
 	void VulkanDevice::updateDescriptorSet2(HwDescriptorSet* descriptorSet,uint32_t dstBinding, HwBuffer* buffer) {
-		descriptorSet->bind(dstBinding, buffer);
+		static_cast<DescriptorSet*>(descriptorSet)->bind(dstBinding, buffer);
 	}
 
 	void VulkanDevice::updateDescriptorSet3(HwDescriptorSet* descriptorSet,uint32_t dstBinding, const BufferInfo& buffer) {
-		descriptorSet->bind(dstBinding, buffer);
+		static_cast<DescriptorSet*>(descriptorSet)->bind(dstBinding, buffer);
 	}
 
 	void VulkanDevice::beginFrame(int) {

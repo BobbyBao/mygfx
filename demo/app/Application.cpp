@@ -39,13 +39,28 @@ namespace mygfx {
 	}
 
 	std::string readAllText(const std::string& filePath) {
-		auto file = SDL_IOFromFile(filePath.c_str(), "rb");
+		auto file = SDL_IOFromFile(filePath.c_str(), "rb"); if (!file) {
+			return {};
+		}
 		auto fileSize = SDL_GetIOSize(file);
 		std::string str;
 		str.resize(fileSize);
 		SDL_ReadIO(file, str.data(), fileSize);
 		SDL_CloseIO(file);
 		return str;
+	}
+
+	std::vector<uint8_t> readAll(const std::string& filePath) {
+		auto file = SDL_IOFromFile(filePath.c_str(), "rb");
+		if (!file) {
+			return {};
+		}
+		auto fileSize = SDL_GetIOSize(file);
+		std::vector<uint8_t> bytes;
+		bytes.resize(fileSize);
+		SDL_ReadIO(file, bytes.data(), fileSize);
+		SDL_CloseIO(file);
+		return bytes;
 	}
 
 	Application::Application() : mTitle("mygfx"),
@@ -61,7 +76,8 @@ namespace mygfx {
 		setupConsole(mTitle);
 		setupDPIAwareness();
 #endif
-		FileUtils::readFileFn = readAllText;
+		FileUtils::readFileFn = readAll;
+		FileUtils::readTextFn = readAllText;
 	}
 
 	Application::~Application()
@@ -146,10 +162,10 @@ namespace mygfx {
 
 		onStart();
 
-		mPrepared = true;
-
-		mLastTimestamp = std::chrono::high_resolution_clock::now();
+		mStartTime = Clock::now();
+		mLastTimestamp = mStartTime;
 		mTimePrevEnd = mLastTimestamp;
+		mPrepared = true;
 		return true;
 	}
 
@@ -214,10 +230,15 @@ namespace mygfx {
 	{
 		auto tStart = std::chrono::high_resolution_clock::now();
 		updateGUI();
+		
+		onUpdate(mFrameTimer);
 
 		auto& cmd = getGraphicsApi();
 
 		cmd.beginFrame();
+
+		onPreDraw(cmd);
+
 		cmd.prepareFrame();
 
 		RenderPassInfo renderInfo { 
@@ -261,7 +282,7 @@ namespace mygfx {
 
 		mFrameCounter++;
 
-		auto tEnd = std::chrono::high_resolution_clock::now();
+		auto tEnd = Clock::now();
 		auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
 
 		mFrameTimer = tDiff / 1000.0f;
@@ -353,8 +374,10 @@ namespace mygfx {
 	{
 	}
 
-	void Application::onDraw(GraphicsApi& cmd)
-	{
+	void Application::onPreDraw(GraphicsApi& cmd) {
+	}
+
+	void Application::onDraw(GraphicsApi& cmd) {
 	}
 
 	void Application::keyDown(uint32_t key)

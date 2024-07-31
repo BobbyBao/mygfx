@@ -17,9 +17,12 @@ namespace mygfx
 		return nullptr;
 	}
 
-	ShaderResourceInfo* HwProgram::getShaderResource(const String& name)
-	{
+	ShaderResourceInfo* HwProgram::getShaderResource(const String& name) {
 		return static_cast<VulkanProgram*>(this)->getShaderResource(name);
+	}
+
+	HwDescriptorSet* HwProgram::getDescriptorSet(uint32_t index) {
+		return static_cast<VulkanProgram*>(this)->getDescriptorSet(index);
 	}
 
 	VulkanProgram::VulkanProgram() {
@@ -95,6 +98,8 @@ namespace mygfx
 		
 		VkDescriptorSetLayout descriptorSetLayout{ VK_NULL_HANDLE };
 		for (auto& it : combinedBindingMap) {
+			std::ranges::sort(it.second, [](auto& v1, auto& v2) { return v1->dsLayoutBinding.binding < v2->dsLayoutBinding.binding; });
+
 			ResourceSetType resourceSetType = ResourceSetType::None;
 			if (isDynamicUniformSet(it.second)) {
 				resourceSetType = ResourceSetType::DynamicUniform;
@@ -129,9 +134,9 @@ namespace mygfx
 				
 				for(uint32_t j = 0; j < dsLayout->numBindings(); j++) {
 					auto sz = it.second[j]->size;
-					if (ds->dynamicBufferSize[0] < sz) {
+					if (ds->dynamicBufferSize[j] < sz) {
 						ds->dynamicBufferSize[j] = sz;
-						gfx().updateDynamicDescriptorSet(j, sz, *ds);
+						gfx().updateDynamicDescriptorSet(it.second[j]->dsLayoutBinding.binding, sz, *ds);
 					}
 				}
 
@@ -158,6 +163,18 @@ namespace mygfx
 			{
 				auto ds = new DescriptorSet(dsLayout);
 				mDesciptorSets.emplace_back(ds);
+				desciptorSets.push_back(*ds);
+
+				for (uint32_t j = 0; j < dsLayout->numBindings(); j++) {
+					if (it.second[j]->dsLayoutBinding.descriptorType == DescriptorType::UniformBufferDynamic) {
+						auto sz = it.second[j]->size;
+						if (ds->dynamicBufferSize[j] < sz) {
+							ds->dynamicBufferSize[j] = sz;
+							gfx().updateDynamicDescriptorSet(it.second[j]->dsLayoutBinding.binding, sz, *ds);
+						}
+					}
+				}
+
 			}
 			break;
 			}
@@ -190,6 +207,13 @@ namespace mygfx
 		}
 		return nullptr;
 	}
+	
+	DescriptorSet* VulkanProgram::getDescriptorSet(uint32_t index) {
+		if (index < mDesciptorSets.size()) {
+			return mDesciptorSets[index];
+		}
+		return nullptr;
+	}
 
 	bool VulkanProgram::createShaders() {
 		VkShaderCreateInfoEXT shaderCreateInfos[MAX_SHADER_STAGE]{};
@@ -197,7 +221,7 @@ namespace mygfx
 		for (uint32_t i = 0; i < stageCount; i++) {
 			VulkanShaderModule* sm = mShaderModules[i].get();
 			shaderCreateInfos[i].sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
-			shaderCreateInfos[i].flags = VK_SHADER_CREATE_LINK_STAGE_BIT_EXT;
+			shaderCreateInfos[i].flags = stageCount > 1 ? VK_SHADER_CREATE_LINK_STAGE_BIT_EXT : 0;
 			shaderCreateInfos[i].stage = sm->vkShaderStage;
 			shaderCreateInfos[i].nextStage = sm->nextStage;
 			shaderCreateInfos[i].codeType = shaderCodeType;

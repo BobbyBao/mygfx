@@ -156,7 +156,7 @@ namespace mygfx::demo {
 
 			void main()
 			{
-				outFragColor = textureLod(textures[nonuniformEXT(materialUniforms.baseColor)], inUV, 0);
+				outFragColor = texture(textures[nonuniformEXT(materialUniforms.baseColor)], inUV);
 			}
 		)";
 

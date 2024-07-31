@@ -1,5 +1,6 @@
 #include "DemoApp.h"
 
+using namespace mygfx;
 using namespace mygfx::demo;
 
 static std::vector<DemoDesc*> sDemos;
@@ -9,6 +10,10 @@ DemoDesc::DemoDesc(const char* name, const std::function<Demo* ()>& creator) {
 	this->creator = creator;
 
 	sDemos.push_back(this);
+}
+
+GraphicsApi& Demo::getGraphicsApi() {
+	return mApp->getGraphicsApi();
 }
 
 DemoApp::DemoApp() {
@@ -28,6 +33,7 @@ void DemoApp::setDemo(int index) {
 	mActiveDemoIndex = index;
 	auto demo = sDemos[mActiveDemoIndex]->creator();
 	demo->mName = sDemos[mActiveDemoIndex]->name;
+	demo->mApp = this;
 	setDemo(demo);
 }
 
@@ -79,6 +85,12 @@ void DemoApp::onGUI() {
 void DemoApp::onUpdate(double delta) {
 	if (mActiveDemo) {
 		mActiveDemo->update(delta);
+	}
+}
+
+void DemoApp::onPreDraw(GraphicsApi& cmd) {
+	if (mActiveDemo) {
+		mActiveDemo->preDraw(cmd);
 	}
 }
 

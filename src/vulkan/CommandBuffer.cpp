@@ -306,7 +306,6 @@ namespace mygfx {
 		if (mProgram != program) {
 			mProgram = vkProgram;
 			g_vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);
-
 		}
 	}
 
@@ -427,10 +426,10 @@ namespace mygfx {
 	}
 	
 	void CommandBuffer::bindUniformBuffer(uint32_t offsetCount, const uint32_t* offsets) const {
-		if (offsetCount > 0 && offsetCount < Uniforms::MAX_COUNT) {			
-			vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, mProgram->pipelineLayout, 0, 
+		//if (offsetCount > 0 && offsetCount < Uniforms::MAX_COUNT) {			
+			vkCmdBindDescriptorSets(cmd, mProgram->getBindPoint(), mProgram->pipelineLayout, 0,
 				(uint32_t)mProgram->desciptorSets.size(), mProgram->desciptorSets.data(), offsetCount, offsets);
-		}
+		//}
 	}
 
 	void CommandBuffer::bindIndexBuffer(HwBuffer* buffer, VkDeviceSize offset, IndexType indexType) const VULKAN_HPP_NOEXCEPT

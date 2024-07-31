@@ -10,11 +10,6 @@ namespace mygfx::demo {
 		Ref<Program> mShader;
 		Vector<Ref<HwRenderPrimitive>> mPrimitives;
 
-		struct VertexColored {
-			float3 pos;
-			uint32_t color;
-		};
-
 		void start() override {
 
 			mShader = ShaderLibs::getSimpleLightShader();
@@ -48,5 +43,5 @@ namespace mygfx::demo {
 		}
 	};
 
-	DEF_DEMO(TextureDemo, "Texture demo");	
+	DEF_DEMO(TextureDemo, "Texture Demo");	
 }

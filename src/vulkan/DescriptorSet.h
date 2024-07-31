@@ -20,9 +20,9 @@ namespace mygfx {
 		void init(const Span<DescriptorSetLayoutBinding>& bindings);
 		void init(DescriptorSetLayout* layout);
 
-		void bind(uint32_t dstBinding, const BufferInfo& buffer) final;
-		void bind(uint32_t dstBinding, HwTextureView* texView) final;
-		void bind(uint32_t dstBinding, HwBuffer* buffer) final;
+		void bind(uint32_t dstBinding, const BufferInfo& buffer);
+		void bind(uint32_t dstBinding, HwTextureView* texView);
+		void bind(uint32_t dstBinding, HwBuffer* buffer);
 
 		void bind(uint32_t dstBinding, HwTexture* tex);
 

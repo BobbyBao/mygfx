@@ -17,3 +17,5 @@ add_subdirectory(app)
 include_directories(app)
 
 add_subdirectory(demos)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/media DESTINATION ${PROJECT_BINARY_DIR})

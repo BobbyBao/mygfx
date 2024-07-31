@@ -34,9 +34,9 @@ namespace mygfx
 		~VulkanProgram();
 
 		ShaderResourceInfo* getShaderResource(const String& name);
-
+		DescriptorSet* getDescriptorSet(uint32_t index);
 		bool createShaders();
-
+		VkPipelineBindPoint getBindPoint() const { return (VkPipelineBindPoint)programType; }
 		static constexpr int MAX_SHADER_STAGE = 8;
 		VkPipelineLayout pipelineLayout = 0;
 		uint32_t stageCount = 0;
