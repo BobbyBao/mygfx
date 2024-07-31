@@ -47,6 +47,25 @@ namespace mygfx {
 
 		Format fromVk(VkFormat fmt);
 		
+		inline VkImageType getImageType(SamplerType target) {
+			switch (target) {
+				case SamplerType::SAMPLER_CUBE:
+					return VK_IMAGE_TYPE_2D;
+				case SamplerType::SAMPLER_1D_ARRAY:
+					return VK_IMAGE_TYPE_1D;
+				case SamplerType::SAMPLER_2D_ARRAY:
+					return VK_IMAGE_TYPE_2D;
+				case SamplerType::SAMPLER_CUBE_ARRAY:
+					return VK_IMAGE_TYPE_2D;
+				case SamplerType::SAMPLER_3D:
+					return VK_IMAGE_TYPE_3D;
+				case SamplerType::SAMPLER_1D:
+					return VK_IMAGE_TYPE_1D;
+				default:
+					return VK_IMAGE_TYPE_2D;
+			}
+		}
+
 		inline VkImageViewType getViewType(SamplerType target) {
 			switch (target) {
 				case SamplerType::SAMPLER_CUBE:

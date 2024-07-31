@@ -58,8 +58,9 @@ namespace mygfx::demo {
 			auto ds1 = mShader->getProgram()->getDescriptorSet(0);
 
 			auto tex = Texture::createFromFile("../../media/textures/particle_rgba.ktx");
-			getGraphicsApi().updateDescriptorSet1(ds1, 0, Texture::Red->getSRV());
-			getGraphicsApi().updateDescriptorSet1(ds1, 1, Texture::White->getSRV());
+			auto tex1 = Texture::createFromFile("../../media/textures/particle_gradient_rgba.ktx");
+			getGraphicsApi().updateDescriptorSet1(ds1, 0, tex->getSRV());
+			getGraphicsApi().updateDescriptorSet1(ds1, 1, tex1->getSRV());
 		}
 
 		void preDraw(GraphicsApi& cmd) override {
@@ -220,7 +221,7 @@ namespace mygfx::demo {
 		#version 450
 
 		layout (binding = 0) uniform sampler2D samplerColorMap;
-		layout (binding = 1) uniform sampler2D samplerGradientRamp;
+		layout (binding = 1) uniform sampler1D samplerGradientRamp;
 
 		layout (location = 0) in vec4 inColor;
 		layout (location = 1) in float inGradientPos;
@@ -229,7 +230,7 @@ namespace mygfx::demo {
 
 		void main () 
 		{
-			vec3 color = texture(samplerGradientRamp, vec2(inGradientPos, 0.0)).rgb;
+			vec3 color = texture(samplerGradientRamp, inGradientPos).rgb;
 			outFragColor.rgb = texture(samplerColorMap, gl_PointCoord).rgb * color;
 		}
 		)";

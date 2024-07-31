@@ -12,9 +12,12 @@ set(KTX_SOURCES
     ${KTX_DIR}/lib/memstream.c
     ${KTX_DIR}/lib/filestream.c)
 
-add_library (${TARGET} STATIC ${_SRC} ${KTX_DIR})
+LIST(APPEND _SRC ${KTX_SOURCES})
+
+add_library (${TARGET} STATIC ${_SRC})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${KTX_DIR}/include)
+include_directories(${KTX_DIR}/lib)
 
 target_link_libraries(${TARGET} mygfx ImGUI SDL3-shared glm)

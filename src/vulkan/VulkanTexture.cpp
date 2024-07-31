@@ -224,7 +224,7 @@ namespace mygfx
 		// Create the Image:
 		{
 			info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-			info.imageType = VK_IMAGE_TYPE_2D;
+			info.imageType = imgutil::getImageType(samplerType);
 			info.format = vkFormat;
 			info.extent.width = width;
 			info.extent.height = height;

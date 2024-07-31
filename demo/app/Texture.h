@@ -39,6 +39,22 @@ namespace mygfx {
         static void staticInit();
         static void staticDeinit();
 		
+		// Returns the with or height for a given mipmap level from the base value.
+		static inline size_t valueForLevel(uint8_t level, size_t baseLevelValue) {
+			return std::max(size_t(1), baseLevelValue >> level);
+		}
+
+		// Returns the max number of levels for a texture of given max dimensions
+		static inline uint8_t maxLevelCount(uint32_t maxDimension) noexcept {
+			return std::max(1, std::ilogbf(float(maxDimension)) + 1);
+		}
+
+		// Returns the max number of levels for a texture of given dimensions
+		static inline uint8_t maxLevelCount(uint32_t width, uint32_t height) noexcept {
+			uint32_t const maxDimension = std::max(width, height);
+			return maxLevelCount(maxDimension);
+		}
+
 		static Ref<Texture> create2D(uint16_t width, uint16_t height, Format format, const MemoryBlock& memoryBlock, SamplerInfo samplerInfo = {});
 		static Ref<Texture> createFromData(const TextureData& imageInfo, SamplerInfo sampler = {}); 
 		static Ref<Texture> createFromFile(const String& fileName, SamplerInfo sampler = {});
