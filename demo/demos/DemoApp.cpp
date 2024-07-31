@@ -56,7 +56,7 @@ void DemoApp::setDemo(Demo* demo) {
 void DemoApp::onGUI() {
 	
 	ImGui::SetNextWindowPos({10.0f, 10.0f});
-	ImGui::SetNextWindowSize({300.0f, 20.0f});
+	ImGui::SetNextWindowSize({300.0f, -10.0f});
 	ImGui::SetNextWindowBgAlpha(0.5f);
 
 	if (ImGui::Begin("Demos", nullptr, ImGuiWindowFlags_NoDecoration)) {
@@ -73,6 +73,8 @@ void DemoApp::onGUI() {
 
 			ImGui::EndCombo();
 		}
+
+		ImGui::Value("fps:", mLastFPS);
 
 	}
 

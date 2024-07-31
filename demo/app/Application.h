@@ -63,7 +63,7 @@ namespace mygfx {
 		virtual void mouseUp(int button, float x, float y);
 		virtual void mouseWheel(float wheelDelta);
 		virtual void mouseMove(float x, float y);
-	private:
+	protected:
 		void setupConsole(std::string title);
 		void setupDPIAwareness();
 		void mainLoop();
