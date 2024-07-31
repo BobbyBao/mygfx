@@ -73,13 +73,25 @@ void DemoApp::onGUI() {
 
 			ImGui::EndCombo();
 		}
+
 	}
 
 	ImGui::End();
 
 	if (mActiveDemo) {
-		mActiveDemo->gui();
+		
+		ImGui::SetNextWindowPos({10.0f, 60.0f});
+		ImGui::SetNextWindowSize({300.0f, -1});
+		ImGui::SetNextWindowBgAlpha(0.5f);
+
+		if (ImGui::Begin(mActiveDemo->mName, nullptr)) {
+
+			mActiveDemo->gui();
+		}
+
+		ImGui::End();
 	}
+
 }
 
 void DemoApp::onUpdate(double delta) {

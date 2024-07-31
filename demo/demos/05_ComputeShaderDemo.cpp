@@ -15,11 +15,14 @@ namespace mygfx::demo {
 
 		float timer = 0.0f;
 		float animStart = 20.0f;
+		bool pause = false;
 		bool attachToCursor = false;
+		float mouseX = 0, mouseY = 0;
 
 		struct Particle {
 			vec2 pos;
-			vec3 vel;
+			vec2 vel;
+			float gradientPos;
 		};
 
 		struct UniformData {						// Compute shader uniform block object
@@ -51,7 +54,8 @@ namespace mygfx::demo {
 			mShader = new Program(vsCode, fsCode);
 			mShader->setVertexInput({
 				Format::R32G32_SFLOAT, 
-				Format::R32G32B32_SFLOAT });
+				Format::R32G32_SFLOAT, 
+				Format::R32_SFLOAT });
 			mShader->setBlendMode(BlendMode::Add);
 			mShader->pipelineState.primitiveState.primitiveTopology = PrimitiveTopology::PointList;
 
@@ -63,7 +67,20 @@ namespace mygfx::demo {
 			getGraphicsApi().updateDescriptorSet1(ds1, 1, tex1->getSRV());
 		}
 
+		void gui() override {
+			ImGui::Checkbox("Pause", &pause);
+			ImGui::Checkbox("Attach To Cursor", &attachToCursor);
+			ImGui::Value("Cursor X", mouseX);
+			ImGui::Value("Cursor Y", mouseY);
+			ImGui::Value("Dest X", uniformData.destX);
+			ImGui::Value("Dest Y", uniformData.destY);
+		}
+
 		void preDraw(GraphicsApi& cmd) override {
+
+			if(pause){
+				return;
+			}
 
 			auto width = mApp->getWidth();
 			auto height = mApp->getHeight();
@@ -91,10 +108,9 @@ namespace mygfx::demo {
 			}
 			else
 			{
-				float x, y;
-				SDL_GetMouseState(&x, &y);
-				float normalizedMx = (x - static_cast<float>(width / 2)) / static_cast<float>(width / 2);
-				float normalizedMy = (y - static_cast<float>(height / 2)) / static_cast<float>(height / 2);
+				SDL_GetMouseState(&mouseX, &mouseY);
+				float normalizedMx = (mouseX - static_cast<float>(width / 2)) / static_cast<float>(width / 2);
+				float normalizedMy = (mouseY - static_cast<float>(height / 2)) / static_cast<float>(height / 2);
 				uniformData.destX = normalizedMx;
 				uniformData.destY = normalizedMy;
 			}
@@ -120,7 +136,8 @@ namespace mygfx::demo {
 		struct Particle
 		{
 			vec2 pos;
-			vec3 vel;
+			vec2 vel;
+			float gradientPos;
 		};
 
 		// Binding 0 : Position storage buffer
@@ -185,36 +202,35 @@ namespace mygfx::demo {
 
 			// Write back
 			particles[index].vel.xy = vVel;
-			particles[index].vel.z += 0.02 * ubo.deltaT;
-			if (particles[index].vel.z > 1.0)
-				particles[index].vel.z -= 1.0;
+			particles[index].gradientPos += 0.02 * ubo.deltaT;
+			if (particles[index].gradientPos > 1.0)
+				particles[index].gradientPos -= 1.0;
 		}
-	)";
-
-
+		)";
 
 		const char* vsCode = R"(
-			#version 450
+		#version 450
 
-			layout (location = 0) in vec2 inPos;
-			layout (location = 1) in vec3 inVel;
+		layout (location = 0) in vec2 inPos;
+		layout (location = 1) in vec2 inVel;
+		layout (location = 2) in float inGradientPos;
 
-			layout (location = 0) out vec4 outColor;
-			layout (location = 1) out float outGradientPos;
+		layout (location = 0) out vec4 outColor;
+		layout (location = 1) out float outGradientPos;
 
-			out gl_PerVertex
-			{
-				vec4 gl_Position;
-				float gl_PointSize;
-			};
+		out gl_PerVertex
+		{
+			vec4 gl_Position;
+			float gl_PointSize;
+		};
 
-			void main () 
-			{
-			  gl_PointSize = 8.0;
-			  outColor = vec4(0.035);
-			  outGradientPos = inVel.z;
-			  gl_Position = vec4(inPos.xy, 1.0, 1.0);
-			}
+		void main () 
+		{
+			gl_PointSize = 8.0;
+			outColor = vec4(0.035);
+			outGradientPos = inGradientPos;
+			gl_Position = vec4(inPos.xy, 0.0, 1.0);
+		}
 		)";
 
 		const char* fsCode = R"(
