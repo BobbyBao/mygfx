@@ -46,7 +46,7 @@ namespace mygfx::demo {
 						renderable.worldTransform = glm::translate(identity<mat4>(), 
 							{(i - GRID_SIZE_X / 2) * SPACE, (j - GRID_SIZE_Y / 2)*SPACE, (k - GRID_SIZE_Z / 2)*SPACE});
 
-						renderable.texIndex = glm::linearRand<int>(0, (int)mTextures.size() - 1);
+						renderable.texIndex = mTextures[glm::linearRand<int>(0, (int)mTextures.size() - 1)]->index();
 
 						for (auto& subMesh : mMesh->getSubMeshes()) {
 							renderable.primitives.emplace_back(device().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
@@ -74,7 +74,7 @@ namespace mygfx::demo {
 			auto& renderCmds = mRenderQueue->getWriteCommands();
 			for (auto& renderable : mRenderables) {
 				uint32_t perRenderable = device().allocConstant(renderable.worldTransform);
-				uint32_t perMaterial = device().allocConstant(mTextures[renderable.texIndex]->index());
+				uint32_t perMaterial = device().allocConstant(renderable.texIndex);
 				for (auto& prim : renderable.primitives) {
 					auto& rc = renderCmds.emplace_back();
 					rc.renderPrimitive = prim;
