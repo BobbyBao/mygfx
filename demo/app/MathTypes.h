@@ -20,6 +20,11 @@ namespace math {
         assert(min <= max);
         return T(math::min(max, math::max(min, v)));
     }
+
+    struct Rect {
+        vec2 min;
+        vec2 max;
+    };
 }
 
 namespace mygfx {
