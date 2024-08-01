@@ -52,7 +52,7 @@ namespace mygfx
 			setData(level, 0, 0, std::max(1, width >> level), std::max(1, height >> level), data.data(), (uint32_t)(sizeof(T) * data.size()));
 		}
 
-		void setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const std::span<byte>& data);
+		void setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const std::span<uint8_t>& data);
 		void setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const void* data, uint32_t size);
 		void setData(uint32_t level, int x, int y, int z, uint32_t w, uint32_t h, uint32_t depth, const void* data, size_t size);
 		void destroy();

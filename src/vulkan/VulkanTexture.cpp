@@ -583,7 +583,7 @@ namespace mygfx
 		return true;
 	}
 
-	void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const std::span<byte>& data)
+	void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const std::span<uint8_t>& data)
 	{
 		auto pixels = gfx().uploadHeap().Suballocate(data.size(), 64);
 		std::memcpy(pixels, data.data(), data.size());
@@ -700,7 +700,7 @@ namespace mygfx
 
 	void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const void* data, uint32_t size)
 	{
-		setData(level, x, y, w, h, std::span<byte>((byte*)data, (int)size));
+		setData(level, x, y, w, h, std::span<uint8_t>((uint8_t*)data, (int)size));
 	}
 
 

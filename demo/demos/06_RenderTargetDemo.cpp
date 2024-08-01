@@ -9,6 +9,8 @@ namespace mygfx::demo {
 		Ref<Mesh> mMesh;
 		Ref<Program> mShader;
 		Vector<Ref<HwRenderPrimitive>> mPrimitives;
+		Ref<Texture> mRenderTexture;
+		Ref<HwRenderTarget> mRenderTarget;
 
 		void start() override {
 
@@ -16,15 +18,29 @@ namespace mygfx::demo {
 
 			mMesh = Mesh::createCube();
 			for (auto& subMesh : mMesh->getSubMeshes()) {
-				mPrimitives.emplace_back( device().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
+				mPrimitives.emplace_back(device().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
 			}
-
+			mRenderTexture = Texture::createRenderTarget(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::Sampled);
+			mRenderTarget = device().createRenderTarget(
+				{ .width = 1024,
+				.height = 1024, 
+				.colorAttachments = {mRenderTexture->getHwTexture()} });
 		}
 
-		void draw(GraphicsApi& cmd) override {
+		void gui() override {
+			if (ImGui::Begin("RenderTarget")) {
+				ImGui::Texture(mRenderTexture, { 1024, 1024 });
+			}
+			ImGui::End();
+		}
 
-			float aspect = ImGui::GetIO().DisplaySize.x / ImGui::GetIO().DisplaySize.y;
-			auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
+		void preDraw(GraphicsApi& cmd) override {
+			
+			auto w = mApp->getWidth();
+			auto h = mApp->getHeight();
+
+			float aspect = w / (float)h;
+			auto vp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 
 			uint32_t perView = device().allocConstant(vp);
 
@@ -33,6 +49,15 @@ namespace mygfx::demo {
 			uint32_t perDraw = device().allocConstant(world);
 			uint32_t perMaterial = device().allocConstant(Texture::Red->index());
 
+			RenderPassInfo renderInfo{
+				.clearFlags = TargetBufferFlags::ALL,
+				.clearColor = {0.25f, 0.25f, 0.25f, 1.0f}
+			};
+
+			renderInfo.viewport = { .left = 0, .top = 0, .width = 1024, .height = 1024 };
+
+			cmd.beginRendering(mRenderTarget, renderInfo);
+
 			cmd.bindPipelineState(mShader->pipelineState);
 			cmd.bindUniforms({ perView, perDraw, perMaterial });
 
@@ -40,6 +65,7 @@ namespace mygfx::demo {
 				cmd.drawPrimitive(prim);
 			}
 
+			cmd.endRendering(mRenderTarget);
 		}
 	};
 

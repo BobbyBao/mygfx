@@ -276,3 +276,16 @@ namespace mygfx
 	}
 
 }
+
+namespace ImGui {
+
+	void Texture(mygfx::Texture* tex, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col) {
+		if (tex->getSRV()) {
+			ImGui::Image((ImTextureID)(int64_t)tex->getSRV()->index(), image_size, uv0, uv1, tint_col, border_col);
+		}
+		else {
+			ImGui::Image((ImTextureID)(int64_t)mygfx::Texture::Magenta->getSRV()->index(), image_size);
+		}
+	}
+}
+

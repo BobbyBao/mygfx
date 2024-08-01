@@ -37,3 +37,8 @@ namespace mygfx {
 		float scale = 1.0f;
 	};
 }
+
+
+namespace ImGui {
+	void Texture(mygfx::Texture* tex, const ImVec2& image_size, const ImVec2& uv0 = ImVec2(0, 0), const ImVec2& uv1 = ImVec2(1, 1), const ImVec4& tint_col = ImVec4(1, 1, 1, 1), const ImVec4& border_col = ImVec4(0, 0, 0, 0));
+}

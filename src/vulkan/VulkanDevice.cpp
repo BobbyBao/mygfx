@@ -141,6 +141,10 @@ namespace mygfx
 		mSwapChain = swapChain;
 	}
 
+	const char* VulkanDevice::getDeviceName() const {
+		return properties.deviceName;
+	}
+
 	void VulkanDevice::updateDynamicDescriptorSet(int index, uint32_t size, VkDescriptorSet descriptorSet)
 	{
 		VulkanBuffer* vkBuffer = (VulkanBuffer*)mConstantBufferRing.getBuffer();

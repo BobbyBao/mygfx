@@ -4,6 +4,10 @@
 #include "../GraphicsHandles.h"
 #include "../PipelineState.h"
 #include "../Uniforms.h"
+#include "VulkanHandles.h"
+#include "VulkanTextureView.h"
+#include "VulkanShader.h"
+#include "VulkanBuffer.h"
 
 #include <span>
 
@@ -116,5 +120,77 @@ namespace mygfx {
 		mutable ColorBlendState mColorBlendState {};		
 		mutable StencilState mStencilState {};
 	};
+
+	inline void CommandBuffer::pushConstant(uint32_t binding, const BufferInfo& bufferInfo) const {
+		auto bufferAddr = bufferInfo.buffer->deviceAddress + bufferInfo.offset;
+		vkCmdPushConstants(cmd, mProgram->pipelineLayout, VK_SHADER_STAGE_ALL, binding * 8, sizeof(uint64_t), &bufferAddr);
+	}
+
+	inline void CommandBuffer::bindUniformBuffer(uint32_t offsetCount, const uint32_t* offsets) const {
+		vkCmdBindDescriptorSets(cmd, mProgram->getBindPoint(), mProgram->pipelineLayout, 0,
+			(uint32_t)mProgram->desciptorSets.size(), mProgram->desciptorSets.data(), offsetCount, offsets);
+	}
+
+	inline void CommandBuffer::bindIndexBuffer(HwBuffer* buffer, VkDeviceSize offset, IndexType indexType) const VULKAN_HPP_NOEXCEPT
+	{
+		VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(buffer);
+		vkCmdBindIndexBuffer(cmd, vkBuffer->buffer, static_cast<VkDeviceSize>(offset), (VkIndexType)indexType);
+	}
+
+	inline void CommandBuffer::bindVertexBuffer(uint32_t firstBinding, HwBuffer* pBuffer, VkDeviceSize pOffset) const VULKAN_HPP_NOEXCEPT
+	{
+		VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(pBuffer);
+		vkCmdBindVertexBuffers(cmd, firstBinding, 1, reinterpret_cast<const VkBuffer*>(&vkBuffer->buffer), reinterpret_cast<const VkDeviceSize*>(&pOffset));
+	}
+
+	inline void CommandBuffer::drawPrimitive(HwRenderPrimitive* primitive) const {
+		VulkanRenderPrimitive* rp = static_cast<VulkanRenderPrimitive*>(primitive);
+		vkCmdBindVertexBuffers(cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
+
+		if (rp->indexBuffer != nullptr) {
+			vkCmdBindIndexBuffer(cmd, rp->indexBuffer, 0, rp->indexType);
+			drawIndexed(rp->drawArgs.indexCount, 1, rp->drawArgs.firstIndex, 0, 0);
+		}
+		else {
+			draw(rp->drawArgs.vertexCount, 1, rp->drawArgs.firstVertex, 0);
+		}
+	}
+
+	inline void CommandBuffer::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) const VULKAN_HPP_NOEXCEPT
+	{
+		vkCmdDraw(cmd, vertexCount, instanceCount, firstVertex, firstInstance);
+	}
+
+	inline void CommandBuffer::drawIndexed(uint32_t indexCount,
+		uint32_t         instanceCount,
+		uint32_t         firstIndex,
+		int32_t          vertexOffset,
+		uint32_t         firstInstance) const VULKAN_HPP_NOEXCEPT
+	{
+		vkCmdDrawIndexed(cmd, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+	}
+
+	inline void CommandBuffer::drawIndirect(HwBuffer* buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) const VULKAN_HPP_NOEXCEPT
+	{
+		VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(buffer);
+		vkCmdDrawIndirect(cmd, vkBuffer->buffer, offset, drawCount, stride);
+	}
+
+	inline void CommandBuffer::drawIndexedIndirect(HwBuffer* buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) const VULKAN_HPP_NOEXCEPT
+	{
+		VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(buffer);
+		vkCmdDrawIndexedIndirect(cmd, vkBuffer->buffer, offset, drawCount, stride);
+	}
+
+	inline void CommandBuffer::dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) const VULKAN_HPP_NOEXCEPT
+	{
+		vkCmdDispatch(cmd, groupCountX, groupCountY, groupCountZ);
+	}
+
+	inline void CommandBuffer::dispatchIndirect(HwBuffer* buffer, VkDeviceSize offset) const VULKAN_HPP_NOEXCEPT
+	{
+		VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(buffer);
+		vkCmdDispatchIndirect(cmd, vkBuffer->buffer, offset);
+	}
 
 }

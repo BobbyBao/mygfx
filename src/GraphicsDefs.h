@@ -423,7 +423,7 @@ namespace mygfx {
         // Special cases
         DepthShaderResource     = DepthRead | NonPixelShaderResource | PixelShaderResource, ///< Depth shader resource state.
         ShaderResource          = NonPixelShaderResource | PixelShaderResource,             ///< Shader resource (general) state
-		Undefined = (ResourceState) - 1,
+		Undefined = (uint32_t) - 1,
 	};
 	
 	struct DescriptorSetLayoutBinding {

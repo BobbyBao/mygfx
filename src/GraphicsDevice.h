@@ -7,8 +7,6 @@
 #include "PipelineState.h"
 #include "Uniforms.h"
 
-#include <span>
-
 namespace mygfx {
 
 	struct Settings {
@@ -37,7 +35,8 @@ namespace mygfx {
 		
 		virtual bool init(const Settings& settings) = 0;		
 		virtual void create(void* windowInstance, void* window) = 0;
-		
+		virtual const char* getDeviceName() const = 0;
+
 		// Returns the dispatcher. This is only called once during initialization of the CommandStream,
 		// so it doesn't matter that it's virtual.
 		virtual Dispatcher getDispatcher() const noexcept;

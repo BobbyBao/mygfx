@@ -34,7 +34,7 @@ namespace mygfx
 
 		bool init(const Settings& settings) override;
 		void create(void* windowInstance, void* window) override;
-				
+		const char* getDeviceName() const override;
         Dispatcher getDispatcher() const noexcept override;
 
 		VmaAllocator vmaAllocator() { return vmaAllocator_; } 

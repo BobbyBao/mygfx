@@ -56,10 +56,13 @@ void DemoApp::setDemo(Demo* demo) {
 void DemoApp::onGUI() {
 	
 	ImGui::SetNextWindowPos({10.0f, 10.0f});
-	ImGui::SetNextWindowSize({300.0f, -10.0f});
+	ImGui::SetNextWindowSize({300.0f, -1.0f});
 	ImGui::SetNextWindowBgAlpha(0.5f);
 
 	if (ImGui::Begin("Demos", nullptr, ImGuiWindowFlags_NoDecoration)) {
+
+		ImGui::Text("Device:{%s}", device().getDeviceName());
+		ImGui::Value("fps:", mLastFPS);
 
 		const char* preview_value = mActiveDemo ? mActiveDemo->mName : "";
 
@@ -74,25 +77,15 @@ void DemoApp::onGUI() {
 			ImGui::EndCombo();
 		}
 
-		ImGui::Value("fps:", mLastFPS);
-
-	}
-
-	ImGui::End();
-
-	if (mActiveDemo) {
-		
-		ImGui::SetNextWindowPos({10.0f, 60.0f});
-		ImGui::SetNextWindowSize({300.0f, -1});
-		ImGui::SetNextWindowBgAlpha(0.5f);
-
-		if (ImGui::Begin(mActiveDemo->mName, nullptr)) {
-
+		if (mActiveDemo) {
 			mActiveDemo->gui();
 		}
 
 		ImGui::End();
+
+
 	}
+
 
 }
 
