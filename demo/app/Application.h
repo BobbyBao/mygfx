@@ -64,6 +64,7 @@ namespace mygfx {
 
 		std::vector<String> mArgs;
 		std::string mTitle;
+		std::string mCPUName;
 		Settings mSettings;
 		uint32_t mWidth = 1920;
 		uint32_t mHeight = 1080;

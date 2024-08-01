@@ -56,9 +56,11 @@ void DemoApp::onGUI() {
 	ImGui::SetNextWindowBgAlpha(0.5f);
 
 	if (ImGui::Begin("Demos", nullptr, ImGuiWindowFlags_NoDecoration)) {
-
-		ImGui::Text("Device:{%s}", device().getDeviceName());
-		ImGui::Value("fps:", mLastFPS);
+		ImGui::Text("CPU:		%s", mCPUName.c_str());
+		ImGui::Text("GPU:		%s", device().getDeviceName());
+		ImGui::Text("FPS:		%d", mLastFPS);
+		ImGui::Text("DrawCall:	%d", Stats::getDrawCall());
+		
 
 		const char* preview_value = mActiveDemo ? mActiveDemo->mName : "";
 

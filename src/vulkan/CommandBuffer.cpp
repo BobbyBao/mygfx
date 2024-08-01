@@ -145,8 +145,8 @@ namespace mygfx {
 		renderingInfo.renderArea = { 
 			renderInfo.viewport.left, 
 			renderInfo.viewport.top, 
-			renderInfo.viewport.width,
-			renderInfo.viewport.height 
+			std::min(renderInfo.viewport.width, pVkRT->width),
+			std::min(renderInfo.viewport.height, pVkRT->height)
 		};
 		renderingInfo.layerCount = 1;
 		renderingInfo.colorAttachmentCount = (uint32_t)pVkRT->numAttachments();
@@ -161,8 +161,8 @@ namespace mygfx {
 		g_vkCmdBeginRenderingKHR(cmd, &renderingInfo);
 		
 		setViewportAndScissor(renderInfo.viewport.left, renderInfo.viewport.top, 
-			renderInfo.viewport.width,
-			renderInfo.viewport.height);
+			std::min(renderInfo.viewport.width, pVkRT->width),
+			std::min(renderInfo.viewport.height, pVkRT->height));
 
 		resetState();
 	}
@@ -238,6 +238,7 @@ namespace mygfx {
 		mDepthState = {};
 		mColorBlendState = {};
 		mStencilState = {};
+		mPrimitive = nullptr;
 	}
 	
 	void CommandBuffer::setViewportAndScissor(const VkRect2D& renderArea) const

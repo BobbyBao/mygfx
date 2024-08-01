@@ -14,12 +14,12 @@ namespace mygfx {
             m_TotalSize = TotalSize;
         }
 
-        uint32_t GetSize() { return m_AllocatedSize; }
-        uint32_t GetHead() { return m_Head; }
-        uint32_t GetTail() { return (m_Head + m_AllocatedSize) % m_TotalSize; }
+        inline uint32_t GetSize() { return m_AllocatedSize; }
+        inline uint32_t GetHead() { return m_Head; }
+        inline uint32_t GetTail() { return (m_Head + m_AllocatedSize) % m_TotalSize; }
 
         //helper to avoid allocating chunks that wouldn't fit contiguously in the ring
-        uint32_t PaddingToAvoidCrossOver(uint32_t size)
+        inline uint32_t PaddingToAvoidCrossOver(uint32_t size)
         {
             int tail = GetTail();
             if ((tail + size) > m_TotalSize)
@@ -28,7 +28,7 @@ namespace mygfx {
                 return 0;
         }
 
-        bool Alloc(uint32_t size, uint32_t* pOut)
+        inline bool Alloc(uint32_t size, uint32_t* pOut)
         {
             if (m_AllocatedSize + size <= m_TotalSize) {
                 if (pOut)
@@ -88,7 +88,7 @@ namespace mygfx {
             m_mem.Free(m_mem.GetSize());
         }
 
-        bool Alloc(uint32_t size, uint32_t* pOut)
+        inline bool Alloc(uint32_t size, uint32_t* pOut)
         {
             uint32_t padding = m_mem.PaddingToAvoidCrossOver(size);
             if (padding > 0) {

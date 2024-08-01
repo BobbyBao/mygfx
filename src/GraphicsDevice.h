@@ -27,6 +27,9 @@ namespace mygfx {
 	class ConcreteDispatcher;
 	class Dispatcher;
 	class CommandStream;
+	
+	using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+	using Clock = std::chrono::high_resolution_clock;
 
 	class GraphicsDevice : public SyncContext {
 	public:
@@ -117,7 +120,7 @@ namespace mygfx {
 		
 		SwapChainDesc mSwapchainDesc;
 		Ref<HwSwapchain> mSwapChain;
-		double mLastRenderTime;
+		TimePoint mLastRenderTime;
 		std::vector<std::tuple<std::function<void()>, int>> postCall_;
 	};
 

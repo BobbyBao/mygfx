@@ -36,7 +36,7 @@ namespace mygfx {
 
 	void GraphicsDevice::beginRender() {
 		mainSemWait();
-		//mLastRenderTime = Timer::millisecondsNow();
+		mLastRenderTime = Clock::now();
 	}
 
 	void GraphicsDevice::endRender() {
@@ -53,7 +53,7 @@ namespace mygfx {
 			}
 		}
 
-		//Stats::renderTime() = Timer::millisecondsNow() - mLastRenderTime;
+		Stats::renderTime() = std::chrono::duration<double, std::milli>(Clock::now() - mLastRenderTime).count();
 		renderSemPost();
 	}
 

@@ -119,6 +119,7 @@ namespace mygfx {
 		mutable DepthState mDepthState {};
 		mutable ColorBlendState mColorBlendState {};		
 		mutable StencilState mStencilState {};
+		mutable HwRenderPrimitive* mPrimitive = nullptr;
 	};
 
 	inline void CommandBuffer::pushConstant(uint32_t binding, const BufferInfo& bufferInfo) const {
@@ -144,16 +145,26 @@ namespace mygfx {
 	}
 
 	inline void CommandBuffer::drawPrimitive(HwRenderPrimitive* primitive) const {
+
 		VulkanRenderPrimitive* rp = static_cast<VulkanRenderPrimitive*>(primitive);
-		vkCmdBindVertexBuffers(cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
 
 		if (rp->indexBuffer != nullptr) {
-			vkCmdBindIndexBuffer(cmd, rp->indexBuffer, 0, rp->indexType);
+			if (mPrimitive != primitive) {
+				vkCmdBindVertexBuffers(cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
+				vkCmdBindIndexBuffer(cmd, rp->indexBuffer, 0, rp->indexType);
+			}
+
 			drawIndexed(rp->drawArgs.indexCount, 1, rp->drawArgs.firstIndex, 0, 0);
 		}
-		else {
+		else {		
+			if (mPrimitive != primitive) {
+				vkCmdBindVertexBuffers(cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
+			}
+
 			draw(rp->drawArgs.vertexCount, 1, rp->drawArgs.firstVertex, 0);
 		}
+
+		mPrimitive = primitive;
 	}
 
 	inline void CommandBuffer::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) const VULKAN_HPP_NOEXCEPT

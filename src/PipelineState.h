@@ -98,7 +98,6 @@ namespace mygfx {
 	class HwProgram;
 
 	struct PipelineState {
-		//HwVertexInput* vertexInput;
 		HwProgram* program;
 		VertexAttribute vertexSemantic = VertexAttribute::All;
 		PrimitiveState primitiveState {};
