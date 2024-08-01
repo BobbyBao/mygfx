@@ -23,7 +23,9 @@ namespace mygfx::demo {
 
 		void draw(GraphicsApi& cmd) override {
 
-			float aspect = ImGui::GetIO().DisplaySize.x / ImGui::GetIO().DisplaySize.y;
+			float w = (float)mApp->getWidth();
+			float h = (float)mApp->getHeight();
+			float aspect = w / h;
 			auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
 
 			uint32_t perView = device().allocConstant(vp);

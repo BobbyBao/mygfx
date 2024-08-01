@@ -16,12 +16,9 @@
 
 namespace mygfx {
 
-	std::vector<const char*> Application::args;
 	Application* Application::msInstance = nullptr;
 
-	void* getNativeWindow(SDL_Window* sdlWindow)
-	{
-		
+	void* getNativeWindow(SDL_Window* sdlWindow) {
 #if defined(WIN32) && !defined(__WINRT__)
 		return (HWND)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 #elif defined(__APPLE__) && defined(SDL_VIDEO_DRIVER_COCOA)
@@ -55,8 +52,12 @@ namespace mygfx {
 		return bytes;
 	}
 
-	Application::Application() : mTitle("mygfx")
+	Application::Application(int argc, char** argv) : mTitle("mygfx")
 	{
+		for (int i = 0; i < argc; i++) {
+			mArgs.push_back(argv[i]);
+		}
+
 		SDL_Init(SDL_INIT_VIDEO);
 
 #ifndef NDEBUG
@@ -225,7 +226,7 @@ namespace mygfx {
 		
 		onUpdate(mFrameTimer);
 
-		auto& cmd = getGraphicsApi();
+		auto& cmd = gfxApi();
 
 		cmd.beginFrame();
 
@@ -341,8 +342,7 @@ namespace mygfx {
 
 		mPrepared = false;
 
-		auto& cmd = getGraphicsApi();
-		cmd.reload(w, h);
+		gfxApi().reload(w, h);
 
 		mWidth = w;
 		mHeight = h;

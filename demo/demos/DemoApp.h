@@ -19,8 +19,6 @@ namespace mygfx::demo {
 		virtual void draw(GraphicsApi& cmd) {}
 		virtual void stop() {}
 	protected:
-		mygfx::GraphicsApi& getGraphicsApi();
-
 		const char* mName = "";
 		String mDesc;
 		DemoApp* mApp = nullptr;
@@ -39,7 +37,7 @@ namespace mygfx::demo {
 
 	class DemoApp : public Application {
 	public:
-		DemoApp();
+		DemoApp(int argc = 0, char** argv = nullptr);
 
 		void setDemo(int index);
 		void setDemo(Demo* demo);

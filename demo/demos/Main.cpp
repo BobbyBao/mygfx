@@ -7,7 +7,7 @@
 using namespace mygfx::demo;
 
 int SDL_AppInit(void** appstate, int argc, char** argv) {
-	auto app = new mygfx::demo::DemoApp();
+	auto app = new mygfx::demo::DemoApp(argc, argv);
 	if (!app->init()) {
 		delete app;
 		return -1;

@@ -28,6 +28,7 @@ namespace mygfx::demo {
 		void draw(GraphicsApi& cmd) override {
 		
 			auto mvp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
+
 			uint32_t perView = device().allocConstant(mvp);
 
 			cmd.bindPipelineState(mShader->pipelineState);

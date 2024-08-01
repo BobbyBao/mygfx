@@ -18,7 +18,7 @@ namespace mygfx {
 	class Application : public utils::RefCounted
 	{
 	public:
-		Application();
+		Application(int argc = 0, char** argv = nullptr);
 		virtual ~Application();
 
 		void start();
@@ -29,10 +29,6 @@ namespace mygfx {
 		void quit() { mQuit = true; }
 		void destroy();
 
-		GraphicsApi& getGraphicsApi() noexcept {
-			return *mGraphicsApi;
-		}
-		
 		uint32_t getWidth() const { return mWidth; }
 		uint32_t getHeight() const { return mHeight; }
 
@@ -44,7 +40,6 @@ namespace mygfx {
 			return std::chrono::duration<double, std::ratio<1>>(Clock::now() - mStartTime).count();
 		}
 
-		static std::vector<const char*> args;
 		static Application* msInstance;
 	protected:
 		virtual void onStart();	
@@ -66,8 +61,8 @@ namespace mygfx {
 		void setupConsole(std::string title);
 		void setupDPIAwareness();
 		void mainLoop();
-		void renderLoop();
 
+		std::vector<String> mArgs;
 		std::string mTitle;
 		Settings mSettings;
 		uint32_t mWidth = 1920;

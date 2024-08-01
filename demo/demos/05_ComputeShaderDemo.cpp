@@ -50,8 +50,6 @@ namespace mygfx::demo {
 			mSBO = device().createBuffer1(BufferUsage::Storage | BufferUsage::Vertex, MemoryUsage::GpuOnly, std::span{ particleBuffer });
 
 			mComputeShader = new Shader(csCode);
-
-			auto& cmd = getGraphicsApi();
 			mComputeShader->updateDescriptorSet(0, 0, mSBO);
 
 			mShader = new Shader(vsCode, fsCode);

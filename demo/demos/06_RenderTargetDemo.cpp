@@ -38,7 +38,6 @@ namespace mygfx::demo {
 			
 			auto w = mApp->getWidth();
 			auto h = mApp->getHeight();
-
 			float aspect = w / (float)h;
 			auto vp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 

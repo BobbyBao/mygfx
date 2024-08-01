@@ -12,11 +12,7 @@ DemoDesc::DemoDesc(const char* name, const std::function<Demo* ()>& creator) {
 	sDemos.push_back(this);
 }
 
-GraphicsApi& Demo::getGraphicsApi() {
-	return mApp->getGraphicsApi();
-}
-
-DemoApp::DemoApp() {
+DemoApp::DemoApp(int argc, char** argv) : Application(argc, argv) {
 }
 
 void DemoApp::onStart() {

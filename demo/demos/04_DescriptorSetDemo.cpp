@@ -24,15 +24,15 @@ namespace mygfx::demo {
 				Format::R32G32_SFLOAT, Format::END,
 				Format::R32G32B32_SFLOAT });
 
-			auto& cmd = getGraphicsApi();
-
 			mShader->updateDescriptorSet(0, 2, Texture::Green);
 
 		}
 
 		void draw(GraphicsApi& cmd) override {
 
-			float aspect = ImGui::GetIO().DisplaySize.x / ImGui::GetIO().DisplaySize.y;
+			auto w = mApp->getWidth();
+			auto h = mApp->getHeight();
+			float aspect = w / (float)h;
 			auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
 
 			uint32_t perView = device().allocConstant(vp);
