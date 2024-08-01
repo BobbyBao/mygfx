@@ -109,8 +109,9 @@ namespace mygfx::demo {
 			else
 			{
 				SDL_GetMouseState(&mouseX, &mouseY);
+
 				float normalizedMx = (mouseX - static_cast<float>(width / 2)) / static_cast<float>(width / 2);
-				float normalizedMy = (mouseY - static_cast<float>(height / 2)) / static_cast<float>(height / 2);
+				float normalizedMy = (height - mouseY - static_cast<float>(height / 2)) / static_cast<float>(height / 2);
 				uniformData.destX = normalizedMx;
 				uniformData.destY = normalizedMy;
 			}
@@ -132,7 +133,7 @@ namespace mygfx::demo {
 
 		const char* csCode = R"(
 		#version 450
-
+		#extension GL_EXT_scalar_block_layout : require
 		struct Particle
 		{
 			vec2 pos;
@@ -141,7 +142,7 @@ namespace mygfx::demo {
 		};
 
 		// Binding 0 : Position storage buffer
-		layout(std140, binding = 0) buffer Pos
+		layout(scalar, binding = 0) buffer Pos
 		{
 			Particle particles[];
 		};
