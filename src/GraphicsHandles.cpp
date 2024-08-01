@@ -6,7 +6,26 @@ namespace mygfx {
 
 	static std::recursive_mutex mLock;
 	static std::deque<std::pair<HwObject*, int>> mDisposables;
-	        
+	
+    static size_t max_blocks_per_chunk        = 1024;
+    static size_t largest_required_pool_block = 1024;
+	static std::pmr::synchronized_pool_resource sPool { std::pmr::pool_options{max_blocks_per_chunk, largest_required_pool_block}};
+
+	void* HwObject::operator new(std::size_t size)
+	{
+		return sPool.allocate(size);
+	}
+
+	void* HwObject::operator new (std::size_t size, void* p)
+	{
+		return p;
+	}
+
+	void HwObject::operator delete(void* ptr, std::size_t size)
+	{
+		sPool.deallocate(ptr, size);
+	}
+
 	void HwObject::deleteThis() {
 
 		std::lock_guard<std::recursive_mutex> locker(mLock);
