@@ -7,7 +7,7 @@ namespace mygfx::demo {
 	class RenderTargetDemo : public Demo {
 	public:
 		Ref<Mesh> mMesh;
-		Ref<Program> mShader;
+		Ref<Shader> mShader;
 		Vector<Ref<HwRenderPrimitive>> mPrimitives;
 		Ref<Texture> mRenderTexture;
 		Ref<HwRenderTarget> mRenderTarget;

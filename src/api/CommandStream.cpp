@@ -59,7 +59,7 @@ static UTILS_NOINLINE UTILS_UNUSED std::string extractMethodName(std::string& co
 
 // ------------------------------------------------------------------------------------------------
 
-CommandStream::CommandStream(Driver& driver, CircularBuffer& buffer) noexcept
+CommandStream::CommandStream(Driver& driver, CircularBuffer* buffer) noexcept
         : mDriver(driver),
           mCurrentBuffer(buffer),
           mDispatcher(driver.getDispatcher())

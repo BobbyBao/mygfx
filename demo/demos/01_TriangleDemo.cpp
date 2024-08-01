@@ -5,7 +5,7 @@ namespace mygfx::demo {
 	class TriangleDemo : public Demo {
 	public:
 		Ref<HwBuffer> mVB;
-		Ref<Program> mShader;
+		Ref<Shader> mShader;
 
 		struct VertexColored {
 			float3 pos;

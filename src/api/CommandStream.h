@@ -199,11 +199,12 @@ class CommandStream {
     };
 
 public:
-    CommandStream(Driver& driver, CircularBuffer& buffer) noexcept;
+    CommandStream(Driver& driver, CircularBuffer* buffer) noexcept;
 
     CommandStream(CommandStream const& rhs) noexcept = delete;
     CommandStream& operator=(CommandStream const& rhs) noexcept = delete;
 
+    virtual ~CommandStream() = default;
 public:
 #if SINGLE_LOOP
 #define DECL_DRIVER_API(methodName, paramsDecl, params)                                         \
@@ -300,18 +301,18 @@ public:
     inline PodType* allocatePod(
             size_t count = 1, size_t alignment = alignof(PodType)) noexcept;
 
-private:
+protected:
     inline void* allocateCommand(size_t size) {
 #ifndef NDEBUG
         assert(utils::ThreadUtils::isThisThread(mThreadId));
 #endif
-        return mCurrentBuffer.allocate(size);
+        return mCurrentBuffer->allocate(size);
     }
 
     // We use a copy of Dispatcher (instead of a pointer) because this removes one dereference
     // when executing driver commands.
     Driver& UTILS_RESTRICT mDriver;
-    CircularBuffer& UTILS_RESTRICT mCurrentBuffer;
+    CircularBuffer* UTILS_RESTRICT mCurrentBuffer;
     Dispatcher mDispatcher;
 
 #ifndef NDEBUG

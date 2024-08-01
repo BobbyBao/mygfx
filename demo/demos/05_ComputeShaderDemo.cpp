@@ -10,8 +10,11 @@ namespace mygfx::demo {
 		const static uint32_t PARTICLE_COUNT = 256 * 1024;
 
 		Ref<HwBuffer> mSBO;
-		Ref<Program> mShader;
-		Ref<Program> mComputeShader;
+		Ref<Shader> mShader;
+		Ref<Shader> mComputeShader;
+
+		Ref<Texture> mParticleTexture;
+		Ref<Texture> mGradientTexture;
 
 		float timer = 0.0f;
 		float animStart = 20.0f;
@@ -46,12 +49,12 @@ namespace mygfx::demo {
 
 			mSBO = device().createBuffer1(BufferUsage::Storage | BufferUsage::Vertex, MemoryUsage::GpuOnly, std::span{ particleBuffer });
 
-			mComputeShader = new Program(csCode);
+			mComputeShader = new Shader(csCode);
 
-			auto ds = mComputeShader->getProgram()->getDescriptorSet(0);
-			getGraphicsApi().updateDescriptorSet2(ds, 0, mSBO);
+			auto& cmd = getGraphicsApi();
+			mComputeShader->updateDescriptorSet(0, 0, mSBO);
 
-			mShader = new Program(vsCode, fsCode);
+			mShader = new Shader(vsCode, fsCode);
 			mShader->setVertexInput({
 				Format::R32G32_SFLOAT, 
 				Format::R32G32_SFLOAT, 
@@ -59,12 +62,11 @@ namespace mygfx::demo {
 			mShader->setBlendMode(BlendMode::Add);
 			mShader->pipelineState.primitiveState.primitiveTopology = PrimitiveTopology::PointList;
 
-			auto ds1 = mShader->getProgram()->getDescriptorSet(0);
+			mParticleTexture = Texture::createFromFile("../../media/textures/particle_rgba.ktx");
+			mGradientTexture = Texture::createFromFile("../../media/textures/particle_gradient_rgba.ktx");
 
-			auto tex = Texture::createFromFile("../../media/textures/particle_rgba.ktx");
-			auto tex1 = Texture::createFromFile("../../media/textures/particle_gradient_rgba.ktx");
-			getGraphicsApi().updateDescriptorSet1(ds1, 0, tex->getSRV());
-			getGraphicsApi().updateDescriptorSet1(ds1, 1, tex1->getSRV());
+			mShader->updateDescriptorSet(0, 0, mParticleTexture);
+			mShader->updateDescriptorSet(0, 1, mGradientTexture);
 		}
 
 		void gui() override {

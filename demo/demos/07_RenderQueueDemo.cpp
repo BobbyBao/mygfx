@@ -7,7 +7,7 @@ namespace mygfx::demo {
 	class RenderQueueDemo : public Demo {
 	public:
 		Ref<Mesh> mMesh;
-		Ref<Program> mShader;
+		Ref<Shader> mShader;
 
 		struct Renderable {
 			mat4 worldTransform = identity<mat4>();;

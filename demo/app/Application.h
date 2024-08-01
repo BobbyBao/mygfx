@@ -1,7 +1,6 @@
 #pragma once
 #include "GraphicsHandles.h"
 #include "GraphicsApi.h"
-#include "api/CommandBufferQueue.h"
 #include "UIOverlay.h"
 #include "SDL.h"
 #include "utils/RefCounted.h"
@@ -76,14 +75,10 @@ namespace mygfx {
 
 		SDL_Window* mSdlWindow;
 
-		std::unique_ptr<GraphicsDevice> mDevice;
-		CommandBufferQueue mCommandBufferQueue;
 		std::unique_ptr<GraphicsApi> mGraphicsApi;
 		Ref<HwSwapchain> mSwapchain;
 		Ref<UIOverlay>	mUI;
 
-		std::unique_ptr<std::thread> mRenderThread;
-		bool mRendering = false;
 		bool mPrepared = false;
 		bool mQuit = false;
 		double mFrameTimer = 0.01;

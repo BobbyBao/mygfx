@@ -1,7 +1,7 @@
 #include "UIOverlay.h"
 #include "GraphicsApi.h"
 #include "utils/FileUtils.h"
-#include "Program.h"
+#include "Shader.h"
 #include "Texture.h"
 #include "MathTypes.h"
 
@@ -144,7 +144,7 @@ namespace mygfx
 	{
 		ImGuiIO& io = ImGui::GetIO();
 
-		mProgram = new Program(vsCode, fsCode);
+		mProgram = new Shader(vsCode, fsCode);
 		mProgram->setVertexInput({Format::R32G32_SFLOAT, Format::R32G32_SFLOAT, Format::R8G8B8A8_UNORM });
 		mProgram->setBlendMode(BlendMode::Alpha);
 		mProgram->pipelineState.rasterState.cullMode = CullMode::None;

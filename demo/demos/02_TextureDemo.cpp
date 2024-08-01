@@ -7,7 +7,7 @@ namespace mygfx::demo {
 	class TextureDemo : public Demo {
 	public:
 		Ref<Mesh> mMesh;
-		Ref<Program> mShader;
+		Ref<Shader> mShader;
 		Vector<Ref<HwRenderPrimitive>> mPrimitives;
 
 		void start() override {

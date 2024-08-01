@@ -7,7 +7,7 @@ namespace mygfx::demo {
 	class DescriptorSetDemo : public Demo {
 	public:
 		Ref<Mesh> mMesh;
-		Ref<Program> mShader;
+		Ref<Shader> mShader;
 		Vector<Ref<HwRenderPrimitive>> mPrimitives;
 
 		void start() override {
@@ -18,15 +18,15 @@ namespace mygfx::demo {
 				mPrimitives.emplace_back(device().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
 			}
 
-			mShader = new Program(vsCode, fsCode);
+			mShader = new Shader(vsCode, fsCode);
 			mShader->setVertexInput({
 				Format::R32G32B32_SFLOAT, Format::END,
 				Format::R32G32_SFLOAT, Format::END,
 				Format::R32G32B32_SFLOAT });
 
-			auto ds = mShader->getProgram()->getDescriptorSet(0);
+			auto& cmd = getGraphicsApi();
 
-			getGraphicsApi().updateDescriptorSet1(ds, 2, Texture::Green->getSRV());
+			mShader->updateDescriptorSet(0, 2, Texture::Green);
 
 		}
 

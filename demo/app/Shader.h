@@ -4,14 +4,17 @@
 #include "ShaderResourceInfo.h"
 
 namespace mygfx {
+	
+	class Texture;
+	class GraphicsApi;
 
-	class Program : public RefCounted {
+	class Shader : public RefCounted {
 	public:
-		Program();
-		~Program();
+		Shader();
+		~Shader();
 
-		Program(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
-		Program(const String& csCode);
+		Shader(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
+		Shader(const String& csCode);
 
 		void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
 		void loadShader(const String& cs);
@@ -24,6 +27,11 @@ namespace mygfx {
 		void setVertexSemantic(VertexAttribute vertexSemantic);
 		void setBlendMode(BlendMode blendMode);
 		void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
+
+		void updateDescriptorSet(uint32_t set, uint32_t binding, Texture* tex);
+		void updateDescriptorSet(uint32_t set, uint32_t binding, HwTextureView* texView);
+		void updateDescriptorSet(uint32_t set, uint32_t binding, HwBuffer* buffer);
+		void updateDescriptorSet(uint32_t set, uint32_t binding, const BufferInfo& bufferInfo);
 
 		PipelineState pipelineState;
 		

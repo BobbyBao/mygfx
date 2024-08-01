@@ -1,11 +1,15 @@
 #pragma once
 
 #include "api/CommandStream.h"
+#include "api/CommandBufferQueue.h"
 
 namespace mygfx {
 
 	class GraphicsApi : public CommandStream {
 	public:
+		GraphicsApi(GraphicsDevice& driver);
+		~GraphicsApi();
+
 		using CommandStream::CommandStream;
 
 		template<typename T>
@@ -81,5 +85,24 @@ namespace mygfx {
 			bindIndexBuffer(bufferInfo1.buffer, bufferInfo1.offset, IndexType::UInt32);
 			drawIndexed((uint32_t)indices.size(), 1, 0, 0, firstInstance);
 		}
+
+		void flush();
+		void destroy();
+	protected:
+		void renderLoop();
+
+		CommandBufferQueue mCommandBufferQueue;
+		std::unique_ptr<std::thread> mRenderThread;
+		bool mRendering = false;
+		bool mDestroyed = false;
+
+		inline static GraphicsApi* sGraphicsApi = nullptr;
+
+		friend GraphicsApi& gfxApi() noexcept;
 	};
+
+	inline GraphicsApi& gfxApi() noexcept {
+		return *GraphicsApi::sGraphicsApi;
+	}
+
 }

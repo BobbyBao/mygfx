@@ -14,14 +14,6 @@
 
 #include "imgui/ImGui.h"
 
-#ifndef MIN_COMMAND_BUFFERS_SIZE_IN_MB
-#    define MIN_COMMAND_BUFFERS_SIZE_IN_MB 2
-#endif
-
-#ifndef COMMAND_BUFFER_SIZE_IN_MB
-#    define COMMAND_BUFFER_SIZE_IN_MB (MIN_COMMAND_BUFFERS_SIZE_IN_MB * 3)
-#endif
-
 namespace mygfx {
 
 	std::vector<const char*> Application::args;
@@ -63,8 +55,7 @@ namespace mygfx {
 		return bytes;
 	}
 
-	Application::Application() : mTitle("mygfx"),
-		mCommandBufferQueue(MIN_COMMAND_BUFFERS_SIZE_IN_MB * 1024 * 1024, COMMAND_BUFFER_SIZE_IN_MB * 1024 * 1024)
+	Application::Application() : mTitle("mygfx")
 	{
 		SDL_Init(SDL_INIT_VIDEO);
 
@@ -144,14 +135,15 @@ namespace mygfx {
 #if defined(WIN32)
 		windowInstance = SDL_GetProperty(SDL_GetWindowProperties(mSdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
 #endif
-		mDevice = std::make_unique<VulkanDevice>();
+		auto mDevice = new VulkanDevice();
 		if (!mDevice->init(mSettings)) {
 			return false;
 		}
 
-		mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice, mCommandBufferQueue.getCircularBuffer());
+		mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice);
 
 		mDevice->create(windowInstance, window);
+		auto& gfx = gfxApi();
 
 		Texture::staticInit();
 
@@ -258,26 +250,8 @@ namespace mygfx {
 
 		cmd.submitFrame();
 		cmd.endFrame();
-
-		auto& gfx = device();
-		if (gfx.singleLoop()) {
-			gfx.swapContext();
-		}
-		else {
-
-			gfx.waitRender();
-
-			mCommandBufferQueue.flush();
-
-			gfx.swapContext();
-
-			if (mRenderThread == nullptr) {
-				mRendering = true;
-				mRenderThread = std::make_unique<std::thread>(&Application::renderLoop, this);
-			}
-
-			gfx.mainSemPost();
-		}
+		
+		cmd.flush();
 
 
 		mFrameCounter++;
@@ -299,49 +273,15 @@ namespace mygfx {
 
 	}
 
-	void Application::renderLoop()
-	{
-		GraphicsDevice::renderThreadID = std::this_thread::get_id();
-
-		while (mRendering) {
-			auto buffers = mCommandBufferQueue.waitForCommands();
-			if (UTILS_UNLIKELY(buffers.empty())) {
-				continue;
-			}
-
-			device().beginRender();
-			// execute all command buffers
-			auto& driver = getGraphicsApi();
-			for (auto& item : buffers) {
-				if (UTILS_LIKELY(item.begin)) {
-					driver.execute(item.begin);
-					mCommandBufferQueue.releaseBuffer(item);
-				}
-			}
-			device().endRender();
-		}
-	}
 
 	void Application::destroy() {
 		
 		onDestroy();
 
-		mRendering = false;
-
-		device().mainSemPost();
-
-		device().waitRender();
-
-		// now wait for all pending commands to be executed and the thread to exit
-		mCommandBufferQueue.requestExit();
-
-		if (mRenderThread != nullptr)
-			mRenderThread->join();
-		
 		Texture::staticDeinit();
 
-		mDevice.release();
-		mGraphicsApi.release();
+		mGraphicsApi.reset();
+
 	}
 
 	void Application::updateGUI()

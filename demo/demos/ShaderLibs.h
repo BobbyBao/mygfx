@@ -1,14 +1,14 @@
 #pragma once
-#include "Program.h"
+#include "Shader.h"
 
 namespace mygfx::demo {
 
 	class ShaderLibs {
 	public:
 
-		static utils::Ref<Program> getColorShader();
-		static utils::Ref<Program> getUnlitShader();
-		static utils::Ref<Program> getSimpleLightShader();
+		static utils::Ref<Shader> getColorShader();
+		static utils::Ref<Shader> getUnlitShader();
+		static utils::Ref<Shader> getSimpleLightShader();
 		static void clean();
 	};
 

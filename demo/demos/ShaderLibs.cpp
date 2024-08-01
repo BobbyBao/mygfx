@@ -2,9 +2,9 @@
 
 namespace mygfx::demo {
 
-	static utils::Ref<Program> sColorShader;
-	static utils::Ref<Program> sUnlitShader;
-	static utils::Ref<Program> sLightShader;
+	static utils::Ref<Shader> sColorShader;
+	static utils::Ref<Shader> sUnlitShader;
+	static utils::Ref<Shader> sLightShader;
 	
 	void ShaderLibs::clean() {
 		sColorShader.reset();
@@ -12,7 +12,7 @@ namespace mygfx::demo {
 		sLightShader.reset();
 	}
 
-	utils::Ref<Program> ShaderLibs::getColorShader() {
+	utils::Ref<Shader> ShaderLibs::getColorShader() {
 		if (sColorShader) {
 			return sColorShader;
 		}
@@ -48,12 +48,12 @@ namespace mygfx::demo {
 			}
 		)";
 
-		sColorShader = new Program(vsCode, fsCode);
+		sColorShader = new Shader(vsCode, fsCode);
 		sColorShader->setVertexInput({ Format::R32G32B32_SFLOAT, Format::R8G8B8A8_UNORM});
 		return sColorShader;
 	}
 
-	utils::Ref<Program> ShaderLibs::getUnlitShader() {
+	utils::Ref<Shader> ShaderLibs::getUnlitShader() {
 		if (sUnlitShader) {
 			return sUnlitShader;
 		}
@@ -102,12 +102,12 @@ namespace mygfx::demo {
 			}
 		)";
 
-		sUnlitShader = new Program(vsCode, fsCode);
+		sUnlitShader = new Shader(vsCode, fsCode);
 		sUnlitShader->setVertexInput({Format::R32G32B32_SFLOAT, Format::R8G8B8A8_UNORM, Format::R32G32_SFLOAT, Format::R32_SINT });
 		return sUnlitShader;
 	}
 
-	utils::Ref<Program> ShaderLibs::getSimpleLightShader() {
+	utils::Ref<Shader> ShaderLibs::getSimpleLightShader() {
 		if (sLightShader) {
 			return sLightShader;
 		}
@@ -160,7 +160,7 @@ namespace mygfx::demo {
 			}
 		)";
 
-		sLightShader = new Program(vsCode, fsCode);
+		sLightShader = new Shader(vsCode, fsCode);
 		sLightShader->setVertexInput({
 			Format::R32G32B32_SFLOAT, Format::END,
 			Format::R32G32_SFLOAT, Format::END, 

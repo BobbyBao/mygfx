@@ -10,7 +10,7 @@ union SDL_Event;
 namespace mygfx {
 
 	class GraphicsApi;
-	class Program;
+	class Shader;
 	class Texture;
 
 	class UIOverlay : public utils::RefCounted
@@ -27,7 +27,7 @@ namespace mygfx {
 		
 	private:
 		void freeResources();
-		utils::Ref<Program> mProgram;
+		utils::Ref<Shader> mProgram;
 		utils::Ref<Texture> mFontTexture;
 
         ImFont* font = nullptr;
