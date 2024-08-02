@@ -70,6 +70,7 @@ namespace mygfx {
 #endif
 		FileUtils::readFileFn = readAll;
 		FileUtils::readTextFn = readAllText;
+		mMainExecutor = make_manual_executor();
 	}
 
 	Application::~Application()
@@ -264,6 +265,8 @@ namespace mygfx {
 	{
 		auto tStart = std::chrono::high_resolution_clock::now();
 		updateGUI();
+
+		mMainExecutor->loop_once();
 		
 		onUpdate(mFrameTimer);
 

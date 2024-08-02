@@ -5,6 +5,8 @@
 #include "SDL.h"
 #include "utils/RefCounted.h"
 
+#include <concurrencpp/concurrencpp.h>
+
 struct SDL_Window;
 union SDL_Event;
 
@@ -15,7 +17,12 @@ namespace mygfx {
 	using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 	using Clock = std::chrono::high_resolution_clock;
 
-	class Application : public utils::RefCounted
+	using namespace concurrencpp;
+
+	template<typename T>
+	using Result = concurrencpp::result<T>;
+
+	class Application : public utils::RefCounted, public concurrencpp::runtime
 	{
 	public:
 		Application(int argc = 0, char** argv = nullptr);
@@ -39,6 +46,8 @@ namespace mygfx {
 		double getTime() const {
 			return std::chrono::duration<double, std::ratio<1>>(Clock::now() - mStartTime).count();
 		}
+
+		const std::shared_ptr<concurrencpp::manual_executor>& getMainExecutor() const { return mMainExecutor; }
 
 		static Application* msInstance;
 	protected:
@@ -84,6 +93,7 @@ namespace mygfx {
 		TimePoint mLastTimestamp, mTimePrevEnd;
 		bool mShowProfiler = false;
 		bool mShowGUI = true;
+		std::shared_ptr<concurrencpp::manual_executor> mMainExecutor;
 	};
 
 }
