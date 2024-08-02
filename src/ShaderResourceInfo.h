@@ -10,32 +10,32 @@ namespace mygfx {
 	
 	enum class UniformType : int8_t
 	{
-		Unknown = -1,
-		Bool,
-		Int8,
-		Uint8,
-		Int16,
-		Uint16,
-		Int32,
-		Uint32,
-		Int64,
-		Uint64,
-		Half,
-		Float,
-		Double,
-		Struct,
+		UNKNOWN = -1,
+		BOOL,
+		INT8,
+		UINT8,
+		INT16,
+		UINT16,
+		INT32,
+		UINT32,
+		INT64,
+		UINT64,
+		HALF,
+		FLOAT,
+		DOUBLE,
+		STRUCT,
 
-		Vec2,
-		Vec3,
-		Vec4,
-		Mat4,
-		Color,
+		VEC2,
+		VEC3,
+		VEC4,
+		MAT4,
+		COLOR,
 
-		Object,
+		OBJECT,
 
-		Texture,
-		Sampler,
-		Buffer,
+		TEXTURE,
+		SAMPLER,
+		BUFFER,
 	};
 
 	class DefineList : public std::map<const String, String>
@@ -62,7 +62,7 @@ namespace mygfx {
 		bool operator == (const ShaderStruct& other) const;
 
 		String name{};
-		UniformType type = UniformType::Unknown;
+		UniformType type = UniformType::UNKNOWN;
 		uint32_t offset{ 0 };
 		uint32_t size{ 0 };
 		std::vector<ShaderStruct> members;

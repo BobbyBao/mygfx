@@ -82,7 +82,7 @@ namespace mygfx {
 	void ShaderStruct::clear()
 	{
 		name = {};
-		type = UniformType::Unknown;
+		type = UniformType::UNKNOWN;
 		offset = 0;
 		size = 0;
 		members.clear();

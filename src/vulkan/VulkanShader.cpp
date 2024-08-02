@@ -641,51 +641,51 @@ namespace mygfx
 
 	static UniformType toUniformType(const SPIRType& spirvType, uint32_t* size)
 	{
-		UniformType uniformType = UniformType::Unknown;
+		UniformType uniformType = UniformType::UNKNOWN;
 		switch (spirvType.basetype) {
-		case SPIRType::Boolean: uniformType = UniformType::Bool; if (size) *size = 4; break;
-		case SPIRType::SByte: uniformType = UniformType::Int8; if (size) *size = 1; break;
-		case SPIRType::UByte: uniformType = UniformType::Uint8; if (size) *size = 1; break;
-		case SPIRType::Short: uniformType = UniformType::Int16;  if (size) *size = 2; break;
-		case SPIRType::UShort: uniformType = UniformType::Uint16;  if (size) *size = 2; break;
-		case SPIRType::Int: uniformType = UniformType::Int32; if (size) *size = 4; break;
-		case SPIRType::UInt: uniformType = UniformType::Uint32;  if (size) *size = 4; break;
-		case SPIRType::Int64: uniformType = UniformType::Int64;  if (size) *size = 8; break;
-		case SPIRType::UInt64: uniformType = UniformType::Uint64;  if (size) *size = 8; break;
-		case SPIRType::AtomicCounter: uniformType = UniformType::Unknown;  if (size) *size = 8; break;
-		case SPIRType::Half: uniformType = UniformType::Half; if (size) *size = 2; break;
-		case SPIRType::Float: uniformType = UniformType::Float;  if (size) *size = 4; break;
-		case SPIRType::Double: uniformType = UniformType::Double;  if (size) *size = 8; break;
-		case SPIRType::Struct: uniformType = UniformType::Struct; break;
-		case SPIRType::Image: uniformType = UniformType::Object; break;
-		case SPIRType::SampledImage: uniformType = UniformType::Object; break;
-		case SPIRType::Sampler: uniformType = UniformType::Unknown; break;
-		case SPIRType::AccelerationStructure: uniformType = UniformType::Unknown; break;
-		case SPIRType::RayQuery: uniformType = UniformType::Unknown; break;
+		case SPIRType::Boolean: uniformType = UniformType::BOOL; if (size) *size = 4; break;
+		case SPIRType::SByte: uniformType = UniformType::INT8; if (size) *size = 1; break;
+		case SPIRType::UByte: uniformType = UniformType::UINT8; if (size) *size = 1; break;
+		case SPIRType::Short: uniformType = UniformType::INT16;  if (size) *size = 2; break;
+		case SPIRType::UShort: uniformType = UniformType::UINT16;  if (size) *size = 2; break;
+		case SPIRType::Int: uniformType = UniformType::INT32; if (size) *size = 4; break;
+		case SPIRType::UInt: uniformType = UniformType::UINT32;  if (size) *size = 4; break;
+		case SPIRType::Int64: uniformType = UniformType::INT64;  if (size) *size = 8; break;
+		case SPIRType::UInt64: uniformType = UniformType::UINT64;  if (size) *size = 8; break;
+		case SPIRType::AtomicCounter: uniformType = UniformType::UNKNOWN;  if (size) *size = 8; break;
+		case SPIRType::Half: uniformType = UniformType::HALF; if (size) *size = 2; break;
+		case SPIRType::Float: uniformType = UniformType::FLOAT;  if (size) *size = 4; break;
+		case SPIRType::Double: uniformType = UniformType::DOUBLE;  if (size) *size = 8; break;
+		case SPIRType::Struct: uniformType = UniformType::STRUCT; break;
+		case SPIRType::Image: uniformType = UniformType::OBJECT; break;
+		case SPIRType::SampledImage: uniformType = UniformType::OBJECT; break;
+		case SPIRType::Sampler: uniformType = UniformType::UNKNOWN; break;
+		case SPIRType::AccelerationStructure: uniformType = UniformType::UNKNOWN; break;
+		case SPIRType::RayQuery: uniformType = UniformType::UNKNOWN; break;
 		default: break;
 		};
 
-		if (uniformType == UniformType::Float) {
+		if (uniformType == UniformType::FLOAT) {
 			switch (spirvType.vecsize) {
 			case 1:
-				uniformType = UniformType::Float;
+				uniformType = UniformType::FLOAT;
 				break;
 			case 2:
-				uniformType = UniformType::Vec2;
+				uniformType = UniformType::VEC2;
 				if (size) *size = 8;
 				break;
 			case 3:
-				uniformType = UniformType::Vec3;
+				uniformType = UniformType::VEC3;
 				if (size) *size = 12;
 				break;
 			case 4:
 				switch (spirvType.columns)
 				{
 				case 1:
-					uniformType = UniformType::Vec4;
+					uniformType = UniformType::VEC4;
 					break;
 				case 4:
-					uniformType = UniformType::Mat4;
+					uniformType = UniformType::MAT4;
 					break;
 				default:
 					break;
