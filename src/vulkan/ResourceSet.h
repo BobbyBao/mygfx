@@ -59,7 +59,7 @@ namespace mygfx {
         VkDescriptorSet defaultSet();
     private:
         void clear();
-        DescriptorType mDescriptorType = DescriptorType::CombinedImageSampler;
+        DescriptorType mDescriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER;
         std::vector<int> freeIndics_;
         Ref<DescriptorSet> fragmentSet_;
     };

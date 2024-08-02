@@ -86,15 +86,15 @@ namespace mygfx {
 		}
 
 		inline VulkanLayout getDefaultLayout(TextureUsage usage) {
-			if (any(usage & TextureUsage::DepthStencilAttachment)) {
-				if (any(usage & TextureUsage::Sampled)) {
+			if (any(usage & TextureUsage::DEPTH_STENCIL_ATTACHMENT)) {
+				if (any(usage & TextureUsage::SAMPLED)) {
 					return VulkanLayout::DEPTH_SAMPLER;
 				} else {
 					return VulkanLayout::DEPTH_ATTACHMENT;
 				}
 			}
 
-			if (any(usage & TextureUsage::ColorAttachment)) {
+			if (any(usage & TextureUsage::COLOR_ATTACHMENT)) {
 				return VulkanLayout::COLOR_ATTACHMENT;
 			}
 			// Finally, the layout for an immutable texture is optimal read-only.
@@ -104,13 +104,13 @@ namespace mygfx {
 		inline VulkanLayout getDefaultLayout(VkImageUsageFlags vkusage) {
 			TextureUsage usage{};
 			if (vkusage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-				usage = usage | TextureUsage::DepthStencilAttachment;
+				usage = usage | TextureUsage::DEPTH_STENCIL_ATTACHMENT;
 			}
 			if (vkusage & VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT) {
-				usage = usage | TextureUsage::ColorAttachment;
+				usage = usage | TextureUsage::COLOR_ATTACHMENT;
 			}
 			if (vkusage & VK_IMAGE_USAGE_SAMPLED_BIT) {
-				usage = usage | TextureUsage::Sampled;
+				usage = usage | TextureUsage::SAMPLED;
 			}
 			return getDefaultLayout(usage);
 		}

@@ -114,7 +114,7 @@ namespace mygfx {
 		mutable VulkanVertexInput* mVertexInput;
 		mutable VulkanProgram* mProgram;
 		mutable PrimitiveState mPrimitiveState {};
-		mutable VertexAttribute mVertexSemantic = VertexAttribute::All;
+		mutable VertexAttribute mVertexSemantic = VertexAttribute::ALL;
 		mutable RasterState mRasterState {};
 		mutable DepthState mDepthState {};
 		mutable ColorBlendState mColorBlendState {};		

@@ -22,7 +22,7 @@ namespace mygfx::demo {
 				{{1.0f, 1.0f, 0.0f}, 0xffff0000 }
 			};
 			
-			mVB = device().createBuffer1(BufferUsage::Vertex, MemoryUsage::GpuOnly, 3, pos);
+			mVB = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, 3, pos);
 		}
 
 		void draw(GraphicsApi& cmd) override {

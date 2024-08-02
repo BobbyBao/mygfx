@@ -102,7 +102,7 @@ namespace mygfx
 
 		mStagePool = new VulkanStagePool(vmaAllocator_);
 
-		mTextureSet = new DescriptorTable(DescriptorType::CombinedImageSampler | DescriptorType::StorageImage);
+		mTextureSet = new DescriptorTable(DescriptorType::COMBINED_IMAGE_SAMPLER | DescriptorType::STORAGE_IMAGE);
 		//mImageSet = new DescriptorTable(DescriptorType::StorageImage);
 		//mBufferSet = new DescriptorTable(DescriptorType::StorageBuffer);	
 
@@ -122,14 +122,14 @@ namespace mygfx
 
 		// Create a 'dynamic' constant buffer
 		const uint32_t constantBuffersMemSize = 32 * 1024 * 1024;
-		mConstantBufferRing.create(BufferUsage::Uniform | BufferUsage::Storage | BufferUsage::ShaderDeviceAddress,
+		mConstantBufferRing.create(BufferUsage::UNIFORM | BufferUsage::STORAGE | BufferUsage::SHADER_DEVICE_ADDRESS,
 			2560 * 1024, MAX_BACKBUFFER_COUNT, constantBuffersMemSize, "Uniforms");
 #if LARGE_DYNAMIC_INDEX
 		const uint32_t vertexBuffersMemSize = 64 * 1024 * 1024;
 #else
 		const uint32_t vertexBuffersMemSize = 16 * 1024 * 1024;
 #endif
-		mVertexBufferRing.create(BufferUsage::Vertex | BufferUsage::Index, MAX_BACKBUFFER_COUNT, vertexBuffersMemSize, "VertexBuffers|IndexBuffers");
+		mVertexBufferRing.create(BufferUsage::VERTEX | BufferUsage::INDEX, MAX_BACKBUFFER_COUNT, vertexBuffersMemSize, "VertexBuffers|IndexBuffers");
 						
 		const uint32_t uploadHeapMemSize = 64 * 1024 * 1024;
 		mUploadHeap.create(uploadHeapMemSize);    // initialize an upload heap (uses suballocation for faster results)

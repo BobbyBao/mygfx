@@ -97,7 +97,7 @@ namespace mygfx {
 
 		isBindless = true;
 
-		dsLayoutbindings_ = { DescriptorSetLayoutBinding {0, DescriptorType::CombinedImageSampler, VARIABLE_DESC_COUNT, shaderStageFlag} };
+		dsLayoutbindings_ = { DescriptorSetLayoutBinding {0, DescriptorType::COMBINED_IMAGE_SAMPLER, VARIABLE_DESC_COUNT, shaderStageFlag} };
 
 		VkDescriptorBindingFlags descriptorBindingFlags = 0;
 		descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;

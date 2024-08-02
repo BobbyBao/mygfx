@@ -59,7 +59,7 @@ namespace mygfx {
 			std::memcpy(pData1, indices.data(), sizeof(uint16_t) * indices.size());
 			
 			bindVertexBuffer(0, bufferInfo.buffer, bufferInfo.offset);
-			bindIndexBuffer(bufferInfo1.buffer, bufferInfo1.offset, IndexType::UInt16);
+			bindIndexBuffer(bufferInfo1.buffer, bufferInfo1.offset, IndexType::UINT16);
 			drawIndexed((uint32_t)indices.size(), 1, 0, 0, firstInstance);
 		}
 
@@ -82,7 +82,7 @@ namespace mygfx {
 			std::memcpy(pData1, indices.data(), sizeof(uint32_t) * indices.size());
 			
 			bindVertexBuffer(0, bufferInfo.buffer, bufferInfo.offset);
-			bindIndexBuffer(bufferInfo1.buffer, bufferInfo1.offset, IndexType::UInt32);
+			bindIndexBuffer(bufferInfo1.buffer, bufferInfo1.offset, IndexType::UINT32);
 			drawIndexed((uint32_t)indices.size(), 1, 0, 0, firstInstance);
 		}
 

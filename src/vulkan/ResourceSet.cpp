@@ -92,31 +92,31 @@ namespace mygfx {
 	void DescriptorTable::init()
 	{
 		auto descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
-		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::Fragment);
+		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::FRAGMENT);
 		fragmentSet_ = addDescriptorSet(descriptorSetLayoutTex);
 
 		descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
-		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::Vertex | ShaderStage::Fragment);
+		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::FRAGMENT);
 		addDescriptorSet(descriptorSetLayoutTex);
 
 		descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
-		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::Vertex | ShaderStage::TessellationEvaluation | ShaderStage::Fragment);
+		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::TESSELLATION_EVALUATION | ShaderStage::FRAGMENT);
 		addDescriptorSet(descriptorSetLayoutTex);
 
 		descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
-		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::Vertex | ShaderStage::TessellationControl | ShaderStage::TessellationEvaluation | ShaderStage::Fragment);
+		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::TESSELLATION_CONTROL | ShaderStage::TESSELLATION_EVALUATION | ShaderStage::FRAGMENT);
 		addDescriptorSet(descriptorSetLayoutTex);
 
 		descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
-		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::TessellationControl | ShaderStage::TessellationEvaluation | ShaderStage::Fragment);
+		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::TESSELLATION_CONTROL | ShaderStage::TESSELLATION_EVALUATION | ShaderStage::FRAGMENT);
 		addDescriptorSet(descriptorSetLayoutTex);
 
 		descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
-		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::Compute);
+		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::COMPUTE);
 		addDescriptorSet(descriptorSetLayoutTex);
 
 		descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
-		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::Vertex | ShaderStage::Fragment | ShaderStage::Compute);
+		descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::FRAGMENT | ShaderStage::COMPUTE);
 		addDescriptorSet(descriptorSetLayoutTex);
 
 		descriptorInfos_[0] = std::vector<VkDescriptorImageInfo>();

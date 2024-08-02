@@ -206,12 +206,12 @@ namespace mygfx
 		switch (stage)
 		{
 		case VK_SHADER_STAGE_VERTEX_BIT:
-			return ShaderStage::Vertex;
-		case VK_SHADER_STAGE_FRAGMENT_BIT: return ShaderStage::Fragment;
-		case VK_SHADER_STAGE_COMPUTE_BIT: return ShaderStage::Compute;
-		case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return ShaderStage::TessellationControl;
-		case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return ShaderStage::TessellationEvaluation;
-		case VK_SHADER_STAGE_GEOMETRY_BIT: return ShaderStage::Geometry;
+			return ShaderStage::VERTEX;
+		case VK_SHADER_STAGE_FRAGMENT_BIT: return ShaderStage::FRAGMENT;
+		case VK_SHADER_STAGE_COMPUTE_BIT: return ShaderStage::COMPUTE;
+		case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT: return ShaderStage::TESSELLATION_CONTROL;
+		case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT: return ShaderStage::TESSELLATION_EVALUATION;
+		case VK_SHADER_STAGE_GEOMETRY_BIT: return ShaderStage::GEOMETRY;
 		default:return ShaderStage::None;
 		}
 	}
@@ -230,7 +230,7 @@ namespace mygfx
 			}
 
 			assert(SpvData.size() != 0);
-			sm = device().createShaderModule(ToShaderStage(shader_type), SpvData, ShaderCodeType::Spirv);
+			sm = device().createShaderModule(ToShaderStage(shader_type), SpvData, ShaderCodeType::SPIRV);
 	
 
 		return sm;

@@ -8,7 +8,7 @@ namespace mygfx
     {
         mDynamicMemSize = utils::alignUp(memTotalSize, 256u);
         mRing.OnCreate(numberOfBackBuffers, mDynamicMemSize);
-        mBuffer = device().createBuffer(usage, MemoryUsage::CpuToGpu, mDynamicMemSize + mStaticMemSize, 0, nullptr);
+        mBuffer = device().createBuffer(usage, MemoryUsage::CPU_TO_GPU, mDynamicMemSize + mStaticMemSize, 0, nullptr);
         mData = (char*)mBuffer->mapped;
     }
 
@@ -16,7 +16,7 @@ namespace mygfx
 	{
 		mDynamicMemSize = utils::alignUp(memTotalSize, 256u);
 		mRing.OnCreate(numberOfBackBuffers, mDynamicMemSize);
-		mBuffer = device().createBuffer(usage, MemoryUsage::CpuToGpu, mDynamicMemSize + mStaticMemSize, 0, nullptr);
+		mBuffer = device().createBuffer(usage, MemoryUsage::CPU_TO_GPU, mDynamicMemSize + mStaticMemSize, 0, nullptr);
 		mData = (char*)mBuffer->mapped;
 	}
 

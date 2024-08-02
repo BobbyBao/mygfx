@@ -121,7 +121,7 @@ namespace mygfx {
 		auto c = toUInt(color);
 		MemoryBlock memoryBlock((uint8_t*)&c, 4);;
 		auto textureData = TextureData::Texture2D(1, 1, Format::R8G8B8A8_UNORM, memoryBlock);
-		textureData.usage = TextureUsage::Sampled | TextureUsage::TransferDst;
+		textureData.usage = TextureUsage::SAMPLED | TextureUsage::TRANSFER_DST;
 		textureData.name = name;
 		auto tex = createFromData(textureData);
 		return tex;
@@ -130,7 +130,7 @@ namespace mygfx {
 	Ref<Texture> Texture::create2D(uint16_t width, uint16_t height, Format format, const MemoryBlock& memoryBlock, SamplerInfo samplerInfo)
 	{
 		auto textureData = TextureData::Texture2D(width, height, format, memoryBlock);
-		textureData.usage = TextureUsage::Sampled | TextureUsage::TransferDst;
+		textureData.usage = TextureUsage::SAMPLED | TextureUsage::TRANSFER_DST;
 		return createFromData(textureData, samplerInfo);
 	}
 
@@ -157,21 +157,21 @@ namespace mygfx {
 	Ref<Texture> Texture::createRenderTarget(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa) {
 		auto textureData = TextureData::Texture2D(width, height, format);
 		textureData.sampleCount = msaa;
-		textureData.usage = TextureUsage::ColorAttachment | usage;
-		return createFromData(textureData, SamplerInfo{ Filter::Nearest, SamplerAddressMode::ClampToEdge });
+		textureData.usage = TextureUsage::COLOR_ATTACHMENT | usage;
+		return createFromData(textureData, SamplerInfo{ Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE });
 	}
 
 	Ref<Texture> Texture::createDepthStencil(uint16_t width, uint16_t height, Format format, TextureUsage usage, bool isShadowMap, SampleCount msaa) {
 		auto textureData = TextureData::Texture2D(width, height, format);
 		textureData.sampleCount = msaa;
-		textureData.usage = TextureUsage::DepthStencilAttachment | usage;
+		textureData.usage = TextureUsage::DEPTH_STENCIL_ATTACHMENT | usage;
 
-		SamplerInfo samplerInfo{ Filter::Nearest, SamplerAddressMode::ClampToEdge };
+		SamplerInfo samplerInfo{ Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE };
 
 		if (isShadowMap) {
-			textureData.usage |= TextureUsage::Sampled;
+			textureData.usage |= TextureUsage::SAMPLED;
 			samplerInfo.compareEnable = true;
-			samplerInfo.compareOp = CompareOp::LessOrEqual;
+			samplerInfo.compareOp = CompareOp::LESS_OR_EQUAL;
 		}
 
 		return createFromData(textureData, samplerInfo);

@@ -110,39 +110,39 @@ namespace mygfx {
 
 	void SamplerHandle::init() {
 		SamplerInfo point;
-		point.magFilter = Filter::Nearest;
-		point.minFilter = Filter::Nearest;
-		point.mipmapMode = Filter::Nearest;
+		point.magFilter = Filter::NEAREST;
+		point.minFilter = Filter::NEAREST;
+		point.mipmapMode = Filter::NEAREST;
 		NearestRepeat = device().createSampler(point);
 
-		point.addressModeU = SamplerAddressMode::ClampToEdge;
-		point.addressModeV = SamplerAddressMode::ClampToEdge;
-		point.addressModeW = SamplerAddressMode::ClampToEdge;
+		point.addressModeU = SamplerAddressMode::CLAMP_TO_EDGE;
+		point.addressModeV = SamplerAddressMode::CLAMP_TO_EDGE;
+		point.addressModeW = SamplerAddressMode::CLAMP_TO_EDGE;
 		NearestClampToEdge = device().createSampler(point);
 
-		point.addressModeU = SamplerAddressMode::ClampToBorder;
-		point.addressModeV = SamplerAddressMode::ClampToBorder;
-		point.addressModeW = SamplerAddressMode::ClampToBorder;
+		point.addressModeU = SamplerAddressMode::CLAMP_TO_BORDER;
+		point.addressModeV = SamplerAddressMode::CLAMP_TO_BORDER;
+		point.addressModeW = SamplerAddressMode::CLAMP_TO_BORDER;
 		NearestClampToBorder = device().createSampler(point);
 
 		point.compareEnable = true;
-		point.compareOp = CompareOp::LessOrEqual;
+		point.compareOp = CompareOp::LESS_OR_EQUAL;
 		Shadow = device().createSampler(point);
 
 		SamplerInfo linear;
-		linear.magFilter = Filter::Nearest;
-		linear.minFilter = Filter::Nearest;
-		linear.mipmapMode = Filter::Nearest;
+		linear.magFilter = Filter::NEAREST;
+		linear.minFilter = Filter::NEAREST;
+		linear.mipmapMode = Filter::NEAREST;
 		LinearRepeat = device().createSampler(linear);
 
-		linear.addressModeU = SamplerAddressMode::ClampToEdge;
-		linear.addressModeV = SamplerAddressMode::ClampToEdge;
-		linear.addressModeW = SamplerAddressMode::ClampToEdge;
+		linear.addressModeU = SamplerAddressMode::CLAMP_TO_EDGE;
+		linear.addressModeV = SamplerAddressMode::CLAMP_TO_EDGE;
+		linear.addressModeW = SamplerAddressMode::CLAMP_TO_EDGE;
 		LinearClampToEdge = device().createSampler(linear);
 
-		linear.addressModeU = SamplerAddressMode::ClampToBorder;
-		linear.addressModeV = SamplerAddressMode::ClampToBorder;
-		linear.addressModeW = SamplerAddressMode::ClampToBorder;
+		linear.addressModeU = SamplerAddressMode::CLAMP_TO_BORDER;
+		linear.addressModeV = SamplerAddressMode::CLAMP_TO_BORDER;
+		linear.addressModeW = SamplerAddressMode::CLAMP_TO_BORDER;
 		LinearClampToBorder = device().createSampler(linear);
 
 	}

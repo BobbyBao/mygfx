@@ -13,79 +13,20 @@ namespace mygfx::demo {
 			uint32_t texIndex;
 		};
 
-		Vector<Vertex2D> mVertices;
-		Vector<uint16_t> mIndices;
-		Ref<Shader> mShader;
-
-		void start() override {
-
-			mShader = ShaderLibs::getUnlitShader();
-
-			const int SPRITE_COUNT = 10000;
-
-			mSprites.clear();
-			
-			float width = (float)mApp->getWidth();
-			float height = (float)mApp->getHeight();
-
-			for (int i = 0; i < SPRITE_COUNT; i++) {
-
-				float2 center = { linearRand<float>(0, width), linearRand<float>(0.0f, height) };
-				float halfSize = linearRand<float>(5.0f, 10.0f);
-				int index = linearRand<int>(0, 8);
-				mSprites.emplace_back(
-					Rect{ {center.x - halfSize, center.y - halfSize}, {center.x + halfSize, center.y + halfSize} },
-					0.0f, 0xffffffff, Rect{ {0, 0}, {1, 1} }, index);
-
-			}
-
-			for (auto& spr : mSprites) {
-				createQuad(spr.v);
-			}
-		}
-
-		void createQuad(const std::span<Vertex2D, 4>& v) {
-			uint16_t start = (uint16_t)mVertices.size();
-			mVertices.insert(mVertices.end(), v.begin(), v.end());
-
-			std::array<uint16_t, 6> indices{};
-			indices[0] = start;
-			indices[1] = start + 1;
-			indices[2] = start + 2;
-			indices[3] = start + 3;
-			indices[4] = start;
-			indices[5] = start + 2;
-		
-			mIndices.insert(mIndices.end(), indices.begin(), indices.end());
-		}
-
-
-		void draw(GraphicsApi& cmd) override {
-
-			float width = (float)mApp->getWidth();
-			float height = (float)mApp->getHeight();
-			mat4 proj = ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
-
-			uint32_t ubo = cmd.allocConstant(proj);
-
-			cmd.bindPipelineState(mShader->pipelineState);
-			cmd.bindUniforms({ ubo });
-
-			if (mIndices.size() > 0) {
-				cmd.drawUserPrimitives(std::span{ mVertices }, std::span{ mIndices });
-			}
-		}
-
-
 		struct Sprite2D {
-			Vertex2D v[4]{};
+			float2 position;
+			float2 extend;
+			float depth;
+			uint32_t color;
+			Rect uv;
+			int32_t index;
+			float2 destPos;
 
-			Sprite2D(const Rect& r, float depth, uint32_t color, const Rect& uv, Texture* tex)
-				: Sprite2D(r, depth, color, uv, tex->index()) {
-			}
+			uint16_t vertexStart;
 
-			Sprite2D(const Rect& r, float depth, uint32_t color, const Rect& uv, uint32_t index) {
+			void getVertex(Vertex2D* v) {
 
+				Rect r = {position - extend , position + extend };
 				v[0].pos = { r.min, depth };
 				v[0].color = color;
 				v[0].uv = uv.min;
@@ -109,7 +50,100 @@ namespace mygfx::demo {
 			}
 		};
 
+		Vector<Vertex2D> mVertices;
+		Vector<uint16_t> mIndices;
+		Ref<Shader> mShader;
 		Vector<Sprite2D> mSprites;
+
+		void start() override {
+
+			mShader = ShaderLibs::getUnlitShader();
+
+			const int SPRITE_COUNT = 10000;
+
+			mSprites.clear();
+			
+			float width = (float)mApp->getWidth();
+			float height = (float)mApp->getHeight();
+
+			for (int i = 0; i < SPRITE_COUNT; i++) {
+
+				float2 center = { linearRand<float>(0, width), linearRand<float>(0.0f, height) };
+				float halfSize = linearRand<float>(5.0f, 10.0f);
+				int index = linearRand<int>(0, 8);
+				mSprites.push_back(
+					Sprite2D{ center, {halfSize, halfSize},
+					0.0f, 0xffffffff, Rect{ {0, 0}, {1, 1} }, index, {linearRand<float>(0, width), linearRand<float>(0.0f, height)} });
+
+			}
+
+			for (auto& spr : mSprites) {
+				createQuad(spr);
+			}
+		}
+
+		void createQuad(Sprite2D& spr) {
+			uint16_t start = (uint16_t)mVertices.size();
+			mVertices.resize(start + 4);
+			spr.getVertex(&mVertices[start]);
+			spr.vertexStart = start;
+
+			std::array<uint16_t, 6> indices;
+			indices[0] = start;
+			indices[1] = start + 1;
+			indices[2] = start + 2;
+			indices[3] = start + 3;
+			indices[4] = start;
+			indices[5] = start + 2;
+
+			mIndices.insert(mIndices.end(), indices.begin(), indices.end());		
+		}
+
+
+		void setPosition(Sprite2D& spr, const float2& pos) {
+			spr.position = pos;
+
+			Vertex2D* v = &mVertices[spr.vertexStart];
+			Rect r = { pos - spr.extend , pos + spr.extend };
+			v[0].pos = { r.min, spr.depth };
+			v[1].pos = { r.max.x, r.min.y, spr.depth };
+			v[2].pos = { r.max, spr.depth };
+			v[3].pos = { r.min.x, r.max.y, spr.depth };
+		}
+
+
+		void update(double delta) override {
+
+			float width = (float)mApp->getWidth();
+			float height = (float)mApp->getHeight();
+
+			for (auto& spr : mSprites) {
+				auto dir = spr.destPos - spr.position;
+				if (length(dir) < 5) {
+					spr.destPos = { linearRand<float>(0, width), linearRand<float>(0.0f, height) };
+				} else {
+					dir = normalize(spr.destPos - spr.position);
+				}
+
+				setPosition(spr, spr.position + dir * (float)(50.0 * delta));
+			}
+		}
+
+
+		void draw(GraphicsApi& cmd) override {
+
+			if (mIndices.size() > 0) {
+				float width = (float)mApp->getWidth();
+				float height = (float)mApp->getHeight();
+				mat4 proj = ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
+				uint32_t ubo = cmd.allocConstant(proj);
+
+				cmd.bindPipelineState(mShader->pipelineState);
+				cmd.bindUniforms({ ubo });
+				cmd.drawUserPrimitives(std::span{ mVertices }, std::span{ mIndices });
+			}
+		}
+
 	};
 
 	DEF_DEMO(DynamicBufferDemo, "DynamicBuffer Demo");	

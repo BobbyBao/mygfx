@@ -418,8 +418,8 @@ void VulkanSwapChain::setupDepthStencil()
 	if (rt) {
 		
 		TextureData textureData = TextureData::Texture2D(desc.width, desc.height, depthFormat);
-		textureData.usage = TextureUsage::DepthStencilAttachment;
-		rt->depthAttachment = new VulkanTexture(textureData, SamplerInfo(Filter::Nearest, SamplerAddressMode::ClampToEdge));
+		textureData.usage = TextureUsage::DEPTH_STENCIL_ATTACHMENT;
+		rt->depthAttachment = new VulkanTexture(textureData, SamplerInfo(Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE));
 	}
 
 }

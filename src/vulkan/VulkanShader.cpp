@@ -67,9 +67,9 @@ namespace mygfx
 		}
 
 		if (fullShaderStageFlags == (VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)) {
-			programType = ProgramType::Graphics;
+			programType = ProgramType::GRAPHICS;
 		} else if (fullShaderStageFlags == VK_SHADER_STAGE_COMPUTE_BIT) {
-			programType = ProgramType::Compute;
+			programType = ProgramType::COMPUTE;
 		} else {
 			assert(false);
 		}
@@ -89,7 +89,7 @@ namespace mygfx
 			}
 
 			for (auto& res : bindings) {
-				if (res->dsLayoutBinding.descriptorType != DescriptorType::UniformBufferDynamic) {
+				if (res->dsLayoutBinding.descriptorType != DescriptorType::UNIFORM_BUFFER_DYNAMIC) {
 					return false;
 				}
 			}
@@ -108,13 +108,13 @@ namespace mygfx
 					if (res->bindless) {
 
 						assert(it.second.size() == 1);
-						if (res->dsLayoutBinding.descriptorType == DescriptorType::CombinedImageSampler) {
+						if (res->dsLayoutBinding.descriptorType == DescriptorType::COMBINED_IMAGE_SAMPLER) {
 							resourceSetType = ResourceSetType::CombinedImageSampler;
-						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::StorageImage) {
+						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::STORAGE_IMAGE) {
 							resourceSetType = ResourceSetType::StorageImage;
-						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::SampledImage) {
+						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::SAMPLED_IMAGE) {
 							resourceSetType = ResourceSetType::SampledImage;
-						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::Sampler) {
+						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::SAMPLER) {
 							resourceSetType = ResourceSetType::Sampler;
 						}
 					}
@@ -166,7 +166,7 @@ namespace mygfx
 				desciptorSets.push_back(*ds);
 
 				for (uint32_t j = 0; j < dsLayout->numBindings(); j++) {
-					if (it.second[j]->dsLayoutBinding.descriptorType == DescriptorType::UniformBufferDynamic) {
+					if (it.second[j]->dsLayoutBinding.descriptorType == DescriptorType::UNIFORM_BUFFER_DYNAMIC) {
 						auto sz = it.second[j]->size;
 						if (ds->dynamicBufferSize[j] < sz) {
 							ds->dynamicBufferSize[j] = sz;
@@ -263,13 +263,13 @@ namespace mygfx
 
 		switch (stage)
 		{
-		case ShaderStage::Vertex:
+		case ShaderStage::VERTEX:
 			return VK_SHADER_STAGE_VERTEX_BIT;
-		case ShaderStage::Fragment: return VK_SHADER_STAGE_FRAGMENT_BIT;
-		case ShaderStage::Compute: return VK_SHADER_STAGE_COMPUTE_BIT;
-		case ShaderStage::TessellationControl: return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
-		case ShaderStage::TessellationEvaluation: return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-		case ShaderStage::Geometry: return VK_SHADER_STAGE_GEOMETRY_BIT;
+		case ShaderStage::FRAGMENT: return VK_SHADER_STAGE_FRAGMENT_BIT;
+		case ShaderStage::COMPUTE: return VK_SHADER_STAGE_COMPUTE_BIT;
+		case ShaderStage::TESSELLATION_CONTROL: return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+		case ShaderStage::TESSELLATION_EVALUATION: return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+		case ShaderStage::GEOMETRY: return VK_SHADER_STAGE_GEOMETRY_BIT;
 		default:return VK_SHADER_STAGE_FLAG_BITS_MAX_ENUM;
 		}
 	}
@@ -278,13 +278,13 @@ namespace mygfx
 
 		switch (stage)
 		{
-		case ShaderStage::Vertex:
+		case ShaderStage::VERTEX:
 			return VK_SHADER_STAGE_FRAGMENT_BIT;
-		case ShaderStage::Fragment: return 0;
-		case ShaderStage::Compute: return 0;
-		case ShaderStage::TessellationControl: return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
-		case ShaderStage::TessellationEvaluation: return VK_SHADER_STAGE_FRAGMENT_BIT;
-		case ShaderStage::Geometry: return VK_SHADER_STAGE_FRAGMENT_BIT;
+		case ShaderStage::FRAGMENT: return 0;
+		case ShaderStage::COMPUTE: return 0;
+		case ShaderStage::TESSELLATION_CONTROL: return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+		case ShaderStage::TESSELLATION_EVALUATION: return VK_SHADER_STAGE_FRAGMENT_BIT;
+		case ShaderStage::GEOMETRY: return VK_SHADER_STAGE_FRAGMENT_BIT;
 		default:return 0;
 		}
 	}

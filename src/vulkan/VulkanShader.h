@@ -13,7 +13,7 @@ namespace mygfx
 {
 	class VulkanShaderModule : public HwShaderModule {
 	public:
-		VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType = ShaderCodeType::Spirv);
+		VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType = ShaderCodeType::SPIRV);
 
 		void collectShaderResource();
 

@@ -19,7 +19,7 @@ namespace mygfx
 		mRTV = createRTV(0, format);
 		isSwapchain = true;
 
-		initState(ResourceState::Present);
+		initState(ResourceState::PRESENT);
 	}
 	
 	VulkanTexture::~VulkanTexture() {
@@ -79,28 +79,28 @@ namespace mygfx
 		mSamples = (VkSampleCountFlagBits)textureData.sampleCount;
 		usage = (VkImageUsageFlags)textureData.usage;
 
-		if (any(textureData.usage & TextureUsage::DepthStencilAttachment)) {
+		if (any(textureData.usage & TextureUsage::DEPTH_STENCIL_ATTACHMENT)) {
 			
 			initDepthStencil(textureData.name.c_str()); 
 			
-			if (any(textureData.usage & TextureUsage::Sampled))
-				initState(ResourceState::ShaderResource);
+			if (any(textureData.usage & TextureUsage::SAMPLED))
+				initState(ResourceState::SHADER_RESOURCE);
 			else
-				initState(ResourceState::CommonResource);
+				initState(ResourceState::COMMON_RESOURCE);
 
 
-		} else if(any(textureData.usage & TextureUsage::ColorAttachment)) {
+		} else if(any(textureData.usage & TextureUsage::COLOR_ATTACHMENT)) {
 
 			initRenderTarget(textureData.name.c_str());
 
-			if (any(textureData.usage & TextureUsage::Sampled))
-				initState(ResourceState::ShaderResource);
+			if (any(textureData.usage & TextureUsage::SAMPLED))
+				initState(ResourceState::SHADER_RESOURCE);
 			else
-				initState(ResourceState::CommonResource);
+				initState(ResourceState::COMMON_RESOURCE);
 
 		} else {
 
-			initState(ResourceState::CopyDest);
+			initState(ResourceState::COPY_DEST);
 
 			initFromData(textureData);
 			
@@ -190,7 +190,7 @@ namespace mygfx
 			createSRV();
 		}
 
-		setCurrentResourceState(ResourceState::ShaderResource);
+		setCurrentResourceState(ResourceState::SHADER_RESOURCE);
 
 		return true;
 	}

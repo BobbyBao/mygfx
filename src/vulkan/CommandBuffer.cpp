@@ -101,9 +101,9 @@ namespace mygfx {
 			colorAttachment[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
 			colorAttachment[0].imageView = pVkRT->colorAttachments[pVkRT->currentIndex]->rtv()->handle();
 			colorAttachment[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-			colorAttachment[0].loadOp = any(renderInfo.clearFlags & TargetBufferFlags::COLOR0) ? VK_ATTACHMENT_LOAD_OP_CLEAR 
-				: any(renderInfo.loadFlags & TargetBufferFlags::COLOR0) ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			colorAttachment[0].storeOp = any(renderInfo.storeFlags & TargetBufferFlags::COLOR0) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			colorAttachment[0].loadOp = any(renderInfo.clearFlags & TargetBufferFlags::COLOR_0) ? VK_ATTACHMENT_LOAD_OP_CLEAR 
+				: any(renderInfo.loadFlags & TargetBufferFlags::COLOR_0) ? VK_ATTACHMENT_LOAD_OP_LOAD : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			colorAttachment[0].storeOp = any(renderInfo.storeFlags & TargetBufferFlags::COLOR_0) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			std::memcpy(&colorAttachment[0].clearValue.color, renderInfo.clearColor, sizeof(float) * 4);
 		} else {
 			//todo:
@@ -233,7 +233,7 @@ namespace mygfx {
 		mProgram = nullptr;
 		mVertexInput = nullptr;
 		mPrimitiveState = {};
-		mVertexSemantic = VertexAttribute::All;
+		mVertexSemantic = VertexAttribute::ALL;
 		mRasterState = {};
 		mDepthState = {};
 		mColorBlendState = {};
@@ -357,21 +357,21 @@ namespace mygfx {
 
         switch (func)
         {
-        case CompareOp::Never:
+        case CompareOp::NEVER:
             return VK_COMPARE_OP_NEVER;
-        case CompareOp::Less:
+        case CompareOp::LESS:
             return invertedDepth ? VK_COMPARE_OP_GREATER : VK_COMPARE_OP_LESS;
-        case CompareOp::Equal:
+        case CompareOp::EQUAL:
             return VK_COMPARE_OP_EQUAL;
-        case CompareOp::LessOrEqual:
+        case CompareOp::LESS_OR_EQUAL:
             return invertedDepth ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL;
-        case CompareOp::Greater:
+        case CompareOp::GREATER:
             return invertedDepth ? VK_COMPARE_OP_LESS : VK_COMPARE_OP_GREATER;
-        case CompareOp::NotEqual:
+        case CompareOp::NOT_EQUAL:
             return VK_COMPARE_OP_NOT_EQUAL;
-        case CompareOp::GreaterOrEqual:
+        case CompareOp::GREATER_OR_EQUAL:
             return invertedDepth ? VK_COMPARE_OP_LESS_OR_EQUAL : VK_COMPARE_OP_GREATER_OR_EQUAL;
-        case CompareOp::Always:
+        case CompareOp::ALWAYS:
             return VK_COMPARE_OP_ALWAYS;
         default:
             return VK_COMPARE_OP_NEVER;
@@ -424,41 +424,41 @@ namespace mygfx {
     {
         switch (state)
         {
-            case ResourceState::CommonResource:
+            case ResourceState::COMMON_RESOURCE:
                 return VK_IMAGE_LAYOUT_GENERAL;
-            case ResourceState::RenderTargetResource:
+            case ResourceState::RENDER_TARGET_RESOURCE:
                 return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            case ResourceState::UnorderedAccess:
+            case ResourceState::UNORDERED_ACCESS:
                 return VK_IMAGE_LAYOUT_GENERAL;
-            case ResourceState::DepthWrite:
+            case ResourceState::DEPTH_WRITE:
                 return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            case ResourceState::DepthRead:
-            case ResourceState::DepthShaderResource:
+            case ResourceState::DEPTH_READ:
+            case ResourceState::DEPTH_SHADER_RESOURCE:
                 return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            case ResourceState::NonPixelShaderResource:
-            case ResourceState::PixelShaderResource:
-            case ResourceState::ShaderResource:
+            case ResourceState::NONPIXEL_SHADER_RESOURCE:
+            case ResourceState::PIXEL_SHADER_RESOURCE:
+            case ResourceState::SHADER_RESOURCE:
                 return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            case ResourceState::CopyDest:
+            case ResourceState::COPY_DEST:
                 return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-            case ResourceState::CopySource:
+            case ResourceState::COPY_SOURCE:
                 return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-            case ResourceState::GenericRead:
+            case ResourceState::GENERICREAD:
                 return VK_IMAGE_LAYOUT_GENERAL;
-            case ResourceState::Present:
+            case ResourceState::PRESENT:
                 return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-            case ResourceState::ShadingRateSource:
+            case ResourceState::SHADING_RATE_SOURCE:
                 return VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
             case g_UndefinedState:
                 return VK_IMAGE_LAYOUT_UNDEFINED;
             // Unsupported states
-            case ResourceState::VertexBufferResource:
-            case ResourceState::ConstantBufferResource:
-            case ResourceState::IndexBufferResource:
-            case ResourceState::IndirectArgument:
-            case ResourceState::ResolveDest:
-            case ResourceState::ResolveSource:
-            case ResourceState::RTAccelerationStruct:
+            case ResourceState::VERTEX_BUFFER_RESOURCE:
+            case ResourceState::CONSTANT_BUFFER_RESOURCE:
+            case ResourceState::INDEX_BUFFER_RESOURCE:
+            case ResourceState::INDIRECT_ARGUMENT:
+            case ResourceState::RESOLVE_DEST:
+            case ResourceState::RESOLVE_SOURCE:
+            case ResourceState::RT_ACCELERATION_STRUCT:
             default:
                 //CauldronCritical(L"Unsupported resource state for layout.");
                 return VK_IMAGE_LAYOUT_UNDEFINED;
@@ -469,46 +469,46 @@ namespace mygfx {
     {
         switch (state)
         {
-        case ResourceState::CommonResource:
+        case ResourceState::COMMON_RESOURCE:
             return 0; // VK_ACCESS_NONE_KHR;
-        case ResourceState::VertexBufferResource:
+        case ResourceState::VERTEX_BUFFER_RESOURCE:
             return VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
-        case ResourceState::ConstantBufferResource:
+        case ResourceState::CONSTANT_BUFFER_RESOURCE:
             return VK_ACCESS_UNIFORM_READ_BIT;
-        case ResourceState::IndexBufferResource:
+        case ResourceState::INDEX_BUFFER_RESOURCE:
             return VK_ACCESS_INDEX_READ_BIT;
-        case ResourceState::RenderTargetResource:
+        case ResourceState::RENDER_TARGET_RESOURCE:
             return VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        case ResourceState::UnorderedAccess:
+        case ResourceState::UNORDERED_ACCESS:
             return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-        case ResourceState::DepthWrite:
+        case ResourceState::DEPTH_WRITE:
             return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-        case ResourceState::DepthRead:
+        case ResourceState::DEPTH_READ:
             return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-        case ResourceState::DepthShaderResource:
+        case ResourceState::DEPTH_SHADER_RESOURCE:
             return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_SHADER_READ_BIT;
-        case ResourceState::NonPixelShaderResource:
-        case ResourceState::PixelShaderResource:
-        case ResourceState::ShaderResource:
+        case ResourceState::NONPIXEL_SHADER_RESOURCE:
+        case ResourceState::PIXEL_SHADER_RESOURCE:
+        case ResourceState::SHADER_RESOURCE:
             return VK_ACCESS_SHADER_READ_BIT;
-        case ResourceState::IndirectArgument:
+        case ResourceState::INDIRECT_ARGUMENT:
             return VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-        case ResourceState::CopyDest:
+        case ResourceState::COPY_DEST:
             return VK_ACCESS_TRANSFER_WRITE_BIT;
-        case ResourceState::CopySource:
+        case ResourceState::COPY_SOURCE:
             return VK_ACCESS_TRANSFER_READ_BIT;
-        case ResourceState::ResolveDest:
+        case ResourceState::RESOLVE_DEST:
             break;
-        case ResourceState::ResolveSource:
+        case ResourceState::RESOLVE_SOURCE:
             break;
-        case ResourceState::RTAccelerationStruct:
+        case ResourceState::RT_ACCELERATION_STRUCT:
             return VK_ACCESS_ACCELERATION_STRUCTURE_READ_BIT_KHR;
             //return VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
-        case ResourceState::ShadingRateSource:
+        case ResourceState::SHADING_RATE_SOURCE:
             return VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
-        case ResourceState::GenericRead:
+        case ResourceState::GENERICREAD:
             break;
-        case ResourceState::Present:
+        case ResourceState::PRESENT:
             return 0; // VK_ACCESS_NONE_KHR;
         case g_UndefinedState:
             return 0;  // VK_ACCESS_NONE_KHR;
@@ -571,10 +571,10 @@ namespace mygfx {
         {
             const Barrier barrier = pBarriers[i];
 
-            if (barrier.type == BarrierType::Transition)
+            if (barrier.type == BarrierType::TRANSITION)
             {
                 assert(barrier.sourceState == barrier.pResource->getCurrentResourceState(barrier.subResource) && "ResourceBarrier::Error : ResourceState and Barrier.SourceState do not match.");
-                if (barrier.pResource->type == ResourceType::Buffer)
+                if (barrier.pResource->type == ResourceType::BUFFER)
                 {
 					const VulkanBuffer* vkBuffer = static_cast<const VulkanBuffer*>(barrier.pResource);
                     VkBufferMemoryBarrier bufferBarrier;
@@ -593,10 +593,10 @@ namespace mygfx {
                 else
                 {
 					const VulkanTexture* vkTexture = static_cast<const VulkanTexture*>(barrier.pResource);
-                    if ((barrier.sourceState == ResourceState::Present || barrier.sourceState == g_UndefinedState)
-                        && (barrier.destState == ResourceState::PixelShaderResource
-                            || barrier.destState == ResourceState::NonPixelShaderResource
-                            || barrier.destState == (ResourceState::PixelShaderResource | ResourceState::NonPixelShaderResource)))
+                    if ((barrier.sourceState == ResourceState::PRESENT || barrier.sourceState == g_UndefinedState)
+                        && (barrier.destState == ResourceState::PIXEL_SHADER_RESOURCE
+                            || barrier.destState == ResourceState::NONPIXEL_SHADER_RESOURCE
+                            || barrier.destState == (ResourceState::PIXEL_SHADER_RESOURCE | ResourceState::NONPIXEL_SHADER_RESOURCE)))
                     {
                         // Add an intermediate transition to get rid of the validation warning:
                         // we are transitioning from undefined state (which means the content of the texture is undefined) to a read state.
@@ -657,7 +657,7 @@ namespace mygfx {
                         imageBarrier.pNext = nullptr;
                         imageBarrier.srcAccessMask = ConvertToAccessMask(barrier.sourceState);
                         imageBarrier.dstAccessMask = ConvertToAccessMask(barrier.destState);
-                        imageBarrier.oldLayout = barrier.sourceState == ResourceState::Present ? VK_IMAGE_LAYOUT_UNDEFINED : ConvertToLayout(barrier.sourceState);
+                        imageBarrier.oldLayout = barrier.sourceState == ResourceState::PRESENT ? VK_IMAGE_LAYOUT_UNDEFINED : ConvertToLayout(barrier.sourceState);
                         imageBarrier.newLayout = ConvertToLayout(barrier.destState);
                         imageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                         imageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -680,7 +680,7 @@ namespace mygfx {
                 //                   ResourceState::RTAccelerationStruct == barrier.pResource->GetCurrentResourceState(barrier.SubResource),
                 //               L"ResourceBarrier::Error : ResourceState isn't UnorderedAccess or RTAccelerationStruct.");
 
-                if (barrier.pResource->type == ResourceType::Image)
+                if (barrier.pResource->type == ResourceType::IMAGE)
                 {
 					const VulkanTexture* vkTexture = static_cast<const VulkanTexture*>(barrier.pResource);
                     VkFormat imageFormat = vkTexture->vkFormat;
@@ -690,7 +690,7 @@ namespace mygfx {
                     imageBarrier.pNext = nullptr;
                     imageBarrier.srcAccessMask = ConvertToAccessMask(barrier.sourceState); // Is this really needed for a UAV barrier? Remove if it's ignored
                     imageBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-                    imageBarrier.oldLayout = barrier.sourceState == ResourceState::Present ? VK_IMAGE_LAYOUT_UNDEFINED : ConvertToLayout(barrier.sourceState);
+                    imageBarrier.oldLayout = barrier.sourceState == ResourceState::PRESENT ? VK_IMAGE_LAYOUT_UNDEFINED : ConvertToLayout(barrier.sourceState);
                     imageBarrier.newLayout = ConvertToLayout(barrier.destState);
                     imageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                     imageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -700,7 +700,7 @@ namespace mygfx {
 
                     imageBarriers.push_back(imageBarrier);
                 }
-                else if (barrier.pResource->type == ResourceType::Buffer)
+                else if (barrier.pResource->type == ResourceType::BUFFER)
                 {
 					const VulkanBuffer* vkBuffer = static_cast<const VulkanBuffer*>(barrier.pResource);
 

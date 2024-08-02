@@ -28,17 +28,17 @@ namespace mygfx {
         void setCurrentResourceState(ResourceState newState, uint32_t subResource = 0xffffffff);
 		void initSubResourceCount(uint32_t subResourceCount);
 
-		ResourceType type = ResourceType::Unknown;
+		ResourceType type = ResourceType::UNKNOWN;
 		std::vector<ResourceState> mCurrentStates;
 	};
 
 	class HwBuffer : public HwResource {
 	public:
-		HwBuffer() { type = ResourceType::Buffer; }
+		HwBuffer() { type = ResourceType::BUFFER; }
 
 		uint64_t size = 0;
-		BufferUsage usage = BufferUsage::None;
-		MemoryUsage memoryUsage = MemoryUsage::GpuOnly;
+		BufferUsage usage = BufferUsage::NONE;
+		MemoryUsage memoryUsage = MemoryUsage::GPU_ONLY;
 		uint16_t stride = 0;
 		uint16_t extra = 0;
 		void* mapped = nullptr;
@@ -64,7 +64,7 @@ namespace mygfx {
 	
 	class HwTexture : public HwResource {
 	public:
-		HwTexture() { type = ResourceType::Image; }
+		HwTexture() { type = ResourceType::IMAGE; }
 
 		uint16_t width, height;
 		uint16_t depth = 1;

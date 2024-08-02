@@ -58,8 +58,8 @@ namespace mygfx {
 		static Ref<Texture> create2D(uint16_t width, uint16_t height, Format format, const MemoryBlock& memoryBlock, SamplerInfo samplerInfo = {});
 		static Ref<Texture> createFromData(const TextureData& imageInfo, SamplerInfo sampler = {}); 
 		static Ref<Texture> createFromFile(const String& fileName, SamplerInfo sampler = {});
-		static Ref<Texture> createRenderTarget(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::None, SampleCount msaa = SampleCount::_1);
-		static Ref<Texture> createDepthStencil(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::None, bool isShadowMap = false, SampleCount msaa = SampleCount::_1);
+		static Ref<Texture> createRenderTarget(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::NONE, SampleCount msaa = SampleCount::SAMPLE_1);
+		static Ref<Texture> createDepthStencil(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::NONE, bool isShadowMap = false, SampleCount msaa = SampleCount::SAMPLE_1);
 	
 		static Ref<Texture> createByColor(const char* name, const float4& color);
 

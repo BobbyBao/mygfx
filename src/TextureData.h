@@ -102,9 +102,9 @@ namespace mygfx {
         uint16_t faceCount = 1;
         uint16_t mipMapCount = 1;
 		Format format = Format::UNDEFINED;
-		TextureUsage usage = TextureUsage::None;
+		TextureUsage usage = TextureUsage::NONE;
 		SamplerType samplerType = SamplerType::COUNT;
-        SampleCount sampleCount = SampleCount::_1;
+        SampleCount sampleCount = SampleCount::SAMPLE_1;
         MemoryBlock dataBlock;
     private:
     };

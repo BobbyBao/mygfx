@@ -104,10 +104,9 @@ namespace mygfx::demo {
 
 		sUnlitShader = new Shader(vsCode, fsCode);
 		sUnlitShader->setVertexInput({Format::R32G32B32_SFLOAT, Format::R8G8B8A8_UNORM, Format::R32G32_SFLOAT, Format::R32_SINT });
-		sUnlitShader->setBlendMode(BlendMode::Alpha);	
-		sUnlitShader->pipelineState.rasterState.cullMode = CullMode::None;
-		sUnlitShader->pipelineState.depthState.depthTestEnable = false;
-		sUnlitShader->pipelineState.depthState.depthWriteEnable = false;
+		sUnlitShader->setBlendMode(BlendMode::ALPHA);	
+		sUnlitShader->setCullMode(CullMode::NONE);
+		sUnlitShader->setDepthTest(false, false);
 		return sUnlitShader;
 	}
 

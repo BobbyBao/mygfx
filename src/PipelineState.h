@@ -5,7 +5,7 @@
 namespace mygfx {
 
 	struct PrimitiveState {
-		PrimitiveTopology primitiveTopology : 4 = PrimitiveTopology::TriangleList;
+		PrimitiveTopology primitiveTopology : 4 = PrimitiveTopology::TRIANGLE_LIST;
 		bool restartEnable : 1 = false;
 		
 		auto operator<=>(PrimitiveState const&) const = default;
@@ -14,15 +14,15 @@ namespace mygfx {
 	//static_assert(sizeof(PrimitiveState) == 1);
 
 	struct RasterState {
-		PolygonMode polygonMode : 2 = PolygonMode::Fill;
-		CullMode cullMode : 2 = CullMode::Front;
-		FrontFace frontFace : 1 = FrontFace::Clockwise;
+		PolygonMode polygonMode : 2 = PolygonMode::FILL;
+		CullMode cullMode : 2 = CullMode::FRONT;
+		FrontFace frontFace : 1 = FrontFace::CLOCKWISE;
 		bool depthBiasEnable : 1 = false;
 
 		bool alphaToCoverageEnable : 1 = false;
 		bool alphaToOneEnable : 1 = false;
 		bool rasterizerDiscardEnable : 1 = false;
-		SampleCount rasterizationSamples : 6 = SampleCount::_1;
+		SampleCount rasterizationSamples : 6 = SampleCount::SAMPLE_1;
 		
 		auto operator<=>(RasterState const&) const = default;
 	};
@@ -31,30 +31,30 @@ namespace mygfx {
 	
 	enum class BlendMode : uint8_t
 	{
-		None = 0,
-		Mask,
-		Add,
-		Multiply,
-		Alpha,
-		AddAlpha,
-		ConstantColor,
-		PremulAlpha,
-		InvdestAlpha,
-		Subtract,
-		SubtractAlpha,
+		NONE = 0,
+		MASK,
+		ADD,
+		MULTIPLY,
+		ALPHA,
+		ADD_ALPHA,
+		CONSTANT_COLOR,
+		PREMUL_ALPHA,
+		INV_DEST_ALPHA,
+		SUBTRACT,
+		SUBTRACT_ALPHA,
 	};
 
 	struct ColorBlendState {
 
 		uint32_t colorBlendEnable : 1 = false;
 
-		BlendFactor srcColorBlendFactor : 5 = BlendFactor::One;
-		BlendFactor dstColorBlendFactor : 5 = BlendFactor::One;
-		BlendOp colorBlendOp : 3 = BlendOp::Add;
+		BlendFactor srcColorBlendFactor : 5 = BlendFactor::ONE;
+		BlendFactor dstColorBlendFactor : 5 = BlendFactor::ONE;
+		BlendOp colorBlendOp : 3 = BlendOp::ADD;
 
-		BlendFactor srcAlphaBlendFactor : 5 = BlendFactor::One;
-		BlendFactor dstAlphaBlendFactor : 5 = BlendFactor::One;
-		BlendOp alphaBlendOp : 3 = BlendOp::Add;
+		BlendFactor srcAlphaBlendFactor : 5 = BlendFactor::ONE;
+		BlendFactor dstAlphaBlendFactor : 5 = BlendFactor::ONE;
+		BlendOp alphaBlendOp : 3 = BlendOp::ADD;
 
 		ColorComponent colorWrite : 4 = ColorComponent::RGBA;
 
@@ -68,7 +68,7 @@ namespace mygfx {
 	struct DepthState {
 		bool    depthTestEnable : 1 = true;
 		bool    depthWriteEnable : 1 = true;
-		CompareOp depthCompareOp : 4 = CompareOp::LessOrEqual;
+		CompareOp depthCompareOp : 4 = CompareOp::LESS_OR_EQUAL;
 		bool depthBoundsTestEnable : 1 = false;
 
 		auto operator<=>(DepthState const&) const = default;
@@ -99,7 +99,7 @@ namespace mygfx {
 
 	struct PipelineState {
 		HwProgram* program;
-		VertexAttribute vertexSemantic = VertexAttribute::All;
+		VertexAttribute vertexSemantic = VertexAttribute::ALL;
 		PrimitiveState primitiveState {};
 		ColorBlendState colorBlendState {};		
 		RasterState rasterState {};

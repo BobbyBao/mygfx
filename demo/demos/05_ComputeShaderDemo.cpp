@@ -47,7 +47,7 @@ namespace mygfx::demo {
 				particle.vel = glm::vec3(0.0f, 0.0f, particle.pos.x / 2.0f);			
 			}
 
-			mSBO = device().createBuffer1(BufferUsage::Storage | BufferUsage::Vertex, MemoryUsage::GpuOnly, std::span{ particleBuffer });
+			mSBO = device().createBuffer1(BufferUsage::STORAGE | BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, std::span{ particleBuffer });
 
 			mComputeShader = new Shader(csCode);
 			mComputeShader->updateDescriptorSet(0, 0, mSBO);
@@ -57,8 +57,8 @@ namespace mygfx::demo {
 				Format::R32G32_SFLOAT, 
 				Format::R32G32_SFLOAT, 
 				Format::R32_SFLOAT });
-			mShader->setBlendMode(BlendMode::Add);
-			mShader->pipelineState.primitiveState.primitiveTopology = PrimitiveTopology::PointList;
+			mShader->setBlendMode(BlendMode::ADD);
+			mShader->pipelineState.primitiveState.primitiveTopology = PrimitiveTopology::POINT_LIST;
 
 			mParticleTexture = Texture::createFromFile("../../media/textures/particle_rgba.ktx");
 			mGradientTexture = Texture::createFromFile("../../media/textures/particle_gradient_rgba.ktx");

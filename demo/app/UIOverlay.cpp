@@ -146,8 +146,8 @@ namespace mygfx
 
 		mProgram = new Shader(vsCode, fsCode);
 		mProgram->setVertexInput({Format::R32G32_SFLOAT, Format::R32G32_SFLOAT, Format::R8G8B8A8_UNORM });
-		mProgram->setBlendMode(BlendMode::Alpha);
-		mProgram->pipelineState.rasterState.cullMode = CullMode::None;
+		mProgram->setBlendMode(BlendMode::ALPHA);
+		mProgram->pipelineState.rasterState.cullMode = CullMode::NONE;
 
 		float size = 18.0f;
 
@@ -223,7 +223,7 @@ namespace mygfx
 		cmd.setViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0, 1);
 		
 		cmd.bindVertexBuffer(0, VerticesView.buffer, VerticesView.offset);
-		cmd.bindIndexBuffer(indicesView.buffer, indicesView.offset, IndexType::UInt16);
+		cmd.bindIndexBuffer(indicesView.buffer, indicesView.offset, IndexType::UINT16);
 				
 		float L = 0.0f;
 		float R = ImGui::GetIO().DisplaySize.x;

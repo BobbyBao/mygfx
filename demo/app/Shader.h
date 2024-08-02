@@ -27,6 +27,8 @@ namespace mygfx {
 		void setVertexSemantic(VertexAttribute vertexSemantic);
 		void setBlendMode(BlendMode blendMode);
 		void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
+		void setCullMode(CullMode cullMode);
+		void setDepthTest(bool test, bool write);
 
 		void updateDescriptorSet(uint32_t set, uint32_t binding, Texture* tex);
 		void updateDescriptorSet(uint32_t set, uint32_t binding, HwTextureView* texView);

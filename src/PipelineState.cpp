@@ -21,93 +21,93 @@ namespace mygfx {
 
 	constexpr static BlendFactor sColorSrcBlend[] =
 	{
-		BlendFactor::One,
-		BlendFactor::One,
-		BlendFactor::One,		//Add
-		BlendFactor::DstColor,
-		BlendFactor::SrcAlpha,
-		BlendFactor::SrcAlpha,	//AddAlpha
-		BlendFactor::One,		//AddConstantColor
-		BlendFactor::One,
-		BlendFactor::OneMinusDstAlpha,
-		BlendFactor::One,
-		BlendFactor::SrcAlpha,
+		BlendFactor::ONE,
+		BlendFactor::ONE,
+		BlendFactor::ONE,		//Add
+		BlendFactor::DST_COLOR,
+		BlendFactor::SRC_ALPHA,
+		BlendFactor::SRC_ALPHA,	//AddAlpha
+		BlendFactor::ONE,		//AddConstantColor
+		BlendFactor::ONE,
+		BlendFactor::ONE_MINUS_DST_ALPHA,
+		BlendFactor::ONE,
+		BlendFactor::SRC_ALPHA,
 	};
 
 	constexpr static BlendFactor sColorDestBlend[] =
 	{
-		BlendFactor::Zero,
-		BlendFactor::Zero,
-		BlendFactor::One,				//Add
-		BlendFactor::Zero,
-		BlendFactor::OneMinusSrcAlpha,
-		BlendFactor::One,				//AddAlpha
-		BlendFactor::ConstantColor,		//AddConstantColor
-		BlendFactor::OneMinusSrcAlpha,
-		BlendFactor::DstAlpha,
-		BlendFactor::One,
-		BlendFactor::One,
+		BlendFactor::ZERO,
+		BlendFactor::ZERO,
+		BlendFactor::ONE,				//Add
+		BlendFactor::ZERO,
+		BlendFactor::ONE_MINUS_SRC_ALPHA,
+		BlendFactor::ONE,				//AddAlpha
+		BlendFactor::CONSTANT_COLOR,		//AddConstantColor
+		BlendFactor::ONE_MINUS_SRC_ALPHA,
+		BlendFactor::DST_ALPHA,
+		BlendFactor::ONE,
+		BlendFactor::ONE,
 	};
 
 	constexpr static BlendOp sColorBlendOp[] =
 	{
-		BlendOp::Add,
-		BlendOp::Add,
-		BlendOp::Add,			//Add
-		BlendOp::Add,
-		BlendOp::Add,
-		BlendOp::Add,			//AddAlpha
-		BlendOp::Add,
-		BlendOp::Add,
-		BlendOp::Add,
-		BlendOp::ReverseSubtract,
-		BlendOp::ReverseSubtract,
+		BlendOp::ADD,
+		BlendOp::ADD,
+		BlendOp::ADD,			//Add
+		BlendOp::ADD,
+		BlendOp::ADD,
+		BlendOp::ADD,			//AddAlpha
+		BlendOp::ADD,
+		BlendOp::ADD,
+		BlendOp::ADD,
+		BlendOp::REVERSE_SUBTRACT,
+		BlendOp::REVERSE_SUBTRACT,
 	};
 
 	constexpr static BlendFactor sAlphaSrcBlend[] =
 	{
-		BlendFactor::One,
-		BlendFactor::One,
-		BlendFactor::One,			//Add
+		BlendFactor::ONE,
+		BlendFactor::ONE,
+		BlendFactor::ONE,			//Add
 
-		BlendFactor::DstColor,
-		BlendFactor::SrcAlpha,
-		BlendFactor::SrcAlpha,		//AddAlpha
-		BlendFactor::One,
-		BlendFactor::One,
-		BlendFactor::OneMinusDstAlpha,
-		BlendFactor::One,
-		BlendFactor::SrcAlpha,
+		BlendFactor::DST_COLOR,
+		BlendFactor::SRC_ALPHA,
+		BlendFactor::SRC_ALPHA,		//AddAlpha
+		BlendFactor::ONE,
+		BlendFactor::ONE,
+		BlendFactor::ONE_MINUS_DST_ALPHA,
+		BlendFactor::ONE,
+		BlendFactor::SRC_ALPHA,
 	};
 
 	constexpr static BlendFactor sAlphaDestBlend[] =
 	{
-		BlendFactor::Zero,
-		BlendFactor::Zero,
-		BlendFactor::Zero,				//Add
-		BlendFactor::Zero,
-		BlendFactor::OneMinusSrcAlpha,
-		BlendFactor::One,				//AddAlpha
-		BlendFactor::One,
-		BlendFactor::OneMinusSrcAlpha,
-		BlendFactor::DstAlpha,
-		BlendFactor::One,
-		BlendFactor::One,
+		BlendFactor::ZERO,
+		BlendFactor::ZERO,
+		BlendFactor::ZERO,				//Add
+		BlendFactor::ZERO,
+		BlendFactor::ONE_MINUS_SRC_ALPHA,
+		BlendFactor::ONE,				//AddAlpha
+		BlendFactor::ONE,
+		BlendFactor::ONE_MINUS_SRC_ALPHA,
+		BlendFactor::DST_ALPHA,
+		BlendFactor::ONE,
+		BlendFactor::ONE,
 	};
 
 	constexpr static BlendOp sAlphaBlendOp[] =
 	{
-		BlendOp::Add,
-		BlendOp::Add,
-		BlendOp::Add,	//Add
-		BlendOp::Add,
-		BlendOp::Add,
-		BlendOp::Add,	//AddAlpha
-		BlendOp::Add,
-		BlendOp::Add,
-		BlendOp::Add,
-		BlendOp::ReverseSubtract,
-		BlendOp::ReverseSubtract,
+		BlendOp::ADD,
+		BlendOp::ADD,
+		BlendOp::ADD,	//Add
+		BlendOp::ADD,
+		BlendOp::ADD,
+		BlendOp::ADD,	//AddAlpha
+		BlendOp::ADD,
+		BlendOp::ADD,
+		BlendOp::ADD,
+		BlendOp::REVERSE_SUBTRACT,
+		BlendOp::REVERSE_SUBTRACT,
 	};
 
 	

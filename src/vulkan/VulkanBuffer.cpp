@@ -11,31 +11,31 @@ namespace mygfx
 		this->memoryUsage = memoryUsage;
 
 		VkBufferUsageFlags flags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		if ((usage & BufferUsage::Vertex) != BufferUsage::None) {
+		if ((usage & BufferUsage::VERTEX) != BufferUsage::NONE) {
 			flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		} 
 		
-		if((usage & BufferUsage::Index) != BufferUsage::None){
+		if((usage & BufferUsage::INDEX) != BufferUsage::NONE){
 			flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 		} 
 		
-		if((usage & BufferUsage::Uniform) != BufferUsage::None){
+		if((usage & BufferUsage::UNIFORM) != BufferUsage::NONE){
 			flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
 		} 
 		
-		if((usage & BufferUsage::Storage) != BufferUsage::None){
+		if((usage & BufferUsage::STORAGE) != BufferUsage::NONE){
 			flags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
 		} 
 		
-		if((usage & BufferUsage::UniformTexel) != BufferUsage::None){
+		if((usage & BufferUsage::UNIFORM_TEXEL) != BufferUsage::NONE){
 			flags |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
 		} 
 		
-		if((usage & BufferUsage::StorageTexel) != BufferUsage::None){
+		if((usage & BufferUsage::STORAGE_TEXEL) != BufferUsage::NONE){
 			flags |= VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
 		}
 		
-		if((usage & BufferUsage::ShaderDeviceAddress) != BufferUsage::None){
+		if((usage & BufferUsage::SHADER_DEVICE_ADDRESS) != BufferUsage::NONE){
 			flags |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
 		}
 
@@ -64,9 +64,9 @@ namespace mygfx
 
 		if (data) {
 			if (cpuVisible()) {
-				initState(ResourceState::GenericRead);
+				initState(ResourceState::GENERICREAD);
 			} else {
-				initState(ResourceState::CopyDest);
+				initState(ResourceState::COPY_DEST);
 			}
 			setData(data, size, 0);
 		}
@@ -94,7 +94,7 @@ namespace mygfx
 	
 	bool VulkanBuffer::cpuVisible() const
 	{
-		return memoryUsage != MemoryUsage::GpuOnly && memoryUsage != MemoryUsage::GpuLazilyAllocated;
+		return memoryUsage != MemoryUsage::GPU_ONLY && memoryUsage != MemoryUsage::GPU_LAZILY_ALLOCATED;
 	}
 
 	void VulkanBuffer::setData(const void* data, VkDeviceSize size, VkDeviceSize offset) {

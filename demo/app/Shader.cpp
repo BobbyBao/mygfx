@@ -36,30 +36,30 @@ namespace mygfx
 	}
 
 	Shader::Shader(const String& vsCode, const String& psCode, const DefineList* macros) {	
-		addShader(ShaderStage::Vertex, vsCode, ShaderSourceType::GLSL, "", "", macros);
-		addShader(ShaderStage::Fragment, psCode, ShaderSourceType::GLSL, "", "", macros);
+		addShader(ShaderStage::VERTEX, vsCode, ShaderSourceType::GLSL, "", "", macros);
+		addShader(ShaderStage::FRAGMENT, psCode, ShaderSourceType::GLSL, "", "", macros);
 		init();
 	}
 
 	Shader::Shader(const String& csCode) {
-		addShader(ShaderStage::Compute, csCode, ShaderSourceType::GLSL, "", "", nullptr);
+		addShader(ShaderStage::COMPUTE, csCode, ShaderSourceType::GLSL, "", "", nullptr);
 		init();
 	}
 
 	void Shader::loadShader(const String& vs, const String& ps, const DefineList* macros) {
 		auto vsSource = FileUtils::readAllText(vs);
 
-		addShader(ShaderStage::Vertex, vsSource, ShaderSourceType::GLSL, "", "", macros);
+		addShader(ShaderStage::VERTEX, vsSource, ShaderSourceType::GLSL, "", "", macros);
 
 		auto psSource = FileUtils::readAllText(ps);
-		addShader(ShaderStage::Fragment, psSource, ShaderSourceType::GLSL, "", "", macros);
+		addShader(ShaderStage::FRAGMENT, psSource, ShaderSourceType::GLSL, "", "", macros);
 
 		init();
 	}
 
 	void Shader::loadShader(const String& cs) {
 		auto csSource = FileUtils::readAllText(cs);
-		addShader(ShaderStage::Compute, csSource, ShaderSourceType::GLSL, "", "", nullptr);
+		addShader(ShaderStage::COMPUTE, csSource, ShaderSourceType::GLSL, "", "", nullptr);
 
 		init();
 	}
@@ -82,6 +82,15 @@ namespace mygfx
 	
 	void Shader::setPrimitiveTopology(PrimitiveTopology primitiveTopology) {
 		pipelineState.primitiveState.primitiveTopology = primitiveTopology;
+	}
+
+	void Shader::setCullMode(CullMode cullMode) {
+		pipelineState.rasterState.cullMode = cullMode;
+	}
+
+	void Shader::setDepthTest(bool test, bool write) {
+		pipelineState.depthState.depthTestEnable = test;
+		pipelineState.depthState.depthWriteEnable = write;
 	}
 
 	void Shader::updateDescriptorSet(uint32_t set, uint32_t binding, Texture* tex) {
