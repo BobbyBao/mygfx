@@ -1,6 +1,6 @@
 #include "DemoApp.h"
 #include <array>
-#include "Texture.h"
+#include "resource/Texture.h"
 
 namespace mygfx::demo {
 	

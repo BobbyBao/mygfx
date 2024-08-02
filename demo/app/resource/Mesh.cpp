@@ -1,5 +1,5 @@
 #include "Mesh.h"
-#include "GraphicsDevice.h"
+#include "GraphicsApi.h"
 
 namespace mygfx {
 
@@ -16,6 +16,16 @@ namespace mygfx {
 	}
 
 	Mesh::~Mesh() {
+	}
+
+	void Mesh::addSubMesh(VertexData* vertexData) {
+		auto& subMesh = mSubMeshes.emplace_back(vertexData);
+		renderPrimitives.emplace_back(gfxApi().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
+	}
+	
+	void Mesh::addSubMesh(VertexData* vertexData, const DrawPrimitiveCommand& drawArgs) {
+		mSubMeshes.emplace_back(vertexData);
+		renderPrimitives.emplace_back(gfxApi().createRenderPrimitive(vertexData, drawArgs));
 	}
 
 	Mesh* Mesh::createPlane(float size)
@@ -66,7 +76,7 @@ namespace mygfx {
 		vertexData->indexBuffer = device().createBuffer1(BufferUsage::INDEX, MemoryUsage::GPU_ONLY, (uint32_t)std::size(indices), indices);
 
 		Mesh* mesh = new Mesh();
-		auto& subMesh = mesh->getSubMeshes().emplace_back(vertexData);
+		mesh->addSubMesh(vertexData);
 		mesh->setBoundingBox({ {-size, -0.01f, -size}, {size, 0.01f, size} });
 		return mesh;
 	}
@@ -189,7 +199,7 @@ namespace mygfx {
 		vertexData->indexBuffer = device().createBuffer1(BufferUsage::INDEX, MemoryUsage::GPU_ONLY, (uint32_t)std::size(indices), indices);
 
 		Mesh* mesh = new Mesh();
-		auto& subMesh = mesh->getSubMeshes().emplace_back(vertexData);
+		mesh->addSubMesh(vertexData);
 		mesh->setBoundingBox({ {-CUBE_HALF_SIZE, -CUBE_HALF_SIZE, -CUBE_HALF_SIZE}, {CUBE_HALF_SIZE, CUBE_HALF_SIZE, CUBE_HALF_SIZE} });
 		return mesh;
 	}

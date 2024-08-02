@@ -1,5 +1,5 @@
 #pragma once
-#include "Shader.h"
+#include "resource/Shader.h"
 
 namespace mygfx::demo {
 

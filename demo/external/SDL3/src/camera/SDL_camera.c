@@ -460,9 +460,9 @@ SDL_CameraDevice *SDL_AddCameraDevice(const char *name, SDL_CameraPosition posit
 
     #if DEBUG_CAMERA
     const char *posstr = "unknown position";
-    if (position == SDL_CAMERA_POSITION_FRONT_FACING) {
+    if (mPosition == SDL_CAMERA_POSITION_FRONT_FACING) {
         posstr = "front-facing";
-    } else if (position == SDL_CAMERA_POSITION_BACK_FACING) {
+    } else if (mPosition == SDL_CAMERA_POSITION_BACK_FACING) {
         posstr = "back-facing";
     }
     SDL_Log("CAMERA: Adding device '%s' (%s) with %d spec%s%s", name, posstr, num_specs, (num_specs == 1) ? "" : "s", (num_specs == 0) ? "" : ":");

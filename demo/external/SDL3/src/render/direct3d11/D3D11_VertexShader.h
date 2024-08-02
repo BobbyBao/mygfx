@@ -79,7 +79,7 @@ dcl_constantbuffer CB0[8], immediateIndexed
 dcl_input v0.xyz
 dcl_input v1.xy
 dcl_input v2.xyzw
-dcl_output_siv o0.xyzw, position
+dcl_output_siv o0.xyzw, mPosition
 dcl_output o1.xy
 dcl_output o2.xyzw
 dcl_temps 2

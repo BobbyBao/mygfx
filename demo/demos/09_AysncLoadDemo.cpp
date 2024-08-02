@@ -4,10 +4,11 @@
 
 namespace mygfx::demo {
 	
-	class TextureDemo : public Demo {
+	class AysncLoadDemo : public Demo {
 	public:
 		Ref<Mesh> mMesh;
 		Ref<Shader> mShader;
+		Vector<Ref<HwRenderPrimitive>> mPrimitives;
 
 		void start() override {
 
@@ -41,5 +42,5 @@ namespace mygfx::demo {
 		}
 	};
 
-	DEF_DEMO(TextureDemo, "Texture Demo");	
+	DEF_DEMO(AysncLoadDemo, "Aysnc Load Demo");	
 }

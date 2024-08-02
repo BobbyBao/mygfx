@@ -20,4 +20,4 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${KTX_DIR}/include)
 include_directories(${KTX_DIR}/lib)
 
-target_link_libraries(${TARGET} mygfx ImGUI SDL3-shared glm)
+target_link_libraries(${TARGET} mygfx ImGUI SDL3-shared glm concurrencpp)

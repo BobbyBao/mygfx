@@ -1,6 +1,6 @@
 #include "DemoApp.h"
-#include "Mesh.h"
-#include "Texture.h"
+#include "resource/Mesh.h"
+#include "resource/Texture.h"
 
 namespace mygfx::demo {
 	
@@ -8,7 +8,6 @@ namespace mygfx::demo {
 	public:
 		Ref<Mesh> mMesh;
 		Ref<Shader> mShader;
-		Vector<Ref<HwRenderPrimitive>> mPrimitives;
 		Ref<Texture> mRenderTexture;
 		Ref<HwRenderTarget> mRenderTarget;
 
@@ -17,9 +16,7 @@ namespace mygfx::demo {
 			mShader = ShaderLibs::getSimpleLightShader();
 
 			mMesh = Mesh::createCube();
-			for (auto& subMesh : mMesh->getSubMeshes()) {
-				mPrimitives.emplace_back(device().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
-			}
+
 			mRenderTexture = Texture::createRenderTarget(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
 			mRenderTarget = device().createRenderTarget(
 				{ .width = 1024,
@@ -60,7 +57,7 @@ namespace mygfx::demo {
 			cmd.bindPipelineState(mShader->pipelineState);
 			cmd.bindUniforms({ perView, perDraw, perMaterial });
 
-			for (auto& prim : mPrimitives) {
+			for (auto& prim : mMesh->renderPrimitives) {
 				cmd.drawPrimitive(prim);
 			}
 

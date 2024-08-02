@@ -1,6 +1,6 @@
 #include "DemoApp.h"
-#include "Mesh.h"
-#include "Texture.h"
+#include "resource/Mesh.h"
+#include "resource/Texture.h"
 
 namespace mygfx::demo {
 	
@@ -8,16 +8,11 @@ namespace mygfx::demo {
 	public:
 		Ref<Mesh> mMesh;
 		Ref<Shader> mShader;
-		Vector<Ref<HwRenderPrimitive>> mPrimitives;
 
 		void start() override {
 
 			mMesh = Mesh::createCube();
-
-			for (auto& subMesh : mMesh->getSubMeshes()) {
-				mPrimitives.emplace_back(device().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
-			}
-
+			
 			mShader = new Shader(vsCode, fsCode);
 			mShader->setVertexInput({
 				Format::R32G32B32_SFLOAT, Format::END,
@@ -44,7 +39,7 @@ namespace mygfx::demo {
 			cmd.bindPipelineState(mShader->pipelineState);
 			cmd.bindUniforms({ perView, perDraw});
 
-			for (auto& prim : mPrimitives) {
+			for (auto& prim : mMesh->renderPrimitives) {
 				cmd.drawPrimitive(prim);
 			}
 

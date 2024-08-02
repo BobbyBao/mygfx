@@ -1,6 +1,6 @@
 #include "DemoApp.h"
-#include "Mesh.h"
-#include "Texture.h"
+#include "resource/Mesh.h"
+#include "resource/Texture.h"
 #include <random>
 
 namespace mygfx::demo {

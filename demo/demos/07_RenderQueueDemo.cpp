@@ -1,6 +1,6 @@
 #include "DemoApp.h"
-#include "Mesh.h"
-#include "Texture.h"
+#include "resource/Mesh.h"
+#include "resource/Texture.h"
 
 namespace mygfx::demo {
 
@@ -10,8 +10,7 @@ namespace mygfx::demo {
 		Ref<Shader> mShader;
 
 		struct Renderable {
-			mat4 worldTransform = identity<mat4>();;
-			Vector<Ref<HwRenderPrimitive>> primitives;
+			mat4 worldTransform = identity<mat4>();
 			int texIndex = 0;
 		};
 
@@ -47,10 +46,6 @@ namespace mygfx::demo {
 							{ (i - GRID_SIZE_X / 2) * SPACE, (j - GRID_SIZE_Y / 2) * SPACE, (k - GRID_SIZE_Z / 2) * SPACE });
 
 						renderable.texIndex = mTextures[glm::linearRand<int>(0, (int)mTextures.size() - 1)]->index();
-
-						for (auto& subMesh : mMesh->getSubMeshes()) {
-							renderable.primitives.emplace_back(device().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
-						}
 					}
 				}
 			}
@@ -75,7 +70,7 @@ namespace mygfx::demo {
 			for (auto& renderable : mRenderables) {
 				uint32_t perRenderable = cmd.allocConstant(renderable.worldTransform);
 				uint32_t perMaterial = cmd.allocConstant(renderable.texIndex);
-				for (auto& prim : renderable.primitives) {
+				for (auto& prim : mMesh->renderPrimitives) {
 					auto& rc = renderCmds.emplace_back();
 					rc.renderPrimitive = prim;
 					rc.pipelineState = mShader->pipelineState;
