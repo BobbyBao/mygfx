@@ -54,6 +54,7 @@ namespace mygfx::demo {
 		Vector<uint16_t> mIndices;
 		Ref<Shader> mShader;
 		Vector<Sprite2D> mSprites;
+		Vector<Ref<Texture>> mTextures;
 
 		Result<void> start() override {
 
@@ -63,6 +64,8 @@ namespace mygfx::demo {
 
 			mSprites.clear();
 			
+			mTextures = Texture::createRandomColorTextures(64);
+
 			float width = (float)mApp->getWidth();
 			float height = (float)mApp->getHeight();
 
@@ -70,7 +73,7 @@ namespace mygfx::demo {
 
 				float2 center = { linearRand<float>(0, width), linearRand<float>(0.0f, height) };
 				float halfSize = linearRand<float>(5.0f, 10.0f);
-				int index = linearRand<int>(0, 8);
+				int index = mTextures[linearRand<int>(0, mTextures.size() - 1)]->index();
 				mSprites.push_back(
 					Sprite2D{ center, {halfSize, halfSize},
 					0.0f, 0xffffffff, Rect{ {0, 0}, {1, 1} }, index, {linearRand<float>(0, width), linearRand<float>(0.0f, height)} });

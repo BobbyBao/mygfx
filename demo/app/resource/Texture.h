@@ -62,6 +62,7 @@ namespace mygfx {
 		static Ref<Texture> createDepthStencil(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::NONE, bool isShadowMap = false, SampleCount msaa = SampleCount::SAMPLE_1);
 	
 		static Ref<Texture> createByColor(const char* name, const float4& color);
+		static Vector<Ref<Texture>> createRandomColorTextures(int count);
 
 		static Ref<Texture> White;
 		static Ref<Texture> Black;

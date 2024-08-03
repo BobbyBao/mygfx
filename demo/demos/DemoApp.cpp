@@ -55,7 +55,7 @@ void DemoApp::onGUI() {
 	
 	ImGui::SetNextWindowPos({10.0f, 10.0f});
 	ImGui::SetNextWindowSize({-1.0f, -1.0f});
-	ImGui::SetNextWindowBgAlpha(0.5f);
+	ImGui::SetNextWindowBgAlpha(0.75f);
 
 	if (ImGui::Begin("Demos", nullptr, ImGuiWindowFlags_NoDecoration)) {
 		ImGui::Text("CPU:	%s", mCPUName.c_str());

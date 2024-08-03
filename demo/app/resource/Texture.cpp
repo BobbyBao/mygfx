@@ -127,6 +127,17 @@ namespace mygfx {
 		return tex;
 	}
 
+	Vector<Ref<Texture>> Texture::createRandomColorTextures(int count) {
+		Vector<Ref<Texture>> ret;
+		for (int i = 0; i < count; i++) {
+			auto tex = Texture::createByColor("", vec4{ glm::linearRand<float>(0, 1.0f),
+				glm::linearRand<float>(0, 1.0f),
+				glm::linearRand<float>(0, 1.0f), 1.0f });
+			ret.push_back(tex);
+		}
+		return ret;
+	}
+
 	Ref<Texture> Texture::create2D(uint16_t width, uint16_t height, Format format, const MemoryBlock& memoryBlock, SamplerInfo samplerInfo)
 	{
 		auto textureData = TextureData::Texture2D(width, height, format, memoryBlock);

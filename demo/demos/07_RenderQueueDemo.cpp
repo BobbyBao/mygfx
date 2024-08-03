@@ -24,13 +24,7 @@ namespace mygfx::demo {
 
 			mMesh = Mesh::createCube(1.0f);
 
-			for (int i = 0; i < 10; i++) {
-
-				auto tex = Texture::createByColor("", vec4{ glm::linearRand<float>(0, 1.0f),
-					glm::linearRand<float>(0, 1.0f),
-					glm::linearRand<float>(0, 1.0f), 1.0f });
-				mTextures.push_back(tex);
-			}
+			mTextures = Texture::createRandomColorTextures(10);
 
 			int GRID_SIZE_X = 100;
 			int GRID_SIZE_Y = 100;
