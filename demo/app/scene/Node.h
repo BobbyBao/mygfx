@@ -1,18 +1,9 @@
 #pragma once
-#include "utils/RefCounted.h"
-#include "utils/SharedPtr.h"
-#include <vector>
-#include <string>
+#include "Fwd.h"
 #include "MathTypes.h"
 
 namespace mygfx {
 
-	using namespace utils;
-
-	using String = std::string;
-
-	template<typename T>
-	using Vector = std::vector<T>;
 	
 	class Scene;
 
@@ -66,6 +57,7 @@ namespace mygfx {
 		vec3 mScale{ 1.0f };
 		mutable quat mWorldRotation;
 		mutable mat4 mWorldTransform;
+		bool mActive : 1 = true;
 		mutable bool worldTransformDirty : 1 = true;
 		mutable bool viewDirty : 1 = true;
 		mutable bool projDirty : 1 = true;

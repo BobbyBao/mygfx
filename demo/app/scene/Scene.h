@@ -7,7 +7,7 @@ namespace mygfx {
 
 	class Scene : public Node {
 	public:
-
+		Scene();
 	protected:
 		
 	};
