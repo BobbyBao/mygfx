@@ -47,7 +47,7 @@ namespace mygfx::demo {
 				particle.vel = glm::vec3(0.0f, 0.0f, particle.pos.x / 2.0f);			
 			}
 
-			mSBO = device().createBuffer1(BufferUsage::STORAGE | BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, std::span{ particleBuffer });
+			mSBO = gfxApi().createBuffer1(BufferUsage::STORAGE | BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, std::span{ particleBuffer });
 
 			mComputeShader = new Shader(csCode);
 			mComputeShader->updateDescriptorSet(0, 0, mSBO);

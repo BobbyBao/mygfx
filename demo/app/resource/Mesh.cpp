@@ -61,19 +61,19 @@ namespace mygfx {
 		uint32_t vertexCount = (uint32_t)std::size(pos);
 		
 		auto vertexData = new VertexData();
-		auto vbPos = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, pos);
+		auto vbPos = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, pos);
 		vbPos->extra = (uint16_t)VertexAttribute::POSITION;
 		vertexData->vertexBuffers.push_back(vbPos);
 
-		auto vbTex = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, tex);
+		auto vbTex = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, tex);
 		vbTex->extra = (uint16_t)VertexAttribute::UV_0;
 		vertexData->vertexBuffers.push_back(vbTex);
 
-		auto vbNorm = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, norm);
+		auto vbNorm = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, norm);
 		vbTex->extra = (uint16_t)VertexAttribute::NORMAL;
 		vertexData->vertexBuffers.push_back(vbNorm);
 		
-		vertexData->indexBuffer = device().createBuffer1(BufferUsage::INDEX, MemoryUsage::GPU_ONLY, (uint32_t)std::size(indices), indices);
+		vertexData->indexBuffer = gfxApi().createBuffer1(BufferUsage::INDEX, MemoryUsage::GPU_ONLY, (uint32_t)std::size(indices), indices);
 
 		Mesh* mesh = new Mesh();
 		mesh->addSubMesh(vertexData);
@@ -185,18 +185,18 @@ namespace mygfx {
 		uint32_t vertexCount = (uint32_t)std::size(pos);
 
 		auto vertexData = new VertexData();
-		auto vbPos = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, pos);
+		auto vbPos = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, pos);
 		vbPos->extra = (uint16_t)VertexAttribute::POSITION;
 		vertexData->vertexBuffers.push_back(vbPos);
 
-		auto vbTex = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, tex);
+		auto vbTex = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, tex);
 		vbTex->extra = (uint16_t)VertexAttribute::UV_0;
 		vertexData->vertexBuffers.push_back(vbTex);
 
-		auto vbNorm = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, norm);
+		auto vbNorm = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, norm);
 		vbTex->extra = (uint16_t)VertexAttribute::NORMAL;
 		vertexData->vertexBuffers.push_back(vbNorm);
-		vertexData->indexBuffer = device().createBuffer1(BufferUsage::INDEX, MemoryUsage::GPU_ONLY, (uint32_t)std::size(indices), indices);
+		vertexData->indexBuffer = gfxApi().createBuffer1(BufferUsage::INDEX, MemoryUsage::GPU_ONLY, (uint32_t)std::size(indices), indices);
 
 		Mesh* mesh = new Mesh();
 		mesh->addSubMesh(vertexData);

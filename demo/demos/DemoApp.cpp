@@ -59,7 +59,7 @@ void DemoApp::onGUI() {
 
 	if (ImGui::Begin("Demos", nullptr, ImGuiWindowFlags_NoDecoration)) {
 		ImGui::Text("CPU:	%s", mCPUName.c_str());
-		ImGui::Text("GPU:	%s", device().getDeviceName());
+		ImGui::Text("GPU:	%s", gfxApi().getDeviceName());
 		ImGui::Text("FPS:	%d", mLastFPS);
 		ImGui::Text("DrawCall:%d", Stats::getDrawCall());
 		

@@ -19,6 +19,10 @@ namespace mygfx {
 	GraphicsApi::~GraphicsApi() {
 		destroy();
 	}
+	
+	const char* GraphicsApi::getDeviceName() const {
+		return mDriver.getDeviceName();
+	}
 
 	void GraphicsApi::flush() {
 
@@ -76,9 +80,9 @@ namespace mygfx {
 
 		mRendering = false;
 
-		device().mainSemPost();
+		mDriver.mainSemPost();
 
-		device().waitRender();
+		mDriver.waitRender();
 
 
 		// now wait for all pending commands to be executed and the thread to exit

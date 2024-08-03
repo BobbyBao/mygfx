@@ -18,7 +18,7 @@ namespace mygfx::demo {
 			mMesh = Mesh::createCube();
 
 			mRenderTexture = Texture::createRenderTarget(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
-			mRenderTarget = device().createRenderTarget(
+			mRenderTarget = gfxApi().createRenderTarget(
 				{ .width = 1024,
 				.height = 1024, 
 				.colorAttachments = {mRenderTexture->getHwTexture()} });
@@ -40,12 +40,12 @@ namespace mygfx::demo {
 			float aspect = w / (float)h;
 			auto vp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 
-			uint32_t perView = device().allocConstant(vp);
+			uint32_t perView = gfxApi().allocConstant(vp);
 
 			auto world = identity<mat4>();
 
-			uint32_t perDraw = device().allocConstant(world);
-			uint32_t perMaterial = device().allocConstant(Texture::Red->index());
+			uint32_t perDraw = gfxApi().allocConstant(world);
+			uint32_t perMaterial = gfxApi().allocConstant(Texture::Red->index());
 
 			RenderPassInfo renderInfo{
 				.clearFlags = TargetBufferFlags::ALL,

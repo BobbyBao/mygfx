@@ -12,6 +12,8 @@ namespace mygfx {
 
 		using CommandStream::CommandStream;
 
+		const char* getDeviceName() const;
+
 		template<typename T>
 		uint32_t allocConstant(const T& data)
 		{
@@ -23,6 +25,16 @@ namespace mygfx {
 
 			std::memcpy(pData, &data, sizeof(T));
 			return (uint32_t)bufferInfo.offset;
+		}
+		
+        template<typename T>
+        Ref<HwBuffer> createBuffer1(BufferUsage usage, MemoryUsage memoryUsage, uint32_t count, const T* data = nullptr) {
+            return createBuffer(usage, memoryUsage, count * sizeof(T), sizeof(T), (void*)data);
+        }
+
+		template<typename T>
+		Ref<HwBuffer> createBuffer1(BufferUsage usage, MemoryUsage memoryUsage, const std::span<T>& data) {
+			return createBuffer(usage, memoryUsage, data.size() * sizeof(T), sizeof(T), (void*)data.data());
 		}
 
 		template<typename V>

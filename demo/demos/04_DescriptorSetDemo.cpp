@@ -31,11 +31,11 @@ namespace mygfx::demo {
 			float aspect = w / (float)h;
 			auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
 
-			uint32_t perView = device().allocConstant(vp);
+			uint32_t perView = gfxApi().allocConstant(vp);
 
 			auto world = identity<mat4>();
 
-			uint32_t perDraw = device().allocConstant(world);
+			uint32_t perDraw = gfxApi().allocConstant(world);
 
 			cmd.bindPipelineState(mShader->pipelineState);
 			cmd.bindUniforms({ perView, perDraw});

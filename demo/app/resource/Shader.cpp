@@ -17,7 +17,7 @@ namespace mygfx
 
 	void Shader::init() {
 
-		mProgram = device().createProgram(mShaderModules.data(), (uint32_t)mShaderModules.size());
+		mProgram = gfxApi().createProgram(mShaderModules.data(), (uint32_t)mShaderModules.size());
 		mProgram->vertexInput = mVertexInput;
 		pipelineState.program = mProgram;
 		
@@ -25,7 +25,7 @@ namespace mygfx
 
 	bool Shader::addShader(ShaderStage shaderStage, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros)
 	{
-		auto sm = device().compileShaderModule(sourceType, shaderStage, source, entry.c_str(), extraParams.c_str(), macros);
+		auto sm = gfxApi().compileShaderModule(sourceType, shaderStage, source, entry.c_str(), extraParams.c_str(), macros);
 		if (sm == nullptr) {
 			assert(false);
 			return false;
@@ -65,7 +65,7 @@ namespace mygfx
 	}
 		
 	void Shader::setVertexInput(const FormatList& fmts, const FormatList& fmts1) {
-		mVertexInput = device().createVertexInput(fmts, fmts1);
+		mVertexInput = gfxApi().createVertexInput(fmts, fmts1);
 
 		if (mProgram) {
 			mProgram->vertexInput = mVertexInput;

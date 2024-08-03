@@ -26,12 +26,12 @@ namespace mygfx::demo {
 			float aspect = w / h;
 			auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
 
-			uint32_t perView = device().allocConstant(vp);
+			uint32_t perView = gfxApi().allocConstant(vp);
 
 			auto world = identity<mat4>();
 
-			uint32_t perDraw = device().allocConstant(world);
-			uint32_t perMaterial = device().allocConstant(Texture::Red->index());
+			uint32_t perDraw = gfxApi().allocConstant(world);
+			uint32_t perMaterial = gfxApi().allocConstant(Texture::Red->index());
 
 			cmd.bindPipelineState(mShader->pipelineState);
 			cmd.bindUniforms({ perView, perDraw, perMaterial });

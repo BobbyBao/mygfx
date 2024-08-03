@@ -1,5 +1,5 @@
 #include "Texture.h"
-#include "GraphicsDevice.h"
+#include "GraphicsApi.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include "utils/FileUtils.h"
@@ -79,12 +79,12 @@ namespace mygfx {
 	}
 
 	bool Texture::onCreate() {
-		mHwTexture = device().createTexture(mTextureData, mSamplerInfo);
+		mHwTexture = gfxApi().createTexture(mTextureData, mSamplerInfo);
 		return mHwTexture != nullptr;
 	}
 
 	void Texture::copyData(TextureDataProvider* dataProvider) {
-		device().copyData(mHwTexture, dataProvider);
+		gfxApi().copyData(mHwTexture, dataProvider);
 	}
 
 	void Texture::setData(uint32_t level,
@@ -97,7 +97,7 @@ namespace mygfx {
 		const void* data,
 		size_t size) {
 
-		device().updateTexture(mHwTexture, level, xoffset,
+		gfxApi().updateTexture(mHwTexture, level, xoffset,
 			yoffset,
 			zoffset,
 			width,

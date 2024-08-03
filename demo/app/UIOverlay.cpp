@@ -1,8 +1,8 @@
 #include "UIOverlay.h"
 #include "GraphicsApi.h"
 #include "utils/FileUtils.h"
-#include "Shader.h"
-#include "Texture.h"
+#include "resource/Shader.h"
+#include "resource/Texture.h"
 #include "MathTypes.h"
 
 #include <SDL.h>
@@ -201,11 +201,11 @@ namespace mygfx
 
 		char* pVertices = NULL;
 		BufferInfo VerticesView;
-		device().allocVertexBuffer(imDrawData->TotalVtxCount, sizeof(ImDrawVert), (void**)&pVertices, &VerticesView);
+		gfxApi().allocVertexBuffer(imDrawData->TotalVtxCount, sizeof(ImDrawVert), (void**)&pVertices, &VerticesView);
 
 		char* pIndices = NULL;
 		BufferInfo indicesView;
-		device().allocIndexBuffer(imDrawData->TotalIdxCount, sizeof(ImDrawIdx), (void**)&pIndices, &indicesView);
+		gfxApi().allocIndexBuffer(imDrawData->TotalIdxCount, sizeof(ImDrawIdx), (void**)&pIndices, &indicesView);
 
 		// Upload data
 
@@ -232,7 +232,7 @@ namespace mygfx
 
 		auto m = glm::ortho(L, R, B, T, -1.0f, 1.0f);
 
-		uint32_t perView = device().allocConstant(m);
+		uint32_t perView = gfxApi().allocConstant(m);
 		
 		cmd.bindPipelineState(mProgram->pipelineState);
 		cmd.bindUniforms({perView});

@@ -22,7 +22,7 @@ namespace mygfx::demo {
 				{{1.0f, 1.0f, 0.0f}, 0xffff0000 }
 			};
 			
-			mVB = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, 3, pos);
+			mVB = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, 3, pos);
 
 			co_return;
 		}
@@ -31,7 +31,7 @@ namespace mygfx::demo {
 		
 			auto mvp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 
-			uint32_t perView = device().allocConstant(mvp);
+			uint32_t perView = gfxApi().allocConstant(mvp);
 
 			cmd.bindPipelineState(mShader->pipelineState);
 			cmd.bindUniforms({ perView });
