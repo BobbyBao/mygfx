@@ -1,9 +1,8 @@
 #pragma once
 #include "GraphicsDefs.h"
-#include "misc/Ring.h"
+#include "utils/Ring.h"
 #include "FrameListener.h"
 #include "GraphicsHandles.h"
-#include <memory_resource>
 
 namespace mygfx
 {

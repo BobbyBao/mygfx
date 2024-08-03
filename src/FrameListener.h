@@ -1,13 +1,30 @@
 #pragma once
-
-#include "misc/Callable.h"
+#include <list>
 
 namespace mygfx {
 
-	class FrameChangeListener : public TCallable1<FrameChangeListener> {
-	public:
+	class FrameChangeListener {
+	public:		
+		FrameChangeListener()
+		{
+			sCallables.push_back(this);
+		}
+
+		~FrameChangeListener()
+		{
+			sCallables.remove(this);
+		}
+
 		virtual void onFrameChange() {}
-		virtual void onCall1() { onFrameChange(); }
+
+		static void callFrameChange()
+		{
+			for (auto obj : sCallables) {
+				obj->onFrameChange();
+			}
+		}
+	private:
+		inline static std::list<FrameChangeListener*> sCallables;
 	};
 
 }

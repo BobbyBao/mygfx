@@ -16,8 +16,10 @@
 #define VOLK_IMPLEMENTATION
 #include "Volk/volk.h"
 
+#define VMA_STATIC_VULKAN_FUNCTIONS 0
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #define VMA_IMPLEMENTATION
-#include "vk_mem_alloc.h"
+#include <vma/vk_mem_alloc.h>
 #include "vulkan/ShaderCompiler.h"
 #include "VkFormatHelper.h"
 
@@ -90,12 +92,16 @@ namespace mygfx
 		submitInfo.signalSemaphoreCount = 1;
 		submitInfo.pSignalSemaphores = &semaphores.renderComplete;
 
+		VmaVulkanFunctions vulkanFunctions = {};
+		vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+		vulkanFunctions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
 
 		VmaAllocatorCreateInfo allocatorInfo = {};
 		allocatorInfo.physicalDevice = physicalDevice;
 		allocatorInfo.device = device;
 		allocatorInfo.instance = instance;
 		allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+		allocatorInfo.pVulkanFunctions = &vulkanFunctions;
 		vmaCreateAllocator(&allocatorInfo, &vmaAllocator_);
 		
 		mDescriptorPoolManager.init();

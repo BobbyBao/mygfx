@@ -151,6 +151,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
 
 include(cmake/helper.cmake)
 
+include_directories(third_party)
+include_directories("third_party/tiny_imageformat/include")
+
 add_subdirectory(src)
 include_directories(src)
 

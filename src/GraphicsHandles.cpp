@@ -1,6 +1,7 @@
 #include "GraphicsHandles.h"
 #include "GraphicsDevice.h"
 #include <deque>
+#include <memory_resource>
 
 namespace mygfx {
 

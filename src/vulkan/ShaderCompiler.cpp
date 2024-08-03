@@ -212,7 +212,7 @@ namespace mygfx
 	
 	Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
 	{
-		assert(pShaderCode.size() > 0);
+		assert(shaderCode.size() > 0);
 
 		Ref<HwShaderModule> sm;
 		ByteArray SpvData;

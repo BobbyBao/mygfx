@@ -1,13 +1,26 @@
 #pragma once
 
-#include "utils/SharedPtr.h"
+#include <memory>
 #include <vector>
 #include <string>
+#include <span>
 
 #pragma warning(push)
 #pragma warning(disable:4819)
 #include <robin_hood/robin_hood.h>
 #pragma warning(pop)
+
+#include "utils/SharedPtr.h"
+
+namespace utils {
+
+	template <class T>
+	class SharedPtr;
+	
+	template <class T>
+	using Ref = SharedPtr<T>;
+
+}
 
 namespace mygfx {
 
@@ -15,7 +28,10 @@ namespace mygfx {
 	using namespace utils;
 
 	using String = std::string;
-
+	
+    template<typename T>
+    using Span = std::span<T>;
+	
 	template<typename T>
 	using Vector = std::vector<T>;
 

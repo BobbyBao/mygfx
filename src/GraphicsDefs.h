@@ -2,36 +2,12 @@
 #include <stdint.h>
 #include "utils/BitmaskEnum.h"
 #include "GraphicsConsts.h"
-#include <memory>
+#include "Fwd.h"
 #include "Format.h"
-#include <string>
-#include <span>
-#include <vector>
 
-namespace utils {
-
-	template <class T>
-	class SharedPtr;
-	
-	template <class T>
-	using Ref = SharedPtr<T>;
-
-}
 
 namespace mygfx {
 	
-	using namespace utils;
-
-	using String = std::string;
-
-    template<typename T>
-    using Span = std::span<T>;
-	
-	template <class T>
-	using Vector = std::vector<T>;
-
-	using ByteArray = std::vector<uint8_t>;
-
 	enum class BufferUsage : uint16_t {
 		NONE = 0,
 		VERTEX = (1 << 0),

@@ -29,7 +29,7 @@ namespace mygfx {
 		
 		SyncContext::swapContext();
 
-		FrameChangeListener::callAll1();
+		FrameChangeListener::callFrameChange();
 
 		Stats::clear();
 	}

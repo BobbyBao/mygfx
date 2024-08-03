@@ -3,7 +3,7 @@
 #include "../GraphicsHandles.h"
 #include "VulkanDefs.h"
 #include "VulkanTools.h"
-#include "vk_mem_alloc.h"
+#include <vma/vk_mem_alloc.h>
 
 namespace mygfx
 {	
