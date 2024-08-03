@@ -12,7 +12,7 @@ namespace mygfx::demo {
 			uint32_t color;
 		};
 
-		void start() override {
+		Result<void> start() override {
 
 			mShader = ShaderLibs::getColorShader();
 
@@ -23,6 +23,8 @@ namespace mygfx::demo {
 			};
 			
 			mVB = device().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, 3, pos);
+
+			co_return;
 		}
 
 		void draw(GraphicsApi& cmd) override {

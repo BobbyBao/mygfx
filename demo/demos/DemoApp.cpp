@@ -15,10 +15,12 @@ DemoDesc::DemoDesc(const char* name, const std::function<Demo* ()>& creator) {
 DemoApp::DemoApp(int argc, char** argv) : Application(argc, argv) {
 }
 
-void DemoApp::onStart() {
+Result<void> DemoApp::onStart() {
 	if (sDemos.size() > 0) {
 		setDemo(0);
 	}
+
+	co_return;
 }
 
 void DemoApp::setDemo(int index) {

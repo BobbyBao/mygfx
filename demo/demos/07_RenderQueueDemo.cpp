@@ -18,7 +18,7 @@ namespace mygfx::demo {
 		Ref<RenderQueue> mRenderQueue = nullptr;
 		Vector<Ref<Texture>> mTextures;
 
-		void start() override {
+		Result<void> start() override {
 
 			mShader = ShaderLibs::getSimpleLightShader();
 
@@ -51,7 +51,8 @@ namespace mygfx::demo {
 			}
 
 			mRenderQueue = new RenderQueue();
-
+			
+			co_return;
 		}
 
 		void draw(GraphicsApi& cmd) override {

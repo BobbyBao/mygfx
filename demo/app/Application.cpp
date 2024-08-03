@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "vulkan/VulkanDevice.h"
 #include "utils/FileUtils.h"
-#include "Texture.h"
+#include "resource/Texture.h"
 
 #ifdef _WIN32
 
@@ -343,9 +343,11 @@ namespace mygfx {
 
 	}
 
-	void  Application::onStart()
+	Result<void> Application::onStart()
 	{
+		co_return;
 	}
+
 
 	void Application::onDestroy()
 	{

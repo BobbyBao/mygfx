@@ -35,7 +35,7 @@ namespace mygfx::demo {
 			uint32_t particleCount = PARTICLE_COUNT;
 		} uniformData;
 		
-		void start() override {
+		Result<void> start() override {
 
 			std::default_random_engine rndEngine((unsigned)time(nullptr));
 			std::uniform_real_distribution<float> rndDist(-1.0f, 1.0f);
@@ -65,6 +65,8 @@ namespace mygfx::demo {
 
 			mShader->updateDescriptorSet(0, 0, mParticleTexture);
 			mShader->updateDescriptorSet(0, 1, mGradientTexture);
+
+			co_return;
 		}
 
 		void gui() override {

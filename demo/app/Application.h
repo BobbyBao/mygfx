@@ -51,7 +51,7 @@ namespace mygfx {
 
 		static Application* msInstance;
 	protected:
-		virtual void onStart();	
+		virtual Result<void> onStart();	
 		virtual void onDestroy();
 		void updateGUI();
 		virtual void onGUI();

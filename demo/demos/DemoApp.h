@@ -12,7 +12,9 @@ namespace mygfx::demo {
 
 	class Demo : public utils::RefCounted {
 	public:
-		virtual void start() {}
+		virtual Result<void> start() {
+			co_return;
+		}
 		virtual void gui() {}
 		virtual void update(double delta) {}
 		virtual void preDraw(GraphicsApi& cmd) {}
@@ -42,7 +44,7 @@ namespace mygfx::demo {
 		void setDemo(int index);
 		void setDemo(Demo* demo);
 	protected:
-		void onStart() override;
+		Result<void> onStart() override;
 		void onDestroy() override;
 		void onGUI() override;
 		void onUpdate(double delta) override;

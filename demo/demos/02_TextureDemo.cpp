@@ -9,12 +9,13 @@ namespace mygfx::demo {
 		Ref<Mesh> mMesh;
 		Ref<Shader> mShader;
 
-		void start() override {
+		Result<void> start() override {
 
 			mShader = ShaderLibs::getSimpleLightShader();
 
 			mMesh = Mesh::createCube();
-
+			
+			co_return;
 		}
 
 		void draw(GraphicsApi& cmd) override {

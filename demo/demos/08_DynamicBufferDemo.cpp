@@ -55,7 +55,7 @@ namespace mygfx::demo {
 		Ref<Shader> mShader;
 		Vector<Sprite2D> mSprites;
 
-		void start() override {
+		Result<void> start() override {
 
 			mShader = ShaderLibs::getUnlitShader();
 
@@ -80,6 +80,8 @@ namespace mygfx::demo {
 			for (auto& spr : mSprites) {
 				createQuad(spr);
 			}
+
+			co_return;
 		}
 
 		void createQuad(Sprite2D& spr) {

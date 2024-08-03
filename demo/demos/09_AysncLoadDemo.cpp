@@ -10,12 +10,13 @@ namespace mygfx::demo {
 		Ref<Shader> mShader;
 		Vector<Ref<HwRenderPrimitive>> mPrimitives;
 
-		void start() override {
+		Result<void> start() override {
 
 			mShader = ShaderLibs::getSimpleLightShader();
 
 			mMesh = Mesh::createCube();
 
+			co_return;
 		}
 
 		void draw(GraphicsApi& cmd) override {

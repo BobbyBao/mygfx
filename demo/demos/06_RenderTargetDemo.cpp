@@ -11,7 +11,7 @@ namespace mygfx::demo {
 		Ref<Texture> mRenderTexture;
 		Ref<HwRenderTarget> mRenderTarget;
 
-		void start() override {
+		Result<void> start() override {
 
 			mShader = ShaderLibs::getSimpleLightShader();
 
@@ -22,6 +22,8 @@ namespace mygfx::demo {
 				{ .width = 1024,
 				.height = 1024, 
 				.colorAttachments = {mRenderTexture->getHwTexture()} });
+
+			co_return;
 		}
 
 		void gui() override {

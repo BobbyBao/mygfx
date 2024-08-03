@@ -9,7 +9,7 @@ namespace mygfx::demo {
 		Ref<Mesh> mMesh;
 		Ref<Shader> mShader;
 
-		void start() override {
+		Result<void> start() override {
 
 			mMesh = Mesh::createCube();
 			
@@ -20,7 +20,8 @@ namespace mygfx::demo {
 				Format::R32G32B32_SFLOAT });
 
 			mShader->updateDescriptorSet(0, 2, Texture::Green);
-
+			
+			co_return;
 		}
 
 		void draw(GraphicsApi& cmd) override {
