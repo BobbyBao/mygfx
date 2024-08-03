@@ -11,7 +11,7 @@ namespace mygfx {
         mAspectRatio = aspect;
 		mNearPlane = znear;
 		mFarPlane = zfar;
-		viewDirty = true;
+		mViewDirty = true;
 	}
 
     mat4 Camera::getEffectiveWorldTransform() const
@@ -20,14 +20,14 @@ namespace mygfx {
     }
 		
     void Camera::onTransformChanged() {
-        viewDirty = true;
+        mViewDirty = true;
     }
 	
     const mat4& Camera::getViewMatrix() const
 	{
-        if (viewDirty) {
+        if (mViewDirty) {
             mView = inverse(getEffectiveWorldTransform());
-            viewDirty = false;
+            mViewDirty = false;
         }
 
         return mView;
@@ -35,7 +35,7 @@ namespace mygfx {
 
     const mat4& Camera::getProjMatrix() const
     {
-        if (projDirty) {
+        if (mProjDirty) {
             updateProjection();
         }
 
@@ -47,9 +47,9 @@ namespace mygfx {
         if (mOrtho)
             mProjection = orthographic(-mOrthoSize, mOrthoSize, -mOrthoSize, mOrthoSize, mNearPlane, mFarPlane, InvertedDepth);
         else
-            mProjection = perspective(mFov, 1.0f / mAspectRatio, mNearPlane, mFarPlane, InvertedDepth);
+            mProjection = perspective(mFov, mAspectRatio, mNearPlane, mFarPlane, InvertedDepth);
         
-        projDirty = false;
+        mProjDirty = false;
     }
     
 }

@@ -113,7 +113,7 @@ namespace mygfx {
 
     void Node::transformChanged() {
         
-		worldTransformDirty = true;
+		mWorldTransformDirty = true;
 
         onTransformChanged();
 
@@ -184,7 +184,7 @@ namespace mygfx {
     }
        
     quat Node::getWorldRotation() const {
-        if (worldTransformDirty) {
+        if (mWorldTransformDirty) {
 			updateTransform();
 		}
 
@@ -192,7 +192,7 @@ namespace mygfx {
     }
 
 	const mat4& Node::getWorldTransform() const {
-		if (worldTransformDirty) {
+		if (mWorldTransformDirty) {
 			updateTransform();
 		}
 
@@ -212,6 +212,6 @@ namespace mygfx {
 			mWorldTransform = localTransform;
 		}
 
-        worldTransformDirty = false;
+        mWorldTransformDirty = false;
 	}
 }

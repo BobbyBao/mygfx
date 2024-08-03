@@ -11,7 +11,7 @@ namespace mygfx {
 
 	class Material : public utils::RefCounted {
 	public:
-		Material() = default;
+		Material();
 		Material(Shader* shader, const String& materialUniformName);
 		
 		void setShader(Shader* shader, const String& materialUniformName);
@@ -25,7 +25,16 @@ namespace mygfx {
 		void setDoubleSide(bool v);
 		void setWireframe(bool v);
 		void setBlendMode(BlendMode blendMode);
+
+		inline Shader* shader() { return mShader; }
+		const PipelineState& getPipelineState() const { return mPipelineState; }
+		inline uint32_t getMaterialUniforms() const {	
+			return mMaterialUniforms;		
+		}
+
+		static void updateAll();
 	protected:
+		void update();
 		Ref<Shader> mShader;
 		PipelineState mPipelineState;
 		String mMaterialUniformName;

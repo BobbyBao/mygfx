@@ -19,7 +19,12 @@ namespace utils {
 	
 	template <class T>
 	using Ref = SharedPtr<T>;
+	
+	template<typename K, typename V>
+	using HashMap = robin_hood::unordered_map<K, V>;
 
+	template<typename T>
+	using HashSet = robin_hood::unordered_set<T>;
 }
 
 namespace mygfx {

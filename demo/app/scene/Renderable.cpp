@@ -9,13 +9,13 @@ namespace mygfx {
 
 	void Renderable::setMesh(Mesh* m) {
 
-		mesh = m;
+		mMesh = m;
 		primitives.clear();
 		
-		for (uint32_t i = 0; i < mesh->getSubMeshCount(); i++) {
-			auto& subMesh = mesh->getSubMeshAt(i);
+		for (uint32_t i = 0; i < mMesh->getSubMeshCount(); i++) {
+			auto& subMesh = mMesh->getSubMeshAt(i);
 			auto& primitive = primitives.emplace_back();
-			primitive.renderPrimitive = mesh->renderPrimitives[i];
+			primitive.renderPrimitive = mMesh->renderPrimitives[i];
 			primitive.material = subMesh.material;
 		}
 	}

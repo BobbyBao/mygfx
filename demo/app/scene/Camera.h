@@ -15,10 +15,9 @@ namespace mygfx {
 
 		const mat4& getViewMatrix() const;
 		const mat4& getProjMatrix() const;
-		void updateProjection() const;
-
 	protected:
 		void onTransformChanged() override;
+		void updateProjection() const;
 		bool	mOrtho = false;
 		float	mOrthoSize = 20.0f;
 		float   mFov = pi<float>() / 4;

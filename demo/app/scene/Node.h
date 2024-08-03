@@ -58,9 +58,11 @@ namespace mygfx {
 		mutable quat mWorldRotation;
 		mutable mat4 mWorldTransform;
 		bool mActive : 1 = true;
-		mutable bool worldTransformDirty : 1 = true;
-		mutable bool viewDirty : 1 = true;
-		mutable bool projDirty : 1 = true;
+		mutable bool mWorldTransformDirty : 1 = true;
+		mutable bool mViewDirty : 1 = true;
+		mutable bool mProjDirty : 1 = true;
+		mutable bool mSkinning : 1 = false;
+		mutable bool mMorphing : 1 = false;
 	};
 
 }

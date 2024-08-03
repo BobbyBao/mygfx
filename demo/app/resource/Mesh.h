@@ -32,6 +32,8 @@ namespace mygfx {
 		const SubMesh& getSubMeshAt(uint32_t index) const { return mSubMeshes.at(index); }
 		SubMesh& addSubMesh(VertexData* vertexData, Material* mat = nullptr);
 		SubMesh& addSubMesh(VertexData* vertexData, const DrawPrimitiveCommand& drawArgs, Material* mat = nullptr);
+		void setMaterial(uint32_t index, Material* mat);
+		void setMaterial(Material* mat);
 
 		auto& getBoundingBox() const { return mBoundingBox; }
 		void setBoundingBox(const Aabb& aabb) { mBoundingBox = aabb; }

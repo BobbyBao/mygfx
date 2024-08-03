@@ -1,10 +1,20 @@
 #include "Material.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "GraphicsApi.h"
 
 namespace mygfx {
-	
+
+	static HashSet<Material*> sMaterials;
+	static std::recursive_mutex sLock;
+
+	Material::Material() {
+		sMaterials.insert(this);
+	}
+
 	Material::Material(Shader* shader, const String& materialUniformName) {
+		sMaterials.insert(this);
+
 		setShader(shader, materialUniformName);
 	}
 	
@@ -91,5 +101,25 @@ namespace mygfx {
 	void Material::setBlendMode(BlendMode blendMode) {
 		mPipelineState.colorBlendState = ColorBlendState::get(blendMode);
 	}
+
+	void Material::update() {
+		if (mMaterialData.empty()) {
+			return;
+		}
+		
+		void* pData;
+		BufferInfo bufferInfo;
+		if (!device().allocConstantBuffer((uint32_t)mMaterialData.size(), &pData, &bufferInfo)) {
+			return;
+		}
+
+		std::memcpy(pData, mMaterialData.data(), mMaterialData.size());
+		mMaterialUniforms = bufferInfo.offset;
+	}
 	
+	void Material::updateAll() {
+		for (auto material : sMaterials) {
+			material->update();
+		}
+	}
 }

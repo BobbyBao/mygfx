@@ -3,7 +3,11 @@
 namespace utils {
 	
 	void FileUtils::addSearchPath(const std::string& path) {
-
+		sSearchPath.insert(path);
+	}
+		
+	void FileUtils::removeSearchPath(const std::string& path) {
+		sSearchPath.erase(path);
 	}
 
 	bool FileUtils::exist(const std::string& path) {

@@ -146,7 +146,7 @@ namespace mygfx::demo {
 
 			#extension GL_EXT_nonuniform_qualifier : require
 
-			layout (binding = 2) uniform ProjConstants {
+			layout (binding = 2) uniform MaterialUniforms {
 				int baseColor;
 			} materialUniforms;
 

@@ -2,6 +2,7 @@
 #include "vulkan/VulkanDevice.h"
 #include "utils/FileUtils.h"
 #include "resource/Texture.h"
+#include "resource/Material.h"
 
 #ifdef _WIN32
 
@@ -273,6 +274,8 @@ namespace mygfx {
 		mMainExecutor->loop_once();
 		
 		onUpdate(mFrameTimer);
+
+		Material::updateAll();
 
 		auto& cmd = gfxApi();
 

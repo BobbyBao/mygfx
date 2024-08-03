@@ -33,6 +33,18 @@ namespace mygfx {
 		return subMesh;
 	}
 
+	void Mesh::setMaterial(uint32_t index, Material* mat) {
+		if (index < mSubMeshes.size()) {
+			mSubMeshes[index].material = mat;
+		}
+	}
+
+	void Mesh::setMaterial(Material* mat) {
+		for (auto& subMesh : mSubMeshes) {
+			subMesh.material = mat;
+		}
+	}
+
 	Mesh* Mesh::createPlane(float size)
 	{
 		size = size / 2;

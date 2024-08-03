@@ -21,10 +21,10 @@ namespace mygfx {
 		void setMesh(Mesh* m);
 
 		Vector<Primitive> primitives;
-		Ref<Mesh> mesh;
 	protected:
 		void addToScene() override;
 		void removeFromScene() override;
+		Ref<Mesh> mMesh;
 	};
 
 }

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include "Fwd.h"
 
 namespace utils {
 
@@ -14,7 +15,9 @@ namespace utils {
 	class FileUtils {
 	public:
 		inline static IOStream sIOStream;
+		inline static HashSet<std::string> sSearchPath;
 		static void addSearchPath(const std::string& path);
+		static void removeSearchPath(const std::string& path);
 		static bool exist(const std::string& path);
 		static std::vector<uint8_t> readAll(const std::string& path) noexcept;
 		static std::string readAllText(const std::string& path) noexcept;
