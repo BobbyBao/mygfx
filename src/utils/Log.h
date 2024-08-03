@@ -9,16 +9,16 @@
 
 namespace utils {
 
-	enum class LogLevel {
-		Debug = 0,
-		Info,
-		Warn,
-		Error,
-		None
-	};
-
 	class Log {
 	public:
+		enum class LogLevel {
+			Debug = 0,
+			Info,
+			Warn,
+			Error,
+			None
+		};
+
 		static void write(LogLevel level, const std::string& msg);
 		static void write(LogLevel level, const char* msg);
 
@@ -26,7 +26,6 @@ namespace utils {
 		static void logMessageF(LogLevel level, std::string_view fmt, Args&&... args)
 		{
 			std::string str = std::vformat(fmt, std::make_format_args(args...));
-			//std::vformat_to(std::back_inserter(str), fmt, fmt::make_format_args(args...));
 			write(level, str.c_str());
 		}
 
@@ -44,11 +43,11 @@ namespace utils {
 
 #ifdef UTILS_LOGGING
 
-#define LOG_RAW(format, ...) utils::Log::logMessageF(utils::LogLevel::None, format, ##__VA_ARGS__)
-#define LOG_DEBUG(format, ...) utils::Log::logMessageF(utils::LogLevel::Debug, format, ##__VA_ARGS__)
-#define LOG_INFO(format, ...) utils::Log::logMessageF(utils::LogLevel::Info, format, ##__VA_ARGS__)
-#define LOG_WARNING(format, ...) utils::Log::logMessageF(utils::LogLevel::Warn, format, ##__VA_ARGS__)
-#define LOG_ERROR(format, ...) utils::Log::logMessageF(utils::LogLevel::Error, format, ##__VA_ARGS__)
+#define LOG_RAW(format, ...) utils::Log::logMessageF(utils::Log::LogLevel::None, format, ##__VA_ARGS__)
+#define LOG_DEBUG(format, ...) utils::Log::logMessageF(utils::Log::LogLevel::Debug, format, ##__VA_ARGS__)
+#define LOG_INFO(format, ...) utils::Log::logMessageF(utils::Log::LogLevel::Info, format, ##__VA_ARGS__)
+#define LOG_WARNING(format, ...) utils::Log::logMessageF(utils::Log::LogLevel::Warn, format, ##__VA_ARGS__)
+#define LOG_ERROR(format, ...) utils::Log::logMessageF(utils::Log::LogLevel::Error, format, ##__VA_ARGS__)
 
 #else
 

@@ -477,10 +477,10 @@ namespace mygfx {
 			return mMaterials[index];
 		}
 
-		auto defaultShader = mShader ? mShader : new Shader(skined ? "shaders/StandardSkin.shader" : "shaders/Standard.shader");
+		auto defaultShader = mShader ? mShader : new Shader("shaders/primitive.vert", "shaders/pbr.frag");
 
 		auto& mat = mGltfModel->materials[index];
-		Material* material = new Material(defaultShader, "materialUniforms");
+		Material* material = new Material(defaultShader, "MaterialUniforms");
 
 		if (mat.has_pbr_metallic_roughness) {
 			auto& baseColorFactor = mat.pbr_metallic_roughness.base_color_factor;
@@ -550,9 +550,9 @@ namespace mygfx {
 
 	Ref<Material> ModelLoader::getDefaultMaterial()
 	{
-		auto defaultShader = new Shader("shaders/Standard.shader");
+		auto defaultShader = new Shader("shaders/primitive.vert", "shaders/pbr.frag");
 
-		Ref<Material> material(makeRef<Material>(defaultShader, "materialUniforms"));
+		Ref<Material> material(makeRef<Material>(defaultShader, "MaterialUniforms"));
 		material->setShaderParameter("baseColorFactor", vec4(1.0f));
 		material->setShaderParameter("roughnessFactor", 0.5f);
 		material->setShaderParameter("metallicFactor", 0.0f);

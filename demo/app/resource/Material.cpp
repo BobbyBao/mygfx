@@ -14,7 +14,8 @@ namespace mygfx {
 		}
 
 		mShader = shader;
-		mMaterialUniformName = materialUniformName;
+		mMaterialUniformName = materialUniformName;	
+		mPipelineState = mShader->pipelineState;
 		mShaderResourceInfo = shader->getProgram()->getShaderResource(materialUniformName);
 
 		if (mShaderResourceInfo) {

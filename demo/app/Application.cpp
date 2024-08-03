@@ -13,6 +13,7 @@
 #endif
 
 #include "imgui/ImGui.h"
+#include <filesystem>
 
 namespace mygfx {
 
@@ -26,17 +27,9 @@ namespace mygfx {
 #endif
 		return nullptr;
 	}
-
-	std::string readAllText(const std::string& filePath) {
-		auto file = SDL_IOFromFile(filePath.c_str(), "rb"); if (!file) {
-			return {};
-		}
-		auto fileSize = SDL_GetIOSize(file);
-		std::string str;
-		str.resize(fileSize);
-		SDL_ReadIO(file, str.data(), fileSize);
-		SDL_CloseIO(file);
-		return str;
+	
+	bool fileExist(const std::string& filePath) {
+		return std::filesystem::exists(filePath);
 	}
 
 	std::vector<uint8_t> readAll(const std::string& filePath) {
@@ -50,6 +43,18 @@ namespace mygfx {
 		SDL_ReadIO(file, bytes.data(), fileSize);
 		SDL_CloseIO(file);
 		return bytes;
+	}
+	
+	std::string readAllText(const std::string& filePath) {
+		auto file = SDL_IOFromFile(filePath.c_str(), "rb"); if (!file) {
+			return {};
+		}
+		auto fileSize = SDL_GetIOSize(file);
+		std::string str;
+		str.resize(fileSize);
+		SDL_ReadIO(file, str.data(), fileSize);
+		SDL_CloseIO(file);
+		return str;
 	}
 
 	Application::Application(int argc, char** argv) : mTitle("mygfx")
@@ -68,8 +73,7 @@ namespace mygfx {
 		setupConsole(mTitle);
 		setupDPIAwareness();
 #endif
-		FileUtils::readFileFn = readAll;
-		FileUtils::readTextFn = readAllText;
+		FileUtils::sIOStream = {&fileExist, &readAll, &readAllText};
 		mMainExecutor = make_manual_executor();
 	}
 

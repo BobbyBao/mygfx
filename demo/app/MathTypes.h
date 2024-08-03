@@ -1,5 +1,7 @@
 #pragma once
 
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 
@@ -10,6 +12,10 @@ namespace math {
     using float2 = glm::vec2;
     using float3 = glm::vec3;
     using float4 = glm::vec4;
+    using Vector2 = glm::vec2;
+    using Vector3 = glm::vec3;
+    using Vector4 = glm::vec4;
+    using Quaternion = glm::quat;
 
 	struct Aabb {
 		float3 min = float3{std::numeric_limits<float>::max()};
@@ -48,7 +54,7 @@ namespace math {
 	inline const mat4 Matrix4_perspective(float fovyRadians, float aspect, float zNear, float zFar)
 	{
 		static const float VECTORMATH_PI_OVER_2 = 1.570796327f;
-
+		
 		float f, rangeInv;
 		f = std::tanf(VECTORMATH_PI_OVER_2 - (0.5f * fovyRadians));
 		rangeInv = (1.0f / (zNear - zFar));

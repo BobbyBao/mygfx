@@ -152,9 +152,6 @@ namespace mygfx
 		return false;
 	}
 
-	//
-	// Generate sources from the input data
-	//
 	String generateSource(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& pshader, const char* shaderCompilerParams, const DefineList* pDefines)
 	{
 		String shaderCode(pshader);
@@ -163,7 +160,6 @@ namespace mygfx
 		if (sourceType == ShaderSourceType::GLSL) {
 			size_t offset = shaderCode.find("#version");
 			if (offset != std::string::npos) {
-
 				offset = shaderCode.find_first_of('\n', offset);
 				code = shaderCode.substr(offset, shaderCode.size() - offset);
 				shaderCode = shaderCode.substr(0, offset) + "\n";
@@ -178,8 +174,6 @@ namespace mygfx
 		}
 
 		shaderCode += "#define TARGET_VULKAN_ENVIRONMENT\n";
-		shaderCode += "#define FILAMENT_VULKAN_SEMANTICS\n";
-		shaderCode += "#define FILAMENT_HAS_FEATURE_TEXTURE_GATHER\n";
 		
 		if (shader_type == VK_SHADER_STAGE_VERTEX_BIT) {			
 			shaderCode += "#define SHADER_STAGE_VERTEX\n";
@@ -216,33 +210,21 @@ namespace mygfx
 		}
 	}
 	
-	//
-	// Compile a GLSL or a HLSL, will cache binaries to disk
-	//
-	Ref<HwShaderModule> vkCompile(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& pshader, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
-	{
-
-		Ref<HwShaderModule> sm;
-			ByteArray SpvData;
-			String shader = generateSource(sourceType, shader_type, pshader, shaderCompilerParams, pDefines);
-			if (!compileToSpirv(sourceType, shader_type, shader.c_str(), pShaderEntryPoint, shaderCompilerParams, pDefines, SpvData)) {
-				return nullptr;
-			}
-
-			assert(SpvData.size() != 0);
-			sm = device().createShaderModule(ToShaderStage(shader_type), SpvData, ShaderCodeType::SPIRV);
-	
-
-		return sm;
-	}
-
-	Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& pShaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
+	Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
 	{
 		assert(pShaderCode.size() > 0);
 
-		auto res = vkCompile(sourceType, shader_type, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
-		//assert(res != nullptr);
-		return res;
+		Ref<HwShaderModule> sm;
+		ByteArray SpvData;
+		String shader = generateSource(sourceType, shader_type, shaderCode, shaderCompilerParams, pDefines);
+		if (!compileToSpirv(sourceType, shader_type, shader.c_str(), pShaderEntryPoint, shaderCompilerParams, pDefines, SpvData)) {
+			return nullptr;
+		}
+
+		assert(SpvData.size() != 0);
+		sm = device().createShaderModule(ToShaderStage(shader_type), SpvData, ShaderCodeType::SPIRV);
+		return sm;
+
 	}
 
 	Ref<HwShaderModule> ShaderCompiler::compileFromFile(const VkShaderStageFlagBits shader_type, const char* pFilename, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)

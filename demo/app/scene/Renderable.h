@@ -22,6 +22,9 @@ namespace mygfx {
 
 		Vector<Primitive> primitives;
 		Ref<Mesh> mesh;
+	protected:
+		void addToScene() override;
+		void removeFromScene() override;
 	};
 
 }
