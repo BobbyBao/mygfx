@@ -16,7 +16,8 @@ namespace mygfx {
 
 	class Renderable : public Node {
 	public:
-		
+		Renderable();
+
 		void setMesh(Mesh* m);
 
 		Vector<Primitive> primitives;

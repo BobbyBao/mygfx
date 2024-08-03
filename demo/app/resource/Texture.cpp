@@ -15,7 +15,10 @@ namespace mygfx {
 
 		KtxTextureLoader() = default;
 		~KtxTextureLoader();
+
 		Ref<Texture> load(const String& fileName, SamplerInfo samplerInfo);
+		Ref<Texture> load(const Span<uint8_t>& content, SamplerInfo samplerInfo);
+
 		void copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level) override;
 
 	};
@@ -26,6 +29,7 @@ namespace mygfx {
 		StbTextureLoader() = default;
 		~StbTextureLoader();
 		Ref<Texture> load(const String& fileName, SamplerInfo samplerInfo);
+		Ref<Texture> load(const Span<uint8_t>& content, SamplerInfo samplerInfo);
 		void copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level) override;
 		void mipImage(uint32_t width, uint32_t height);
 
@@ -164,6 +168,17 @@ namespace mygfx {
 		StbTextureLoader dataProvider;
 		return dataProvider.load(fileName, samplerInfo);
 	}
+	
+	Ref<Texture> Texture::createFromData(const Span<uint8_t>& content, const String& type, SamplerInfo samplerInfo) {
+		
+		if (type.ends_with(".ktx")) {
+			KtxTextureLoader dataProvider;
+			return dataProvider.load(content, samplerInfo);
+		}
+
+		StbTextureLoader dataProvider;
+		return dataProvider.load(content, samplerInfo);
+	}
 
 	Ref<Texture> Texture::createRenderTarget(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa) {
 		auto textureData = TextureData::Texture2D(width, height, format);
@@ -195,17 +210,20 @@ namespace mygfx {
 	}
 
 	Ref<Texture> StbTextureLoader::load(const String& fileName, SamplerInfo samplerInfo) {
-		TextureData textureData;
+		
 		auto content = FileUtils::readAll(fileName);
-
+		return load(Span{content}, samplerInfo);
+	}
+		
+	Ref<Texture> StbTextureLoader::load(const Span<uint8_t>& content, SamplerInfo samplerInfo) {
 		int32_t width, height, channels;
 		mData = (char*)stbi_load_from_memory(content.data(), (int)content.size(), &width, &height, &channels, STBI_rgb_alpha);
 		if (!mData) {
 			return nullptr;
 		}
-
 		uint32_t mipCount = Texture::maxLevelCount(width, height);
 
+		TextureData textureData;
 		textureData.layerCount = 1;
 		textureData.width = width;
 		textureData.height = height;
@@ -517,12 +535,15 @@ namespace mygfx {
 	}
 
 	Ref<Texture> KtxTextureLoader::load(const String& fileName, SamplerInfo samplerInfo) {
-		TextureData textureData;
-		auto content = FileUtils::readAll(fileName);
 
+		auto content = FileUtils::readAll(fileName);
+		return load(Span{content}, samplerInfo);
+	}
+	
+	Ref<Texture> KtxTextureLoader::load(const Span<uint8_t>& content, SamplerInfo samplerInfo) {
 		auto result = ktxTexture_CreateFromMemory(content.data(), content.size(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
 		assert(result == KTX_SUCCESS);
-
+		TextureData textureData;
 		textureData.width = ktxTexture->baseWidth;
 		textureData.height = ktxTexture->baseHeight;
 		textureData.depth = ktxTexture->baseDepth;

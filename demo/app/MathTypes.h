@@ -12,14 +12,25 @@ namespace math {
     using float4 = glm::vec4;
 
 	struct Aabb {
-		float3 min, max;
-	};
+		float3 min = float3{std::numeric_limits<float>::max()};
+		float3 max = float3{std::numeric_limits<float>::min()};
 
-    template<typename T>
-    inline constexpr T clamp(T v, T min, T max) noexcept {
-        assert(min <= max);
-        return T(math::min(max, math::max(min, v)));
-    }
+		
+		Aabb& merge(const Aabb& other)
+		{
+			min = glm::min(min, other.min);
+			max = glm::max(max, other.max);
+			return *this;
+		}
+
+		Aabb& merge(const vec3& pt)
+		{
+			min = glm::min(min, pt);
+			max = glm::max(max, pt);
+			return *this;
+		}
+
+	};
 
     struct Rect {
         vec2 min;
@@ -27,6 +38,12 @@ namespace math {
     };
 
    
+    template<typename T>
+    inline constexpr T clamp(T v, T min, T max) noexcept {
+        assert(min <= max);
+        return T(math::min(max, math::max(min, v)));
+    }
+
 	
 	inline const mat4 Matrix4_perspective(float fovyRadians, float aspect, float zNear, float zFar)
 	{

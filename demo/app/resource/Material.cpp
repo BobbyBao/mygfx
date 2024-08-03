@@ -21,9 +21,30 @@ namespace mygfx {
 			mMaterialData.resize(mShaderResourceInfo->getMemberSize());
 		}
 	}
-
 	
-	void Material::setParameter(const String& name, const vec3& v) {
+	void Material::setShaderParameter(const String& name, int v) {
+		
+		if (mShaderResourceInfo) {
+			auto member = mShaderResourceInfo->getMember(name);
+			if (member) {
+				assert(member->size == sizeof(int));
+				std::memcpy(&mMaterialData[member->offset], &v, sizeof(int));
+			}
+		}
+	}
+
+	void Material::setShaderParameter(const String& name, float v) {
+		
+		if (mShaderResourceInfo) {
+			auto member = mShaderResourceInfo->getMember(name);
+			if (member) {
+				assert(member->size == sizeof(float));
+				std::memcpy(&mMaterialData[member->offset], &v, sizeof(float));
+			}
+		}
+	}
+	
+	void Material::setShaderParameter(const String& name, const vec3& v) {
 		
 		if (mShaderResourceInfo) {
 			auto member = mShaderResourceInfo->getMember(name);
@@ -34,7 +55,7 @@ namespace mygfx {
 		}
 	}
 
-	void Material::setParameter(const String& name, const vec4& v) {
+	void Material::setShaderParameter(const String& name, const vec4& v) {
 		
 		if (mShaderResourceInfo) {
 			auto member = mShaderResourceInfo->getMember(name);
@@ -45,7 +66,7 @@ namespace mygfx {
 		}
 	}
 
-	void Material::setParameter(const String& name, Texture* tex)
+	void Material::setShaderParameter(const String& name, Texture* tex)
 	{
 		if (mShaderResourceInfo) {
 			auto member = mShaderResourceInfo->getMember(name);
@@ -57,4 +78,17 @@ namespace mygfx {
 		}
 
 	}
+
+	void Material::setDoubleSide(bool v) {
+		mPipelineState.rasterState.cullMode = v ? CullMode::NONE : CullMode::BACK;
+	}
+	
+	void Material::setWireframe(bool v) {
+		mPipelineState.rasterState.polygonMode = v ? PolygonMode::LINE : PolygonMode::FILL;
+	}
+
+	void Material::setBlendMode(BlendMode blendMode) {
+		mPipelineState.colorBlendState = ColorBlendState::get(blendMode);
+	}
+	
 }

@@ -3,6 +3,8 @@
 #include "MathTypes.h"
 
 namespace mygfx {
+	
+	class Material;
 
 	struct SubMesh {
 
@@ -12,6 +14,8 @@ namespace mygfx {
 		String name;
 		Ref<VertexData> vertexData;
 		DrawPrimitiveCommand drawArgs;
+		Ref<Material> material;
+		Aabb boundingBox;
 	};
 
 	class Mesh : public RefCounted {
@@ -26,8 +30,8 @@ namespace mygfx {
 
 		const Vector<SubMesh>& getSubMeshes() const { return mSubMeshes; }
 		const SubMesh& getSubMeshAt(uint32_t index) const { return mSubMeshes.at(index); }
-		void addSubMesh(VertexData* vertexData);
-		void addSubMesh(VertexData* vertexData, const DrawPrimitiveCommand& drawArgs);
+		SubMesh& addSubMesh(VertexData* vertexData, Material* mat = nullptr);
+		SubMesh& addSubMesh(VertexData* vertexData, const DrawPrimitiveCommand& drawArgs, Material* mat = nullptr);
 
 		auto& getBoundingBox() const { return mBoundingBox; }
 		void setBoundingBox(const Aabb& aabb) { mBoundingBox = aabb; }

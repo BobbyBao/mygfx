@@ -1,7 +1,7 @@
 #pragma once
 #include "Fwd.h"
 #include "MathTypes.h"
-
+#include "PipelineState.h"
 
 namespace mygfx {
 
@@ -15,13 +15,19 @@ namespace mygfx {
 		Material(Shader* shader, const String& materialUniformName);
 		
 		void setShader(Shader* shader, const String& materialUniformName);
-
-		void setParameter(const String& name, const vec3& v);
-		void setParameter(const String& name, const vec4& v);
-		void setParameter(const String& name, Texture* tex);
-
+		
+		void setShaderParameter(const String& name, int v);
+		void setShaderParameter(const String& name, float v);
+		void setShaderParameter(const String& name, const vec3& v);
+		void setShaderParameter(const String& name, const vec4& v);
+		void setShaderParameter(const String& name, Texture* tex);
+		
+		void setDoubleSide(bool v);
+		void setWireframe(bool v);
+		void setBlendMode(BlendMode blendMode);
 	protected:
 		Ref<Shader> mShader;
+		PipelineState mPipelineState;
 		String mMaterialUniformName;
 		Ref<ShaderResourceInfo> mShaderResourceInfo;
 		ByteArray mMaterialData;

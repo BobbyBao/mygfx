@@ -18,14 +18,19 @@ namespace mygfx {
 	Mesh::~Mesh() {
 	}
 
-	void Mesh::addSubMesh(VertexData* vertexData) {
+	SubMesh& Mesh::addSubMesh(VertexData* vertexData, Material* mat) {
 		auto& subMesh = mSubMeshes.emplace_back(vertexData);
+		subMesh.material = mat;
 		renderPrimitives.emplace_back(gfxApi().createRenderPrimitive(subMesh.vertexData, subMesh.drawArgs));
+		return subMesh;
 	}
 	
-	void Mesh::addSubMesh(VertexData* vertexData, const DrawPrimitiveCommand& drawArgs) {
-		mSubMeshes.emplace_back(vertexData);
+	SubMesh& Mesh::addSubMesh(VertexData* vertexData, const DrawPrimitiveCommand& drawArgs, Material* mat) {
+		auto& subMesh = mSubMeshes.emplace_back(vertexData);
+		subMesh.drawArgs = drawArgs;
+		subMesh.material = mat;
 		renderPrimitives.emplace_back(gfxApi().createRenderPrimitive(vertexData, drawArgs));
+		return subMesh;
 	}
 
 	Mesh* Mesh::createPlane(float size)

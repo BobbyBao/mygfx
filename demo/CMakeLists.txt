@@ -14,6 +14,7 @@ set_target_properties(SDL3_test PROPERTIES FOLDER external)
 
 add_subdirectory(external/concurrencpp)
 include_directories(external/concurrencpp/include)
+set_target_properties(concurrencpp PROPERTIES FOLDER external)
 
 add_subdirectory(app)
 include_directories(app)

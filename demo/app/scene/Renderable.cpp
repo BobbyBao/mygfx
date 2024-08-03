@@ -3,15 +3,19 @@
 #include "GraphicsApi.h"
 
 namespace mygfx {
+	
+	Renderable::Renderable() = default;
 
 	void Renderable::setMesh(Mesh* m) {
 
 		mesh = m;
-
-		for (auto& rp : mesh->renderPrimitives) {
+		primitives.clear();
+		
+		for (int i = 0; i < mesh->getSubMeshCount(); i++) {
+			auto& subMesh = mesh->getSubMeshAt(i);
 			auto& primitive = primitives.emplace_back();
-			primitive.renderPrimitive = rp;
-
+			primitive.renderPrimitive = mesh->renderPrimitives[i];
+			primitive.material = subMesh.material;
 		}
 	}
 }
