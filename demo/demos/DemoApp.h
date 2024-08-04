@@ -2,7 +2,7 @@
 
 #include "Application.h"
 #include "ShaderLibs.h"
-#include "MathTypes.h"
+#include "core/MathTypes.h"
 
 namespace mygfx::demo {
 

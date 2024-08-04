@@ -1,6 +1,6 @@
 #pragma once
 #include "Fwd.h"
-#include "MathTypes.h"
+#include "core/MathTypes.h"
 #include "PipelineState.h"
 
 namespace mygfx {
