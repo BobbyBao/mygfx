@@ -1,9 +1,10 @@
-uniform mat4 u_ViewProjectionMatrix;
-uniform mat3 u_EnvRotation;
+#version 450
 
+#include <common_uniforms.glsl>
 
-in vec3 a_position;
-out vec3 v_TexCoords;
+layout(location = 0) in vec3 a_position;
+
+layout(location = 0) out vec3 v_TexCoords;
 
 
 void main()

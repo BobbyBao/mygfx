@@ -6,22 +6,6 @@ uniform highp sampler2DArray u_MorphTargetsSampler;
 uniform float u_morphWeights[WEIGHT_COUNT];
 #endif
 
-#ifdef HAS_JOINTS_0_VEC4
-in vec4 a_joints_0;
-#endif
-
-#ifdef HAS_JOINTS_1_VEC4
-in vec4 a_joints_1;
-#endif
-
-#ifdef HAS_WEIGHTS_0_VEC4
-in vec4 a_weights_0;
-#endif
-
-#ifdef HAS_WEIGHTS_1_VEC4
-in vec4 a_weights_1;
-#endif
-
 #ifdef USE_SKINNING
 uniform sampler2D u_jointsSampler;
 #endif

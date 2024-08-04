@@ -34,6 +34,22 @@ layout(location = HAS_COLOR_0_VEC3) in vec3 a_color_0;
 layout(location = HAS_COLOR_0_VEC4) in vec4 a_color_0;
 #endif
 
+#ifdef HAS_JOINTS_0_VEC4
+layout(location = HAS_JOINTS_0_VEC4) in vec4 a_joints_0;
+#endif
+
+#ifdef HAS_JOINTS_1_VEC4
+layout(location = HAS_JOINTS_1_VEC4) in vec4 a_joints_1;
+#endif
+
+#ifdef HAS_WEIGHTS_0_VEC4
+layout(location = HAS_WEIGHTS_0_VEC4) in vec4 a_weights_0;
+#endif
+
+#ifdef HAS_WEIGHTS_1_VEC4
+layout(location = HAS_WEIGHTS_1_VEC4) in vec4 a_weights_1;
+#endif
+
 #include <common_varyings.glsl>
 
 
