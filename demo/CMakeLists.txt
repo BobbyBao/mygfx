@@ -22,6 +22,8 @@ include_directories(external/cgltf)
 add_subdirectory(framework)
 set_target_properties(framework PROPERTIES FOLDER demo)
 
+add_subdirectory(media/shaders)
+
 add_subdirectory(app)
 set_target_properties(app PROPERTIES FOLDER demo)
 

@@ -3,23 +3,28 @@
 #include <vector>
 #include <functional>
 #include "Fwd.h"
+#include <filesystem>
 
 namespace utils {
+	
+	using Path = std::filesystem::path;
 
 	struct IOStream {
-		bool (*exist)(const std::string&) = nullptr;
-		std::vector<uint8_t> (*readAll)(const std::string&) = nullptr;
-		std::string (*readAllText)(const std::string&) = nullptr;
+		bool (*exist)(const Path&) = nullptr;
+		std::vector<uint8_t>(*readAll)(const Path&) = nullptr;
+		std::string(*readAllText)(const Path&) = nullptr;
 	};
 
 	class FileUtils {
 	public:
 		inline static IOStream sIOStream;
-		inline static HashSet<std::string> sSearchPath;
-		static void addSearchPath(const std::string& path);
-		static void removeSearchPath(const std::string& path);
-		static bool exist(const std::string& path);
-		static std::vector<uint8_t> readAll(const std::string& path) noexcept;
-		static std::string readAllText(const std::string& path) noexcept;
+		inline static Path sBasePath;
+		static void setBasePath(const Path& path);
+		static const Path& getCurrentPath();
+		static void pushPath(const Path& path);
+		static void popPath();
+		static bool exist(const Path& path);
+		static std::vector<uint8_t> readAll(const Path& path) noexcept;
+		static std::string readAllText(const Path& path) noexcept;
 	};
 }

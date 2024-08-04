@@ -1,4 +1,4 @@
-uniform float u_EnvIntensity;
+//uniform float u_EnvIntensity;
 
 vec3 getDiffuseLight(vec3 n)
 {

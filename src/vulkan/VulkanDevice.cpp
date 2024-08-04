@@ -431,8 +431,8 @@ namespace mygfx
 		return makeShared<VulkanShaderModule>(stage, shaderCode, shaderCodeType);
 	}
 
-	Ref<HwShaderModule> VulkanDevice::compileShaderModule(ShaderSourceType sourceType, const ShaderStage shader_type, const String& pShaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines){
-		return ShaderCompiler::compileFromString(sourceType, ToVkShaderStage(shader_type), pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
+	Ref<HwShaderModule> VulkanDevice::compileShaderModule(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& pShaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines){
+		return ShaderCompiler::compileFromString(sourceType, ToVkShaderStage(shader_type), shaderName, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
 	}
 
 	SharedPtr<HwProgram> VulkanDevice::createProgram(Ref<HwShaderModule>* shaderModules, uint32_t count) {

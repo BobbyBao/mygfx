@@ -1,8 +1,9 @@
 const float M_PI = 3.141592653589793;
 
+#include <varyings.glsl>
 
+/*
 in vec3 v_Position;
-
 
 #ifdef HAS_NORMAL_VEC3
 #ifdef HAS_TANGENT_VEC4
@@ -19,7 +20,7 @@ in vec3 v_Color;
 #ifdef HAS_COLOR_0_VEC4
 in vec4 v_Color;
 #endif
-
+*/
 
 vec4 getVertexColor()
 {

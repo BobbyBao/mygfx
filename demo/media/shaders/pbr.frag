@@ -14,12 +14,15 @@
 // [5] "KHR_materials_clearcoat"
 //     https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_clearcoat
 
+#version 450
+
 precision highp float;
 
+#include <common_uniforms.glsl>
 
+#include <functions.glsl>
 #include <tonemapping.glsl>
 #include <textures.glsl>
-#include <functions.glsl>
 #include <brdf.glsl>
 #include <punctual.glsl>
 #include <ibl.glsl>
@@ -30,7 +33,7 @@ precision highp float;
 #endif
 
 
-out vec4 g_finalColor;
+layout(location = 0) out vec4 g_finalColor;
 
 
 void main()

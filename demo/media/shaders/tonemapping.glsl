@@ -1,4 +1,4 @@
-uniform float u_Exposure;
+//uniform float u_Exposure;
 
 
 const float GAMMA = 2.2;

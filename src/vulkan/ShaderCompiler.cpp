@@ -87,7 +87,7 @@ namespace mygfx
 	}
 
 
-	bool compileShaderC(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines, ByteArray& outSpvData)
+	bool compileShaderC(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines, ByteArray& outSpvData)
 	{
 		shaderc::CompileOptions options;
 		//if (debug) {
@@ -126,7 +126,7 @@ namespace mygfx
 		shaderc::Compiler compiler;
 
 		try {
-			shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(shaderCode, kind, "", "main", options);
+			shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(shaderCode, kind, shaderName.c_str(), "main", options);
 			if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
 				auto error = result.GetErrorMessage();
 				LOG_ERROR(error);
@@ -143,10 +143,10 @@ namespace mygfx
 		return true;
 	}
 
-	bool compileToSpirv(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines, ByteArray& outSpvData)
+	bool compileToSpirv(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines, ByteArray& outSpvData)
 	{
 		if (sourceType == ShaderSourceType::GLSL) {
-			return compileShaderC(sourceType, shader_type, shaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines, outSpvData);
+			return compileShaderC(sourceType, shader_type, shaderName, shaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines, outSpvData);
 		}
 
 		return false;
@@ -210,14 +210,14 @@ namespace mygfx
 		}
 	}
 	
-	Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
+	Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
 	{
 		assert(shaderCode.size() > 0);
 
 		Ref<HwShaderModule> sm;
 		ByteArray SpvData;
 		String shader = generateSource(sourceType, shader_type, shaderCode, shaderCompilerParams, pDefines);
-		if (!compileToSpirv(sourceType, shader_type, shader.c_str(), pShaderEntryPoint, shaderCompilerParams, pDefines, SpvData)) {
+		if (!compileToSpirv(sourceType, shader_type, shaderName, shader.c_str(), pShaderEntryPoint, shaderCompilerParams, pDefines, SpvData)) {
 			return nullptr;
 		}
 
@@ -242,7 +242,7 @@ namespace mygfx
 
 		std::string fullpath = pFilename;
 		pShaderCode = FileUtils::readAllText(fullpath);
-		auto res = compileFromString(sourceType, shader_type, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
+		auto res = compileFromString(sourceType, shader_type, pFilename, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
 		if (res) {
 			//gfx().setResourceName(VK_OBJECT_TYPE_SHADER_MODULE, (uint64_t)pShader->module, pFilename);
 			return res;

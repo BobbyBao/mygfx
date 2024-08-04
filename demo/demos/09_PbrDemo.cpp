@@ -14,6 +14,7 @@ namespace mygfx::demo {
 		Ref<Scene> mScene;
 		Ref<Camera> mCamera;
 		Ref<Mesh> mMesh;
+		Ref<Shader> mShader;
 
 		Result<void> start() override {
 			
@@ -34,6 +35,9 @@ namespace mygfx::demo {
 
 			mCamera = new Camera();
 			mCamera->lookAt(vec3{0.0f, 0.0f, 4.0f}, vec3{0.0f}, vec3{0.0f, 1.0f, 0.0f});
+
+			mShader = Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag");
+
 
 			co_return;
 		}

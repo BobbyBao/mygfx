@@ -36,10 +36,11 @@ namespace mygfx {
 		void updateDescriptorSet(uint32_t set, uint32_t binding, const BufferInfo& bufferInfo);
 
 		PipelineState pipelineState;
-		
+
+		static Ref<Shader> fromFile(const String& vs, const String& fs, const DefineList* marcos = nullptr);
 	protected:
 		void init();
-		bool addShader(ShaderStage shaderStage, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros = nullptr);
+		bool addShader(ShaderStage shaderStage, const String& shaderName, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros = nullptr);
 
 		std::vector<Ref<HwShaderModule>> mShaderModules;
 		Ref<HwVertexInput> mVertexInput;

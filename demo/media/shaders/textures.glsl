@@ -1,37 +1,26 @@
 // IBL
 
+#include <common_texture_set.glsl>
 
-uniform int u_MipCount;
-uniform samplerCube u_LambertianEnvSampler;
-uniform samplerCube u_GGXEnvSampler;
-uniform sampler2D u_GGXLUT;
-uniform samplerCube u_CharlieEnvSampler;
-uniform sampler2D u_CharlieLUT;
-uniform sampler2D u_SheenELUT;
-uniform mat3 u_EnvRotation;
+#define u_LambertianEnvSampler textures_Cube[nonuniformEXT(u_LambertianEnvTexture)]
+#define u_GGXEnvSampler textures_Cube[nonuniformEXT(u_GGXEnvTexture)]
+#define u_GGXLUT textures_2d[nonuniformEXT(u_GGXLUTTexture)]
 
+#define u_CharlieEnvSampler textures_Cube[nonuniformEXT(u_CharlieEnvTexture)]
+#define u_CharlieLUT textures_2d[nonuniformEXT(u_CharlieLUTTexture)]
+#define u_SheenELUT textures_2d[nonuniformEXT(u_SheenELUTTexture)]
 
-// General Material
+#define u_NormalSampler textures_2d[nonuniformEXT(u_NormalTexture)]
+#define u_EmissiveSampler textures_2d[nonuniformEXT(u_EmissiveTexture)]
+#define u_OcclusionSampler textures_2d[nonuniformEXT(u_OcclusionTexture)]
 
+#ifdef MATERIAL_METALLICROUGHNESS
+#define u_BaseColorSampler textures_2d[nonuniformEXT(u_BaseColorTexture)]
+#endif
 
-uniform sampler2D u_NormalSampler;
-uniform float u_NormalScale;
-uniform int u_NormalUVSet;
-uniform mat3 u_NormalUVTransform;
-
-uniform vec3 u_EmissiveFactor;
-uniform sampler2D u_EmissiveSampler;
-uniform int u_EmissiveUVSet;
-uniform mat3 u_EmissiveUVTransform;
-
-uniform sampler2D u_OcclusionSampler;
-uniform int u_OcclusionUVSet;
-uniform float u_OcclusionStrength;
-uniform mat3 u_OcclusionUVTransform;
-
-
-in vec2 v_texcoord_0;
-in vec2 v_texcoord_1;
+#ifdef MATERIAL_SPECULARGLOSSINESS
+#define u_SpecularGlossinessSampler textures_2d[nonuniformEXT(u_SpecularGlossinessTexture)]
+#endif
 
 
 vec2 getNormalUV()
@@ -75,14 +64,6 @@ vec2 getOcclusionUV()
 
 #ifdef MATERIAL_METALLICROUGHNESS
 
-uniform sampler2D u_BaseColorSampler;
-uniform int u_BaseColorUVSet;
-uniform mat3 u_BaseColorUVTransform;
-
-uniform sampler2D u_MetallicRoughnessSampler;
-uniform int u_MetallicRoughnessUVSet;
-uniform mat3 u_MetallicRoughnessUVTransform;
-
 vec2 getBaseColorUV()
 {
     vec3 uv = vec3(u_BaseColorUVSet < 1 ? v_texcoord_0 : v_texcoord_1, 1.0);
@@ -112,15 +93,6 @@ vec2 getMetallicRoughnessUV()
 
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
-
-uniform sampler2D u_DiffuseSampler;
-uniform int u_DiffuseUVSet;
-uniform mat3 u_DiffuseUVTransform;
-
-uniform sampler2D u_SpecularGlossinessSampler;
-uniform int u_SpecularGlossinessUVSet;
-uniform mat3 u_SpecularGlossinessUVTransform;
-
 
 vec2 getSpecularGlossinessUV()
 {

@@ -13,7 +13,12 @@
 #include "utils/SharedPtr.h"
 
 namespace utils {
-
+	
+	using String = std::string;
+	
+    template<typename T>
+    using Span = std::span<T>;
+	
 	template <class T>
 	class SharedPtr;
 	

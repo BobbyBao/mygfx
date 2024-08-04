@@ -23,9 +23,9 @@ namespace mygfx
 		
 	}
 
-	bool Shader::addShader(ShaderStage shaderStage, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros)
+	bool Shader::addShader(ShaderStage shaderStage, const String& shaderName, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros)
 	{
-		auto sm = gfxApi().compileShaderModule(sourceType, shaderStage, source, entry.c_str(), extraParams.c_str(), macros);
+		auto sm = gfxApi().compileShaderModule(sourceType, shaderStage, shaderName, source, entry.c_str(), extraParams.c_str(), macros);
 		if (sm == nullptr) {
 			assert(false);
 			return false;
@@ -36,30 +36,51 @@ namespace mygfx
 	}
 
 	Shader::Shader(const String& vsCode, const String& psCode, const DefineList* macros) {	
-		addShader(ShaderStage::VERTEX, vsCode, ShaderSourceType::GLSL, "", "", macros);
-		addShader(ShaderStage::FRAGMENT, psCode, ShaderSourceType::GLSL, "", "", macros);
+		addShader(ShaderStage::VERTEX, "", vsCode, ShaderSourceType::GLSL, "", "", macros);
+		addShader(ShaderStage::FRAGMENT, "", psCode, ShaderSourceType::GLSL, "", "", macros);
 		init();
 	}
 
 	Shader::Shader(const String& csCode) {
-		addShader(ShaderStage::COMPUTE, csCode, ShaderSourceType::GLSL, "", "", nullptr);
+		addShader(ShaderStage::COMPUTE, "", csCode, ShaderSourceType::GLSL, "", "", nullptr);
 		init();
 	}
 
-	void Shader::loadShader(const String& vs, const String& ps, const DefineList* macros) {
-		auto vsSource = FileUtils::readAllText(vs);
+	void Shader::loadShader(const String& vs, const String& fs, const DefineList* macros) {
+		Path vsPath(vs);
+		auto vsSource = FileUtils::readAllText(vsPath);
+		if (vsSource.empty()) {
+			return;
+		}
 
-		addShader(ShaderStage::VERTEX, vsSource, ShaderSourceType::GLSL, "", "", macros);
+		FileUtils::pushPath(vsPath.parent_path());
 
-		auto psSource = FileUtils::readAllText(ps);
-		addShader(ShaderStage::FRAGMENT, psSource, ShaderSourceType::GLSL, "", "", macros);
+		addShader(ShaderStage::VERTEX, vsPath.filename().string(), vsSource, ShaderSourceType::GLSL, "", "", macros);
+		FileUtils::popPath();
+
+		Path fsPath(fs);
+		auto psSource = FileUtils::readAllText(fsPath);
+		if (psSource.empty()) {
+			return;
+		}
+		
+		FileUtils::pushPath(fsPath.parent_path());
+		addShader(ShaderStage::FRAGMENT, fsPath.filename().string(), psSource, ShaderSourceType::GLSL, "", "", macros);
+		FileUtils::popPath();
 
 		init();
 	}
 
 	void Shader::loadShader(const String& cs) {
-		auto csSource = FileUtils::readAllText(cs);
-		addShader(ShaderStage::COMPUTE, csSource, ShaderSourceType::GLSL, "", "", nullptr);
+		Path csPath(cs);
+		auto csSource = FileUtils::readAllText(csPath);
+		if (csSource.empty()) {
+			return;
+		}
+		
+		FileUtils::pushPath(csPath.parent_path());
+		addShader(ShaderStage::COMPUTE, csPath.filename().string(), csSource, ShaderSourceType::GLSL, "", "", nullptr);
+		FileUtils::popPath();
 
 		init();
 	}
@@ -122,5 +143,11 @@ namespace mygfx
 		if (ds != nullptr) {
 			gfxApi().updateDescriptorSet3(ds, binding, bufferInfo);
 		}
+	}
+	
+	Ref<Shader> Shader::fromFile(const String& vs, const String& fs, const DefineList* marcos) {
+		Ref<Shader> shader(new Shader());		
+		shader->loadShader(vs, fs, marcos);
+		return shader;
 	}
 }

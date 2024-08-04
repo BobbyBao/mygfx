@@ -1,47 +1,40 @@
+#version 450
+#extension GL_EXT_buffer_reference : require
+#extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
+#extension GL_EXT_scalar_block_layout : require
+
+#include <common_uniforms.glsl>
+
 #include <animation.glsl>
 
-
-uniform mat4 u_ViewProjectionMatrix;
-uniform mat4 u_ModelMatrix;
-uniform mat4 u_NormalMatrix;
-
-
-in vec3 a_position;
-out vec3 v_Position;
+layout(location = 0) in vec3 a_position;
 
 #ifdef HAS_NORMAL_VEC3
-in vec3 a_normal;
-#endif
+layout(location = HAS_NORMAL_VEC3) in vec3 a_normal;
 
-#ifdef HAS_NORMAL_VEC3
 #ifdef HAS_TANGENT_VEC4
-in vec4 a_tangent;
-out mat3 v_TBN;
-#else
-out vec3 v_Normal;
+layout(location = HAS_TANGENT_VEC4) in vec4 a_tangent;
 #endif
+
 #endif
 
 #ifdef HAS_TEXCOORD_0_VEC2
-in vec2 a_texcoord_0;
+layout(location = HAS_TEXCOORD_0_VEC2) in vec2 a_texcoord_0;
 #endif
 
 #ifdef HAS_TEXCOORD_1_VEC2
-in vec2 a_texcoord_1;
+layout(location = HAS_TEXCOORD_1_VEC2) in vec2 a_texcoord_1;
 #endif
 
-out vec2 v_texcoord_0;
-out vec2 v_texcoord_1;
-
 #ifdef HAS_COLOR_0_VEC3
-in vec3 a_color_0;
-out vec3 v_Color;
+layout(location = HAS_COLOR_0_VEC3) in vec3 a_color_0;
 #endif
 
 #ifdef HAS_COLOR_0_VEC4
-in vec4 a_color_0;
-out vec4 v_Color;
+layout(location = HAS_COLOR_0_VEC4) in vec4 a_color_0;
 #endif
+
+#include <common_varyings.glsl>
 
 
 vec4 getPosition()

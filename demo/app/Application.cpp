@@ -29,12 +29,12 @@ namespace mygfx {
 		return nullptr;
 	}
 	
-	bool fileExist(const std::string& filePath) {
+	bool fileExist(const Path& filePath) {
 		return std::filesystem::exists(filePath);
 	}
 
-	std::vector<uint8_t> readAll(const std::string& filePath) {
-		auto file = SDL_IOFromFile(filePath.c_str(), "rb");
+	std::vector<uint8_t> readAll(const Path& filePath) {
+		auto file = SDL_IOFromFile(filePath.string().c_str(), "rb");
 		if (!file) {
 			return {};
 		}
@@ -46,8 +46,8 @@ namespace mygfx {
 		return bytes;
 	}
 	
-	std::string readAllText(const std::string& filePath) {
-		auto file = SDL_IOFromFile(filePath.c_str(), "rb"); if (!file) {
+	std::string readAllText(const Path& filePath) {
+		auto file = SDL_IOFromFile(filePath.string().c_str(), "rb"); if (!file) {
 			return {};
 		}
 		auto fileSize = SDL_GetIOSize(file);
@@ -75,6 +75,7 @@ namespace mygfx {
 		setupDPIAwareness();
 #endif
 		FileUtils::sIOStream = {&fileExist, &readAll, &readAllText};
+		FileUtils::setBasePath("../../media");
 		mMainExecutor = make_manual_executor();
 	}
 

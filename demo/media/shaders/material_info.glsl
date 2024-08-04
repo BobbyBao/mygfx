@@ -1,3 +1,5 @@
+
+/*
 // Metallic Roughness
 uniform float u_MetallicFactor;
 uniform float u_RoughnessFactor;
@@ -62,7 +64,7 @@ uniform ivec2 u_ScreenSize;
 uniform mat4 u_ModelMatrix;
 uniform mat4 u_ViewMatrix;
 uniform mat4 u_ProjectionMatrix;
-
+*/
 
 struct MaterialInfo
 {
