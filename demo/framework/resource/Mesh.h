@@ -1,6 +1,6 @@
 #pragma once
 #include "GraphicsHandles.h"
-#include "MathTypes.h"
+#include "core/MathTypes.h"
 
 namespace mygfx {
 	

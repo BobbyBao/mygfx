@@ -16,9 +16,15 @@ add_subdirectory(external/concurrencpp)
 include_directories(external/concurrencpp/include)
 set_target_properties(concurrencpp PROPERTIES FOLDER external)
 
+include_directories(external/cgltf)
+
+add_subdirectory(framework)
+set_target_properties(framework PROPERTIES FOLDER demo)
+
 add_subdirectory(app)
-include_directories(app)
+set_target_properties(app PROPERTIES FOLDER demo)
 
 add_subdirectory(demos)
+set_target_properties(demos PROPERTIES FOLDER demo)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/media DESTINATION ${PROJECT_BINARY_DIR})

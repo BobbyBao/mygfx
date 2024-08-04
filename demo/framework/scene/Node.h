@@ -1,6 +1,6 @@
 #pragma once
 #include "Fwd.h"
-#include "MathTypes.h"
+#include "core/MathTypes.h"
 
 namespace mygfx {
 

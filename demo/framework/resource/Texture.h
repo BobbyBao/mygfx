@@ -1,7 +1,7 @@
 #pragma once
 #include "GraphicsHandles.h"
 #include "TextureData.h"
-#include "MathTypes.h"
+#include "core/MathTypes.h"
 
 namespace mygfx {
 	
