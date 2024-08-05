@@ -91,9 +91,9 @@ namespace mygfx {
 		Renderable* renderable = nullptr;
 		Camera* camera = nullptr;
 		if (node.mesh) {
-			newNode = renderable = new Renderable();
+			newNode = renderable = parent->createChild<Renderable>();
 		} else if (node.camera) {
-			newNode = camera = new Camera();
+			newNode = camera = parent->createChild<Camera>();
 			//createCamera(newNode, node.camera);
 		} else if (node.light) {
 			//createLight(newNode, node.light);

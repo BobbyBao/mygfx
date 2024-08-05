@@ -123,7 +123,8 @@ void main()
     // Roughness is authored as perceptual roughness; as is convention,
     // convert to material roughness by squaring the perceptual roughness.
     materialInfo.alphaRoughness = materialInfo.perceptualRoughness * materialInfo.perceptualRoughness;
-
+    
+    g_finalColor = vec4(0.5 + 0.5*normalInfo.n, 1.0); return;
 
     // LIGHTING
     vec3 f_specular_dielectric = vec3(0.0);

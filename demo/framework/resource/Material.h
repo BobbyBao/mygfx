@@ -13,6 +13,7 @@ namespace mygfx {
 	public:
 		Material();
 		Material(Shader* shader, const String& materialUniformName);
+		~Material();
 		
 		void setShader(Shader* shader, const String& materialUniformName);
 		
@@ -40,7 +41,7 @@ namespace mygfx {
 		String mMaterialUniformName;
 		Ref<ShaderResourceInfo> mShaderResourceInfo;
 		ByteArray mMaterialData;
-		mutable uint32_t mMaterialUniforms = 0;
+		mutable uint32_t mMaterialUniforms = 0xffffffff;
 	};
 
 }

@@ -39,6 +39,15 @@ namespace mygfx {
 
 		mFrameUniforms.screenSize = { mRenderTarget->width, mRenderTarget->height };
 		mFrameUniforms.invScreenSize = { 1.0f / mFrameUniforms.screenSize.x, 1.0f / mFrameUniforms.screenSize.y };
+
+		if (mScene->skybox) {
+			
+			auto cubeMap = mScene->skybox->getCubeMap();
+			if (cubeMap) {
+				mFrameUniforms.ggxEnvTexture = cubeMap->index();
+				mFrameUniforms.mipCount = cubeMap->textureData().mipMapCount;
+			}
+		}
 	}
 
 	void View::render(GraphicsApi& cmd) {
@@ -46,16 +55,18 @@ namespace mygfx {
 		uint32_t perView = gfxApi().allocConstant(mFrameUniforms);
 
 		for (auto renderable : mScene->renderables) {
+			ObjectUniforms objectUniforms;
+			objectUniforms.worldMatrix = renderable->getWorldTransform();
+			objectUniforms.normalMatrix = objectUniforms.worldMatrix;
 
-			auto& world = renderable->getWorldTransform();
-			uint32_t perDraw = gfxApi().allocConstant(world);
+			uint32_t perDraw = gfxApi().allocConstant(objectUniforms);
 
 			for (auto& prim : renderable->primitives) {
 
 				uint32_t perMaterial = prim.material->getMaterialUniforms();
 
 				cmd.bindPipelineState(prim.material->getPipelineState());			
-				cmd.bindUniforms(perMaterial == 0 ? Uniforms{ perView, perDraw } : Uniforms{ perView, perDraw, perMaterial });
+				cmd.bindUniforms(perMaterial == 0xffffffff ? Uniforms{ perView, perDraw } : Uniforms{ perView, perDraw, perMaterial });
 				cmd.drawPrimitive(prim.renderPrimitive);
 			}
 		}

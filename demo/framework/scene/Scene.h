@@ -6,6 +6,7 @@
 namespace mygfx {
 	
 	class Renderable;
+	class Skybox;
 
 	class Scene : public Node {
 	public:
@@ -17,6 +18,7 @@ namespace mygfx {
 		
 		
 		HashSet<Renderable*> renderables;
+		Skybox* skybox = nullptr;
 	protected:
 	};
 

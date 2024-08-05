@@ -5,12 +5,19 @@
 
 namespace mygfx {
 	
+	class Texture;
+
 	class Skybox : public Renderable {
 	public:
-		Skybox();		
+		Skybox();
+
+		Texture* getCubeMap() const { return mCubeMap; }
+		void setCubeMap(Texture* tex);
 	protected:
 		void addToScene() override;
 		void removeFromScene() override;
+
+		Ref<Texture> mCubeMap;
 	};
 
 }

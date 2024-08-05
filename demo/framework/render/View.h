@@ -44,6 +44,11 @@ namespace mygfx {
 		mat3x4 envRotation = identity<mat3x4>();
 	};
 
+	struct ObjectUniforms {		
+		mat4 worldMatrix;
+		mat4 normalMatrix;
+	};
+
 	class View : public utils::RefCounted {
 	public:
 		View();

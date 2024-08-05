@@ -121,7 +121,7 @@ layout(std140, binding = 2) uniform MaterialUniforms {
     // Alpha mode
     float u_AlphaCutoff;
 
-    float pad3;
+    //float pad3;
 };
 
 

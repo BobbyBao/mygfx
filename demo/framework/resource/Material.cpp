@@ -17,7 +17,11 @@ namespace mygfx {
 
 		setShader(shader, materialUniformName);
 	}
-	
+
+	Material::~Material() {
+		sMaterials.erase(this);
+	}
+
 	void Material::setShader(Shader* shader, const String& materialUniformName) {
 		if (mShader == shader || shader == nullptr) {
 			return;
