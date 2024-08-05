@@ -15,14 +15,31 @@ namespace mygfx {
 	}
 
     mat4 Camera::getEffectiveWorldTransform() const
-    {        
-		return glm::translate(glm::mat4_cast(getWorldRotation()), getWorldPosition());
+	{
+        auto result =  glm::mat4_cast(getWorldRotation());
+		result[3] = vec4(getWorldPosition(), 1.0f);
+        return result;
     }
 		
     void Camera::onTransformChanged() {
         mViewDirty = true;
     }
-	
+
+	vec3 Camera::getDirection() const
+	{
+        return ((mat3)getEffectiveWorldTransform()) * vec3(0.0f, 0.0f, -1.0f);
+	}
+
+    vec3 Camera::getUp() const
+	{
+		return ((mat3)getEffectiveWorldTransform()) * vec3(0.0f, 1.0f, 0.0f);
+	}
+
+    vec3 Camera::getSide() const
+	{
+		return ((mat3)getEffectiveWorldTransform()) * vec3(1.0f, 1.0f, 0.0f);
+	}
+
     const mat4& Camera::getViewMatrix() const
 	{
         if (mViewDirty) {

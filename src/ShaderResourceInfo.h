@@ -45,6 +45,10 @@ namespace mygfx {
 
 		size_t hash(size_t result) const;
 
+		DefineList& add(const String& key, size_t val);
+		DefineList& add(const String& key, int val);
+		DefineList& add(const String& key);
+
 		DefineList& operator+(const DefineList& def2);
 	};
 

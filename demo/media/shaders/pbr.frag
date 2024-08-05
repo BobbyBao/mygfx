@@ -19,6 +19,7 @@
 precision highp float;
 
 #include <common_uniforms.glsl>
+#include <common_varyings.glsl>
 
 #include <functions.glsl>
 #include <tonemapping.glsl>

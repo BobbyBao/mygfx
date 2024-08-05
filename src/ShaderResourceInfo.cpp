@@ -15,6 +15,21 @@ namespace mygfx {
 		return result;
 	}
 
+	DefineList& DefineList::add(const String& key, size_t val) {
+		(*this)[key] = std::to_string(val);
+		return *this;
+	}
+
+	DefineList& DefineList::add(const String& key, int val) {
+		(*this)[key] = std::to_string(val);
+		return *this;
+	}
+
+	DefineList& DefineList::add(const String& key) {
+		(*this)[key] = "";
+		return *this;
+	}
+
 	DefineList& DefineList::operator+(const DefineList& def2) {
 		for (auto it = def2.begin(); it != def2.end(); it++)
 			(*this)[it->first] = it->second;

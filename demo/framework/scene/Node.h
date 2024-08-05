@@ -7,6 +7,12 @@ namespace mygfx {
 	
 	class Scene;
 
+	enum class TransformSpace {
+		LOCAL = 0,
+		PARENT,
+		WORLD
+	};
+
 	class Node : public utils::RefCounted {
 	public:
 		Node();
@@ -19,18 +25,21 @@ namespace mygfx {
 		
 		inline const String& getName() const { return mName; }
 		virtual void setName(const char* name);
+
         Node* getParent() const { return mParent; }
         Scene* getScene() const { return mScene; }
-		const vec3& position() const { return mPosition; }
-		const quat& rotation() const { return mRotation; }
-		const vec3& scale() const { return mScale; }
 
-		Node& position(const vec3& p);
-		Node& rotation(const quat& r);
-		Node& scale(const vec3& s);
+		const vec3& getPosition() const { return mPosition; }
+		const quat& getRotation() const { return mRotation; }
+		const vec3& getScale() const { return mScale; }
+
+		Node& setPosition(const vec3& p);
+		Node& setRotation(const quat& r);
+		Node& setScale(const vec3& s);
 		void setTRS(const vec3& p, const quat& r, const vec3& s, bool notifyChange = true);
 		void setTransform(const mat4& m);
-		void lookAt(vec3 const& eye, vec3 const& center, vec3 const& up) noexcept;
+		void translate(const vec3& delta, TransformSpace space = TransformSpace::LOCAL);
+		void lookAt(vec3 const& eye, vec3 const& center, vec3 const& up = {0.0f, 1.0f, 0.0f}) noexcept;
 		
 		const vec3& getWorldPosition() const;
 		quat getWorldRotation() const;

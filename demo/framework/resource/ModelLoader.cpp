@@ -141,6 +141,7 @@ namespace mygfx {
 
 			const uint32_t numMorphTargets = (uint32_t)mesh.primitives[0].targets_count;
 			bool hasSkinOrMorphing = (hasSkin() && node.skin) || numMorphTargets;
+			DefineList defineList;
 
 			for (size_t j = 0; j < mesh.primitives_count; j++) {
 				const cgltf_primitive& primitive = mesh.primitives[j];
@@ -208,6 +209,7 @@ namespace mygfx {
 						
 						auto vb = gfxApi().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount * sizeof(float3), sizeof(float3), bufferNormals);
 						vb->extra = (uint16_t)VertexAttribute::NORMAL;
+						defineList.add("HAS_NORMAL_VEC3", vbs.size());
 						vbs.push_back(vb);
 					}
 
@@ -219,6 +221,7 @@ namespace mygfx {
 						if (mVertexAttribute == VertexAttribute::NONE || any(mVertexAttribute & VertexAttribute::UV_0)) {
 							auto vb = device().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, accessor.count * sizeof(float2), sizeof(float2), bufferTexCoords);
 							vb->extra = (uint16_t)VertexAttribute::UV_0;
+							defineList.add("HAS_TEXCOORD_0_VEC2", vbs.size());
 							vbs.push_back(vb);
 						}
 
@@ -229,6 +232,7 @@ namespace mygfx {
 							Vector<float2> float2Buffer(vertexCount, float2{ 0.0f });
 							auto vb = device().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, float2Buffer.size() * sizeof(float2), sizeof(float2), float2Buffer.data());
 							vb->extra = (uint16_t)VertexAttribute::UV_0;
+							defineList.add("HAS_TEXCOORD_0_VEC2", vbs.size());
 							vbs.push_back(vb);
 						}
 					}
@@ -243,6 +247,7 @@ namespace mygfx {
 						if (mVertexAttribute == VertexAttribute::NONE || any(mVertexAttribute & VertexAttribute::COLOR)) {
 							auto vb = device().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, accessor.count * sizeof(float4), sizeof(float4), bufferColors);
 							vb->extra = (uint16_t)VertexAttribute::COLOR;
+							defineList.add(numColorComponents == 3 ? "HAS_COLOR_0_VEC3" : "HAS_COLOR_0_VEC4", vbs.size());
 							vbs.push_back(vb);
 						}
 
@@ -253,6 +258,7 @@ namespace mygfx {
 							Vector<float4> float4Buffer(vertexCount, float4{ 1.0f });
 							auto vb = device().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, float4Buffer.size() * sizeof(float4), sizeof(float4), float4Buffer.data());
 							vb->extra = (uint16_t)VertexAttribute::COLOR;
+							defineList.add(numColorComponents == 3 ? "HAS_COLOR_0_VEC3" : "HAS_COLOR_0_VEC4", vbs.size());
 							vbs.push_back(vb);
 						}
 					}
@@ -265,6 +271,7 @@ namespace mygfx {
 							
 							auto vb = gfxApi().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount * sizeof(float4), sizeof(float4), bufferTangents);
 							vb->extra = (uint16_t)VertexAttribute::TANGENTS;
+							defineList.add("HAS_TANGENT_VEC4", vbs.size());
 							vbs.push_back(vb);
 
 						}
@@ -327,6 +334,7 @@ namespace mygfx {
 						if (mVertexAttribute == VertexAttribute::NONE || any(mVertexAttribute & VertexAttribute::BONE_INDICES)) {
 							auto vb = device().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, accessor.count * sizeof(u16vec4), sizeof(u16vec4), bufferJoints);
 							vb->extra = (uint16_t)VertexAttribute::BONE_INDICES;
+							defineList.add("HAS_JOINTS_0_VEC4", vbs.size());
 							vbs.push_back(vb);
 						}
 
@@ -339,6 +347,7 @@ namespace mygfx {
 						if (mVertexAttribute == VertexAttribute::NONE || any(mVertexAttribute & VertexAttribute::BONE_WEIGHTS)) {
 							auto vb = device().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, accessor.count * sizeof(float4), sizeof(float4), bufferWeights);
 							vb->extra = (uint16_t)VertexAttribute::BONE_WEIGHTS;
+							defineList.add("HAS_WEIGHTS_0_VEC4", vbs.size());
 							vbs.push_back(vb);
 						}
 					}
@@ -356,7 +365,7 @@ namespace mygfx {
 					drawArgs.indexCount = indexCount;
 					auto& subMesh = newMesh->addSubMesh(vertexData, drawArgs);
 				
-					subMesh.material = primitive.material ? getMaterial(primitive.material - mGltfModel->materials, hasSkinOrMorphing) : getDefaultMaterial();
+					subMesh.material = primitive.material ? getMaterial(primitive.material - mGltfModel->materials, hasSkinOrMorphing, &defineList) : getDefaultMaterial(&defineList);
 					subMesh.boundingBox = Aabb(posMin, posMax);
 					boundingBox.merge(subMesh.boundingBox);
 
@@ -466,18 +475,18 @@ namespace mygfx {
 		mMaterials.resize(mGltfModel->materials_count);
 
 		if (mMaterials.empty()) {
-			mMaterials.emplace_back(getDefaultMaterial());
+			mMaterials.emplace_back(getDefaultMaterial(nullptr));
 		}
 
 	}
 
-	Material* ModelLoader::getMaterial(size_t index, bool skined)
+	Material* ModelLoader::getMaterial(size_t index, bool skined, const DefineList* marcos)
 	{
 		if (mMaterials[index]) {
 			return mMaterials[index];
 		}
 
-		auto defaultShader = mShader ? mShader : new Shader("shaders/primitive.vert", "shaders/pbr.frag");
+		auto defaultShader = mShader ? mShader : Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", marcos);
 
 		auto& mat = mGltfModel->materials[index];
 		Material* material = new Material(defaultShader, "MaterialUniforms");
@@ -548,9 +557,9 @@ namespace mygfx {
 		return nullptr;
 	}
 
-	Ref<Material> ModelLoader::getDefaultMaterial()
+	Ref<Material> ModelLoader::getDefaultMaterial(const DefineList* marcos)
 	{
-		auto defaultShader = new Shader("shaders/primitive.vert", "shaders/pbr.frag");
+		auto defaultShader = Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", marcos);
 
 		Ref<Material> material(makeRef<Material>(defaultShader, "MaterialUniforms"));
 		material->setShaderParameter("baseColorFactor", vec4(1.0f));

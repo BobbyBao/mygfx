@@ -130,19 +130,19 @@ namespace mygfx {
         
     }
     
-	Node& Node::position(const vec3& p) {
+	Node& Node::setPosition(const vec3& p) {
 		mPosition = p;
 		transformChanged();
 		return *this;
 	}
 		
-	Node& Node::rotation(const quat& r) {
+	Node& Node::setRotation(const quat& r) {
 		mRotation = r;
 		transformChanged();
 		return *this;
 	}
 
-	Node& Node::scale(const vec3& s) {
+	Node& Node::setScale(const vec3& s) {
 		mScale = s;
 		transformChanged();
 		return *this;
@@ -168,6 +168,28 @@ namespace mygfx {
 		glm::decompose(m, s, r, tr, skew, perspective);
 
 		setTRS(tr, r, s);
+	}
+
+	void Node::translate(const vec3& delta, TransformSpace space)
+	{
+		switch (space)
+		{
+		case TransformSpace::LOCAL:
+			// Note: local space translation disregards local scale for scale-independent movement speed
+			mPosition += mRotation * delta;
+			break;
+
+		case TransformSpace::PARENT:
+			mPosition += delta;
+			break;
+
+		case TransformSpace::WORLD:
+            mPosition += (!mParent) ? delta : (inverse(mParent->getWorldTransform())* vec4{ delta, 0.0f });
+			break;
+		}
+
+        transformChanged();
+
 	}
 
 	void Node::lookAt(vec3 const& eye, vec3 const& center, vec3 const& up) noexcept
