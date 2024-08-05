@@ -60,7 +60,7 @@ namespace mygfx::demo {
 
 		void update(double delta) override {
 			
-			mCameraController.update(delta);
+			mCameraController.update((float)delta);
 
 			mView->update(delta);
 		}

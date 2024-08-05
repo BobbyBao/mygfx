@@ -201,7 +201,11 @@ namespace mygfx {
 		transformChanged();
 	}
 	
-    const vec3& Node::getWorldPosition() const {
+	const vec3& Node::getWorldPosition() const {
+		if (mWorldTransformDirty) {
+			updateTransform();
+		}
+
         return *(const vec3*)&mWorldTransform[3][0];
     }
        
@@ -223,8 +227,8 @@ namespace mygfx {
 
 	void Node::updateTransform() const {
 
-		mat4 r = glm::scale_slow(glm::mat4_cast(mRotation), mScale);
-		mat4 localTransform = glm::translate(r, mPosition);
+		mat4 localTransform = glm::scale(glm::mat4_cast(mRotation), mScale);
+        localTransform[3] = { mPosition, 1.0f };
 
 		if (mParent) {
             mWorldRotation = mParent->getWorldRotation() * mRotation;
