@@ -3,7 +3,7 @@
 #include <common_texture_set.glsl>
 
 
-layout(binding = 2) uniform MaterialUniforms {
+layout(std140, binding = 2) uniform MaterialUniforms {
 
 #ifdef MATERIAL_METALLICROUGHNESS
 
@@ -45,11 +45,35 @@ layout(binding = 2) uniform MaterialUniforms {
     mat3 u_DiffuseUVTransform;
 #endif
 
-    //sampler2D 
 #ifdef HAS_SPECULARGLOSSINESS_UV_TRANSFORM
     mat3 u_SpecularGlossinessUVTransform;
 #endif
 
+#endif
+
+
+    //sampler2D
+    int u_NormalTexture;
+    float u_NormalScale;
+    int u_NormalUVSet;
+    float pad2;
+#ifdef HAS_NORMAL_UV_TRANSFORM
+    mat3 u_NormalUVTransform;
+#endif
+
+    vec3 u_EmissiveFactor;
+    int u_EmissiveTexture;
+    int u_EmissiveUVSet;
+    int u_OcclusionTexture;
+    int u_OcclusionUVSet;
+    float u_OcclusionStrength;
+
+#ifdef HAS_EMISSIVE_UV_TRANSFORM
+    mat3 u_EmissiveUVTransform;
+#endif
+
+#ifdef HAS_OCCLUSION_UV_TRANSFORM
+    mat3 u_OcclusionUVTransform;
 #endif
 
     // Sheen
@@ -60,10 +84,6 @@ layout(binding = 2) uniform MaterialUniforms {
     float u_ClearcoatFactor;
     float u_ClearcoatRoughnessFactor;
 
-    // Specular
-    vec3 u_KHR_materials_specular_specularColorFactor;
-    float u_KHR_materials_specular_specularFactor;
-
     // Transmission
     float u_TransmissionFactor;
 
@@ -71,6 +91,10 @@ layout(binding = 2) uniform MaterialUniforms {
     float u_ThicknessFactor;
     vec3 u_AttenuationColor;
     float u_AttenuationDistance;
+    
+    // Specular
+    vec3 u_KHR_materials_specular_specularColorFactor;
+    float u_KHR_materials_specular_specularFactor;
 
     // Iridescence
     float u_IridescenceFactor;
@@ -79,8 +103,11 @@ layout(binding = 2) uniform MaterialUniforms {
     float u_IridescenceThicknessMaximum;
 
     // Diffuse Transmission
-    float u_DiffuseTransmissionFactor;
     vec3 u_DiffuseTransmissionColorFactor;
+    float u_DiffuseTransmissionFactor;
+
+    // Anisotropy
+    vec3 u_Anisotropy;
 
     // Emissive Strength
     float u_EmissiveStrength;
@@ -88,45 +115,13 @@ layout(binding = 2) uniform MaterialUniforms {
     // IOR
     float u_Ior;
 
-    // Anisotropy
-    vec3 u_Anisotropy;
-
     // Dispersion
     float u_Dispersion;
 
     // Alpha mode
     float u_AlphaCutoff;
 
-    #ifdef MATERIAL_TRANSMISSION
-    //ivec2 u_ScreenSize;
-    #endif
-
-
-    //sampler2D
-    int u_NormalTexture;
-    float u_NormalScale;
-    int u_NormalUVSet;
-#ifdef HAS_NORMAL_UV_TRANSFORM
-    mat3 u_NormalUVTransform;
-#endif
-
-    vec3 u_EmissiveFactor;
-    //sampler2D
-    int u_EmissiveTexture;
-    int u_EmissiveUVSet;
-#ifdef HAS_EMISSIVE_UV_TRANSFORM
-    mat3 u_EmissiveUVTransform;
-#endif
-
-    //sampler2D
-    int u_OcclusionTexture;
-    int u_OcclusionUVSet;
-    float u_OcclusionStrength;
-#ifdef HAS_OCCLUSION_UV_TRANSFORM
-    mat3 u_OcclusionUVTransform;
-#endif
-
-
+    float pad3;
 };
 
 
