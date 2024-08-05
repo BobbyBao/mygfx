@@ -8,6 +8,7 @@ namespace mygfx {
 	class GraphicsApi;
 	class Scene;
 	class Camera;
+	class Texture;
 
 	struct FrameUniforms {
 		mat4 viewMatrix;
@@ -28,7 +29,7 @@ namespace mygfx {
 		float envIntensity = 1.0f;
 		float exposure = 1.0f;
 		int mipCount = 1;
-		float envBlurNormalized;
+		float envBlurNormalized = 1.0f;
 
 		int lambertianEnvTexture;
 		int ggxEnvTexture;
@@ -50,6 +51,7 @@ namespace mygfx {
 
 		void setScene(Scene* scene);
 		void setCamera(Camera* camera);
+		void setEnvMap(Texture* cubeMap);
 
 		void update(double delta);
 		void render(GraphicsApi& cmd);

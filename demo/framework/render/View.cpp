@@ -19,6 +19,10 @@ namespace mygfx {
 		mCamera = camera;
 	}
 
+	void View::setEnvMap(Texture* cubeMap) {
+
+	}
+
 	void View::update(double delta) {
 
 		mFrameUniforms.viewMatrix = mCamera->getViewMatrix();
@@ -50,8 +54,8 @@ namespace mygfx {
 
 				uint32_t perMaterial = prim.material->getMaterialUniforms();
 
-				cmd.bindPipelineState(prim.material->getPipelineState());
-				cmd.bindUniforms({ perView, perDraw, perMaterial });
+				cmd.bindPipelineState(prim.material->getPipelineState());			
+				cmd.bindUniforms(perMaterial == 0 ? Uniforms{ perView, perDraw } : Uniforms{ perView, perDraw, perMaterial });
 				cmd.drawPrimitive(prim.renderPrimitive);
 			}
 		}

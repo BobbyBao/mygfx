@@ -98,7 +98,7 @@ namespace mygfx {
 		return mesh;
 	}
 
-	Mesh* Mesh::createCube(float size)
+	Mesh* Mesh::createCube(float size, VertexAttribute attributes)
 	{
 		const int NUM_VERTICES = 4 * 6; // 4 vertices per side * 6 sides
 		const int NUM_ENTRIES_PER_VERTEX = 8;
@@ -206,15 +206,19 @@ namespace mygfx {
 		vbPos->extra = (uint16_t)VertexAttribute::POSITION;
 		vertexData->vertexBuffers.push_back(vbPos);
 
-		auto vbTex = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, tex);
-		vbTex->extra = (uint16_t)VertexAttribute::UV_0;
-		vertexData->vertexBuffers.push_back(vbTex);
+		if (any(attributes & VertexAttribute::UV_0)) {
+			auto vbTex = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, tex);
+			vbTex->extra = (uint16_t)VertexAttribute::UV_0;
+			vertexData->vertexBuffers.push_back(vbTex);
+		}
 
-		auto vbNorm = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, norm);
-		vbTex->extra = (uint16_t)VertexAttribute::NORMAL;
-		vertexData->vertexBuffers.push_back(vbNorm);
+		if (any(attributes & VertexAttribute::NORMAL)) {
+			auto vbNorm = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount, norm);
+			vbNorm->extra = (uint16_t)VertexAttribute::NORMAL;
+			vertexData->vertexBuffers.push_back(vbNorm);
+		}
+
 		vertexData->indexBuffer = gfxApi().createBuffer1(BufferUsage::INDEX, MemoryUsage::GPU_ONLY, (uint32_t)std::size(indices), indices);
-
 		Mesh* mesh = new Mesh();
 		mesh->addSubMesh(vertexData);
 		mesh->setBoundingBox({ {-CUBE_HALF_SIZE, -CUBE_HALF_SIZE, -CUBE_HALF_SIZE}, {CUBE_HALF_SIZE, CUBE_HALF_SIZE, CUBE_HALF_SIZE} });

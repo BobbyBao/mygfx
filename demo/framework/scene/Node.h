@@ -17,7 +17,23 @@ namespace mygfx {
 	public:
 		Node();
 		Node(const String& name, const vec3& pos = vec3 {0}, const quat& rot = identity<quat>(), const vec3& s = one<vec3>());
-		Node* createChild(const String& name, const vec3& pos = vec3 {0}, const quat& rot = identity<quat>(), const vec3& s = one<vec3>());
+
+		template<typename T>
+		T* createChild(const String& name, const vec3& pos = vec3{ 0 }, const quat& rot = identity<quat>(), const vec3& s = one<vec3>()) {
+
+			T* so = new T(name, pos, rot, s);
+			addChild(so);
+			return so;			
+		}
+
+		template<typename T>
+		T* createChild() {
+
+			T* so = new T();
+			addChild(so);
+			return so;
+		}
+
         void addChild(Node* child);
         void removeChild(Node* child);
 		void remove();

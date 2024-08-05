@@ -1,12 +1,5 @@
 #include "DemoApp.h"
-#include "resource/Mesh.h"
-#include "resource/Texture.h"
-#include "resource/Material.h"
-#include "resource/ModelLoader.h"
-#include "scene/Scene.h"
-#include "scene/Renderable.h"
-#include "scene/Camera.h"
-#include "render/View.h"
+#include "Framework.h"
 #include "CameraController.h"
 
 namespace mygfx::demo {
@@ -49,6 +42,8 @@ namespace mygfx::demo {
 			auto material = new Material(mShader, "MaterialUniforms");
 			mMesh->setMaterial(material);
 			material->setShaderParameter("baseColor", Texture::Green);
+
+			mScene->createChild<Skybox>();
 
 			auto node = new Renderable();
 			node->setMesh(mMesh);

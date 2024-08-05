@@ -17,12 +17,6 @@ namespace mygfx {
         mName = name;
     }
 
-    Node* Node::createChild(const String& name, const vec3& pos, const quat& rot, const vec3& s) {
-        Node* so = new Node(name, pos, rot, s);
-        addChild(so);
-        return so;
-    }
-
     void Node::addChild(Node* child) {
         child->setParent(this);
     }

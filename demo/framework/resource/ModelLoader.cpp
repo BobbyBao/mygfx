@@ -89,10 +89,11 @@ namespace mygfx {
 	{
 		Node* newNode = nullptr;
 		Renderable* renderable = nullptr;
+		Camera* camera = nullptr;
 		if (node.mesh) {
 			newNode = renderable = new Renderable();
 		} else if (node.camera) {
-			newNode = new Camera();
+			newNode = camera = new Camera();
 			//createCamera(newNode, node.camera);
 		} else if (node.light) {
 			//createLight(newNode, node.light);
@@ -103,7 +104,7 @@ namespace mygfx {
 		}
 
 		if(newNode == nullptr)
-			newNode = parent->createChild(node.name);
+			newNode = parent->createChild<Node>(node.name);
 
 		// Generate local node matrix
 		if (node.has_matrix) {

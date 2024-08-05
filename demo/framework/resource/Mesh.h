@@ -39,7 +39,7 @@ namespace mygfx {
 		void setBoundingBox(const Aabb& aabb) { mBoundingBox = aabb; }
 
 		static Mesh* createPlane(float size = 1.0f);
-		static Mesh* createCube(float size = 1.0f);
+		static Mesh* createCube(float size = 1.0f, VertexAttribute attributes = VertexAttribute::POSITION | VertexAttribute::NORMAL | VertexAttribute::UV_0);
 
 		Vector<Ref<HwRenderPrimitive>> renderPrimitives;
 	private:
