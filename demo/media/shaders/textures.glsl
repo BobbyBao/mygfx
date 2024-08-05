@@ -125,9 +125,6 @@ layout(std140, binding = 2) uniform MaterialUniforms {
 };
 
 
-
-
-
 #define u_LambertianEnvSampler textures_Cube[nonuniformEXT(u_LambertianEnvTexture)]
 #define u_GGXEnvSampler textures_Cube[nonuniformEXT(u_GGXEnvTexture)]
 #define u_GGXLUT textures_2d[nonuniformEXT(u_GGXLUTTexture)]

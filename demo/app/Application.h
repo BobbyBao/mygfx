@@ -38,6 +38,7 @@ namespace mygfx {
 
 		uint32_t getWidth() const { return mWidth; }
 		uint32_t getHeight() const { return mHeight; }
+		HwSwapchain* getSwapChain() const { return mSwapchain; }
 
 		auto getDeltaTime() const {
 			return mFrameTimer;

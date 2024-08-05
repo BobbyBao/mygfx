@@ -9,6 +9,8 @@ namespace mygfx {
 	public:
 		Skybox();		
 	protected:
+		void addToScene() override;
+		void removeFromScene() override;
 	};
 
 }

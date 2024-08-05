@@ -17,12 +17,6 @@ namespace mygfx {
         mName = name;
     }
 
-    Node* Node::createChild(const String& name, const vec3& pos, const quat& rot, const vec3& s) {
-        Node* so = new Node(name, pos, rot, s);
-        addChild(so);
-        return so;
-    }
-
     void Node::addChild(Node* child) {
         child->setParent(this);
     }
@@ -130,19 +124,19 @@ namespace mygfx {
         
     }
     
-	Node& Node::position(const vec3& p) {
+	Node& Node::setPosition(const vec3& p) {
 		mPosition = p;
 		transformChanged();
 		return *this;
 	}
 		
-	Node& Node::rotation(const quat& r) {
+	Node& Node::setRotation(const quat& r) {
 		mRotation = r;
 		transformChanged();
 		return *this;
 	}
 
-	Node& Node::scale(const vec3& s) {
+	Node& Node::setScale(const vec3& s) {
 		mScale = s;
 		transformChanged();
 		return *this;
@@ -170,6 +164,28 @@ namespace mygfx {
 		setTRS(tr, r, s);
 	}
 
+	void Node::translate(const vec3& delta, TransformSpace space)
+	{
+		switch (space)
+		{
+		case TransformSpace::LOCAL:
+			// Note: local space translation disregards local scale for scale-independent movement speed
+			mPosition += mRotation * delta;
+			break;
+
+		case TransformSpace::PARENT:
+			mPosition += delta;
+			break;
+
+		case TransformSpace::WORLD:
+            mPosition += (!mParent) ? delta : (inverse(mParent->getWorldTransform())* vec4{ delta, 0.0f });
+			break;
+		}
+
+        transformChanged();
+
+	}
+
 	void Node::lookAt(vec3 const& eye, vec3 const& center, vec3 const& up) noexcept
 	{
 		mPosition = eye;
@@ -179,7 +195,11 @@ namespace mygfx {
 		transformChanged();
 	}
 	
-    const vec3& Node::getWorldPosition() const {
+	const vec3& Node::getWorldPosition() const {
+		if (mWorldTransformDirty) {
+			updateTransform();
+		}
+
         return *(const vec3*)&mWorldTransform[3][0];
     }
        
@@ -201,8 +221,8 @@ namespace mygfx {
 
 	void Node::updateTransform() const {
 
-		mat4 r = glm::scale_slow(glm::mat4_cast(mRotation), mScale);
-		mat4 localTransform = glm::translate(r, mPosition);
+		mat4 localTransform = glm::scale(glm::mat4_cast(mRotation), mScale);
+        localTransform[3] = { mPosition, 1.0f };
 
 		if (mParent) {
             mWorldRotation = mParent->getWorldRotation() * mRotation;

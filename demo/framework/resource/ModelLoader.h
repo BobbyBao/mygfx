@@ -30,8 +30,8 @@ namespace mygfx {
 		void loadImages();
 		void loadMaterials();
 		Texture* getTexture(size_t index);
-		Material* getMaterial(size_t index, bool skined);
-		Ref<Material> getDefaultMaterial();
+		Material* getMaterial(size_t index, bool skined, const DefineList* marcos);
+		Ref<Material> getDefaultMaterial(const DefineList* marcos);
 
 		VertexAttribute mVertexAttribute = VertexAttribute::NONE;
 		float mScale = 1.0f;

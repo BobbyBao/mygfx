@@ -9,6 +9,9 @@ namespace math {
 
     using namespace glm;
 
+	inline static const float MATH_PI = pi<float>();
+	inline static const float MATH_HALF_PI = pi<float>() / 2;
+
     using float2 = glm::vec2;
     using float3 = glm::vec3;
     using float4 = glm::vec4;

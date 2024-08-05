@@ -52,4 +52,14 @@ namespace mygfx {
 
 	template<typename T>
 	using HashSet = robin_hood::unordered_set<T>;
+
+	class HwBuffer;
+	class HwTexture;
+	class HwTextureView;
+	class HwRenderTarget;
+	class HwSwapchain;
+	class HwShaderModule;
+	class HwProgram;
+	class HwDescriptorSet;
+	class HwRenderPrimitive;
 }

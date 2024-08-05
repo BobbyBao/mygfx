@@ -13,11 +13,19 @@ namespace mygfx {
 
 		mat4 getEffectiveWorldTransform() const;
 
+		bool getNearPlane() const { return mNearPlane; }
+		bool getFarPlane() const { return mFarPlane; }
+		
+		vec3 getDirection() const;
+		vec3 getUp() const;
+		vec3 getSide() const;
+
 		const mat4& getViewMatrix() const;
 		const mat4& getProjMatrix() const;
 	protected:
 		void onTransformChanged() override;
 		void updateProjection() const;
+
 		bool	mOrtho = false;
 		float	mOrthoSize = 20.0f;
 		float   mFov = pi<float>() / 4;
