@@ -1,7 +1,7 @@
 #pragma once
 #include "Fwd.h"
 #include "utils/RefCounted.h"
-#include "core/MathTypes.h"
+#include "core/Maths.h"
 
 namespace mygfx {
 

@@ -7,8 +7,10 @@ namespace mygfx {
 		this->vertexData = vertexData;
 		if (vertexData->indexBuffer) {
 			drawArgs.indexCount = (uint32_t)vertexData->indexBuffer->count();
-		} else {
+		} else if(vertexData->vertexBuffers.size() > 0){
 			drawArgs.vertexCount = (uint32_t)vertexData->vertexBuffers[0]->count();
+		} else {
+			drawArgs.vertexCount = 3;
 		}
 	}
 
@@ -33,16 +35,26 @@ namespace mygfx {
 		return subMesh;
 	}
 
-	void Mesh::setMaterial(uint32_t index, Material* mat) {
+	void Mesh::setMaterial(uint32_t index, Material* mat)
+	{
 		if (index < mSubMeshes.size()) {
 			mSubMeshes[index].material = mat;
 		}
 	}
 
-	void Mesh::setMaterial(Material* mat) {
+	void Mesh::setMaterial(Material* mat)
+	{
 		for (auto& subMesh : mSubMeshes) {
 			subMesh.material = mat;
 		}
+	}
+
+	Mesh* Mesh::createFullScreen()
+	{
+		Mesh* mesh = new Mesh();
+		mesh->addSubMesh(new VertexData());
+		mesh->setBoundingBox(Aabb::Infinity);
+		return mesh;
 	}
 
 	Mesh* Mesh::createPlane(float size)

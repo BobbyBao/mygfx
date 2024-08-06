@@ -1,6 +1,6 @@
 #pragma once
 #include "Fwd.h"
-#include "core/MathTypes.h"
+#include "core/Maths.h"
 #include "GraphicsDefs.h"
 
 struct cgltf_data;

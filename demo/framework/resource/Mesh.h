@@ -1,6 +1,6 @@
 #pragma once
 #include "GraphicsHandles.h"
-#include "core/MathTypes.h"
+#include "core/Maths.h"
 
 namespace mygfx {
 	
@@ -38,6 +38,7 @@ namespace mygfx {
 		auto& getBoundingBox() const { return mBoundingBox; }
 		void setBoundingBox(const Aabb& aabb) { mBoundingBox = aabb; }
 
+		static Mesh* createFullScreen();
 		static Mesh* createPlane(float size = 1.0f);
 		static Mesh* createCube(float size = 1.0f, VertexAttribute attributes = VertexAttribute::POSITION | VertexAttribute::NORMAL | VertexAttribute::UV_0);
 

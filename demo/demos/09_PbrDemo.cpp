@@ -32,16 +32,19 @@ namespace mygfx::demo {
 			
 			
 			DefineList macros;
-			macros.add("HAS_TEXCOORD_0_VEC2", 1);
-			macros.add("HAS_NORMAL_VEC3", 2);
+			macros.add("HAS_TEXCOORD_0_VEC2", 1)
+				.add("HAS_NORMAL_VEC3", 2)
+				.add("MATERIAL_METALLICROUGHNESS")
+				.add("USE_IBL");
+
 			mShader = Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
 			mShader->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT});
 
 			auto material = new Material(mShader, "MaterialUniforms");
 			mMesh->setMaterial(material);
-			material->setShaderParameter("u_BaseColorFactor", vec4{1.0f});
-			material->setShaderParameter("u_MetallicFactor", vec4{0.0f});
-			material->setShaderParameter("u_RoughnessFactor", vec4{0.5f});
+			material->setShaderParameter("u_BaseColorFactor", vec4{0.5f});
+			material->setShaderParameter("u_MetallicFactor", 0.0f);
+			material->setShaderParameter("u_RoughnessFactor", 0.5f);
 			material->setShaderParameter("u_BaseColorTexture", Texture::Green);
 
 			auto node = new Renderable();

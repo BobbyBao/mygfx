@@ -669,13 +669,15 @@ namespace mygfx
 		
 	void VulkanDevice::drawPrimitive(HwRenderPrimitive* primitive) {
 		VulkanRenderPrimitive* rp = static_cast<VulkanRenderPrimitive*>(primitive);
-		vkCmdBindVertexBuffers(currentCmd->cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
+		if (rp->vertexBuffers.size() > 0) {
+			vkCmdBindVertexBuffers(currentCmd->cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
+		}
 
 		if (rp->indexBuffer != nullptr) {
 			vkCmdBindIndexBuffer(currentCmd->cmd, rp->indexBuffer, 0, rp->indexType);
-			currentCmd->drawIndexed(rp->drawArgs.indexCount, 1, rp->drawArgs.firstIndex, 0, 0);
+			currentCmd->drawIndexed(rp->drawArgs.indexCount, rp->drawArgs.instanceCount, rp->drawArgs.firstIndex, rp->drawArgs.vertexOffset, rp->drawArgs.firstInstance);
 		} else {
-			currentCmd->draw(rp->drawArgs.vertexCount, 1, rp->drawArgs.firstVertex, 0);
+			currentCmd->draw(rp->drawArgs.vertexCount, rp->drawArgs.instanceCount, rp->drawArgs.firstVertex, rp->drawArgs.firstInstance);
 		}
 
 		Stats::drawCall()++;

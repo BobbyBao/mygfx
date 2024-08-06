@@ -17,15 +17,14 @@ namespace mygfx {
 		Renderable::addToScene();
 
 		if (mMesh == nullptr) {
-			auto mesh = Mesh::createCube(80.0f, VertexAttribute::POSITION);
-			Ref<Shader> shader = Shader::fromFile("shaders/cubemap.vert", "shaders/cubemap.frag");
-			shader->setVertexInput({ Format::R32G32B32_SFLOAT });
-			shader->setCullMode(CullMode::BACK);
-			shader->setDepthTest(true, false);
+			auto mesh = Mesh::createFullScreen();
+			Ref<Shader> shader = Shader::fromFile("shaders/skybox.vert", "shaders/skybox.frag");
+			shader->setVertexInput({});
+			shader->setCullMode(CullMode::NONE);
+			//shader->setDepthTest(true, true);
 			Ref<Material> material = makeRef<Material>(shader.get(), "MaterialUniforms");
 			material->setShaderParameter("u_MipLevel", 0);
 			mesh->setMaterial(material);
-			
 			setMesh(mesh);
 		}
 
