@@ -60,8 +60,8 @@ namespace mygfx::demo {
 			mShader->setBlendMode(BlendMode::ADD);
 			mShader->pipelineState.primitiveState.primitiveTopology = PrimitiveTopology::POINT_LIST;
 
-			mParticleTexture = Texture::createFromFile("textures/particle_rgba.ktx");
-			mGradientTexture = Texture::createFromFile("textures/particle_gradient_rgba.ktx");
+			mParticleTexture = Texture::createFromFile("textures/particle_rgba.ktx", {.srgb = true});
+			mGradientTexture = Texture::createFromFile("textures/particle_gradient_rgba.ktx", {.srgb = true});
 
 			mShader->updateDescriptorSet(0, 0, mParticleTexture);
 			mShader->updateDescriptorSet(0, 1, mGradientTexture);

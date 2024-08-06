@@ -291,6 +291,11 @@ namespace mygfx {
 			.clearColor = {0.25f, 0.25f, 0.25f, 1.0f}
 		};
 
+		auto c = glm::convertSRGBToLinear(vec3{0.25f, 0.25f, 0.25f}, 2.2f);
+		renderInfo.clearColor[0] = c.r;
+		renderInfo.clearColor[1] = c.g;
+		renderInfo.clearColor[2] = c.b;
+
 		renderInfo.viewport = { .left = 0, .top = 0, .width = mWidth, .height = mHeight };
 
 		cmd.beginRendering(mSwapchain->renderTarget, renderInfo);

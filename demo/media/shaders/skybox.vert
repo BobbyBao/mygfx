@@ -17,6 +17,6 @@ void main()
 {
     gl_Position = FullScreenVertsPos[gl_VertexIndex];
     vec2 uv = FullScreenVertsUVs[gl_VertexIndex];
-    vec4 clip = vec4(2 * uv.x - 1, 2 * uv.y, 0, 1);
+    vec4 clip = vec4(2 * uv.x - 1, 1 - 2 * uv.y, 0, 1);
     v_TexCoords = (u_InvViewProjectionMatrix * clip).xyz;
 }

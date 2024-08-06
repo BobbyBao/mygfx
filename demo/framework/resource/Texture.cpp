@@ -164,7 +164,7 @@ namespace mygfx {
 		auto textureData = TextureData::Texture2D(width, height, format);
 		textureData.sampleCount = msaa;
 		textureData.usage = TextureUsage::COLOR_ATTACHMENT | usage;
-		return createFromData(textureData, SamplerInfo{ Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE });
+		return createFromData(textureData, SamplerInfo::create(Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE));
 	}
 
 	Ref<Texture> Texture::createDepthStencil(uint16_t width, uint16_t height, Format format, TextureUsage usage, bool isShadowMap, SampleCount msaa) {
@@ -172,7 +172,7 @@ namespace mygfx {
 		textureData.sampleCount = msaa;
 		textureData.usage = TextureUsage::DEPTH_STENCIL_ATTACHMENT | usage;
 
-		SamplerInfo samplerInfo{ Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE };
+		SamplerInfo samplerInfo = SamplerInfo::create(Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE);
 
 		if (isShadowMap) {
 			textureData.usage |= TextureUsage::SAMPLED;
@@ -204,6 +204,10 @@ namespace mygfx {
 		textureData.depth = 1;
 		textureData.mipMapCount = mipCount;
 		textureData.format = Format::R8G8B8A8_UNORM;
+
+		if (samplerInfo.srgb) {
+			textureData.format = setFormatGamma(textureData.format, true);
+		}
 
 		Ref<Texture> tex(new Texture());
 		if (!tex->create(textureData, samplerInfo)) {

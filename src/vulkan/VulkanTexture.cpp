@@ -217,7 +217,7 @@ namespace mygfx
 			info.pNext = &formatListInfo;
 		}
 		else {
-			assert(!isSrgb(vkFormat));
+			//assert(!isSrgb(vkFormat));
 			vkFormat = setFormatGamma(vkFormat, useSRGB);
 		}
 

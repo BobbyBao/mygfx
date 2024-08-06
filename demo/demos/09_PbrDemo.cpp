@@ -35,6 +35,7 @@ namespace mygfx::demo {
 			macros.add("HAS_TEXCOORD_0_VEC2", 1)
 				.add("HAS_NORMAL_VEC3", 2)
 				.add("MATERIAL_METALLICROUGHNESS")
+				.add("LINEAR_OUTPUT")
 				.add("USE_IBL");
 
 			mShader = Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
@@ -58,7 +59,7 @@ namespace mygfx::demo {
 			//mScene->addChild(model);
 
 			auto skybox = mScene->createChild<Skybox>();
-			skybox->setCubeMap(Texture::createFromFile("textures/hdr/papermill.ktx"));
+			skybox->setCubeMap(Texture::createFromFile("textures/papermill/specular.dds", SamplerInfo {.srgb = true}));
 
 			co_return;
 		}

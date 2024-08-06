@@ -254,5 +254,6 @@ namespace mygfx {
 	
 	Format fromName(char const* p);
 	
+    Format setFormatGamma(Format format, bool addGamma);
 
 }

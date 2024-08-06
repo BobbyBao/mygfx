@@ -18,10 +18,11 @@ namespace mygfx {
 
 		if (mMesh == nullptr) {
 			auto mesh = Mesh::createFullScreen();
-			Ref<Shader> shader = Shader::fromFile("shaders/skybox.vert", "shaders/skybox.frag");
+			DefineList macros;
+			macros.add("LINEAR_OUTPUT");
+			Ref<Shader> shader = Shader::fromFile("shaders/skybox.vert", "shaders/skybox.frag", &macros);
 			shader->setVertexInput({});
 			shader->setCullMode(CullMode::NONE);
-			//shader->setDepthTest(true, true);
 			Ref<Material> material = makeRef<Material>(shader.get(), "MaterialUniforms");
 			material->setShaderParameter("u_MipLevel", 0);
 			mesh->setMaterial(material);

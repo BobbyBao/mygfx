@@ -347,24 +347,28 @@ namespace mygfx {
 		Filter  minFilter : 1 = Filter::LINEAR;
 		Filter  mipmapMode : 1 = Filter::LINEAR;
 		SamplerAddressMode    addressModeU : 3 = SamplerAddressMode::REPEAT;
+
 		SamplerAddressMode    addressModeV : 3 = SamplerAddressMode::REPEAT;
 		SamplerAddressMode    addressModeW : 3 = SamplerAddressMode::REPEAT;
 		bool	compareEnable : 1 = false;
+
 		CompareOp	compareOp : 3 = CompareOp::NEVER;
 		BorderColor	borderColor : 3 = BorderColor::FLOAT_TRANSPARENT_BLACK;
 		bool    unnormalizedCoordinates : 1 = false;
 		bool	anisotropyEnable : 1 = false;
-		uint8_t reserve{};
 
-		SamplerInfo() = default;
+		bool	srgb : 1 = false;
+		//uint8_t reserve : 7;
 
-		SamplerInfo(Filter filter, SamplerAddressMode addressMode) {
-			magFilter = filter;
-			minFilter = filter;
-			mipmapMode = filter;
-			addressModeU = addressMode;
-			addressModeV = addressMode;
-			addressModeW = addressMode;
+		constexpr static SamplerInfo create(Filter filter, SamplerAddressMode addressMode) {
+			SamplerInfo ret{};
+			ret.magFilter = filter;
+			ret.minFilter = filter;
+			ret.mipmapMode = filter;
+			ret.addressModeU = addressMode;
+			ret.addressModeV = addressMode;
+			ret.addressModeW = addressMode;
+			return ret;
 		}
 
 		bool operator == (const SamplerInfo& other) const {

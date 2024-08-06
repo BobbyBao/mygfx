@@ -12,6 +12,7 @@ namespace mygfx {
 
 		Ref<Texture> load(const String& fileName, SamplerInfo samplerInfo);
 		virtual Ref<Texture> onLoad(const Span<uint8_t>& content, SamplerInfo samplerInfo) = 0;
+
 	protected:
 	};
 
@@ -49,7 +50,7 @@ namespace mygfx {
 		Ref<Texture> onLoad(const Span<uint8_t>& content, SamplerInfo samplerInfo) override;
 	protected:
 		void copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level) override;
-		char* mData = nullptr;
+		uint8_t* mData = nullptr;
 	};
 
 }
