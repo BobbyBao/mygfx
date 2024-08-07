@@ -4,12 +4,6 @@
 
 namespace mygfx
 {
-	inline vec3 FORWARD(0.0f, 0.0f, -1.0f);
-	inline vec3 BACK(0.0f, 0.0f, 1.0);
-	inline vec3 RIGHT(1.0f, 0.0f, 0.0f);
-	inline vec3 LEFT(-1.0f, 0.0f, 0.0f);
-	inline vec3 UP(0.0f, 1.0f, 0.0f);
-	inline vec3 DOWN(0.0f, -1.0f, 0.0f);
 
     static vec3 moveWASD()
     {

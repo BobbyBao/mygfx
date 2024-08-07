@@ -9,9 +9,6 @@ namespace math {
 
     using namespace glm;
 
-	inline static const float MATH_PI = pi<float>();
-	inline static const float MATH_HALF_PI = pi<float>() / 2;
-
     using float2 = glm::vec2;
     using float3 = glm::vec3;
     using float4 = glm::vec4;
@@ -19,6 +16,17 @@ namespace math {
     using Vector3 = glm::vec3;
     using Vector4 = glm::vec4;
     using Quaternion = glm::quat;
+
+	inline static const float MATH_PI = pi<float>();
+	inline static const float MATH_HALF_PI = pi<float>() / 2;
+	
+	inline constexpr vec3 FORWARD(0.0f, 0.0f, -1.0f);
+	inline constexpr vec3 BACK(0.0f, 0.0f, 1.0);
+	inline constexpr vec3 RIGHT(1.0f, 0.0f, 0.0f);
+	inline constexpr vec3 LEFT(-1.0f, 0.0f, 0.0f);
+	inline constexpr vec3 UP(0.0f, 1.0f, 0.0f);
+	inline constexpr vec3 DOWN(0.0f, -1.0f, 0.0f);
+    
 
 	struct Aabb {
 		float3 min = float3{std::numeric_limits<float>::max()};
