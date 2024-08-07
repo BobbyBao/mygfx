@@ -15,8 +15,8 @@ namespace mygfx {
 
 	struct RasterState {
 		PolygonMode polygonMode : 2 = PolygonMode::FILL;
-		CullMode cullMode : 2 = CullMode::FRONT;
-		FrontFace frontFace : 1 = FrontFace::CLOCKWISE;
+		CullMode cullMode : 2 = CullMode::BACK;
+		FrontFace frontFace : 1 = FrontFace::COUNTER_CLOCKWISE;
 		bool depthBiasEnable : 1 = false;
 
 		bool alphaToCoverageEnable : 1 = false;

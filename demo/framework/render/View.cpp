@@ -47,6 +47,16 @@ namespace mygfx {
 				mFrameUniforms.ggxEnvTexture = cubeMap->index();
 				mFrameUniforms.mipCount = cubeMap->textureData().mipMapCount;
 			}
+
+			auto irr = mScene->skybox->getIrrMap();
+			if (irr) {
+				mFrameUniforms.lambertianEnvTexture = irr->index();
+			}
+
+			auto lut = mScene->skybox->getGGXLUT();
+			if (lut) {
+				mFrameUniforms.ggxLUTTexture = lut->index();
+			}
 		}
 	}
 

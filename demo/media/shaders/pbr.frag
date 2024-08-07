@@ -374,6 +374,8 @@ void main()
     g_finalColor = vec4(toneMap(color), baseColor.a);
 #endif
 
+return;
+
 #else
     // In case of missing data for a debug view, render a checkerboard.
     g_finalColor = vec4(1.0);
@@ -386,7 +388,6 @@ void main()
         g_finalColor.rgb *= gray + v1.x * v1.y + v2.x * v2.y;
     }
 #endif
-
     // Debug views:
 
     // Generic:

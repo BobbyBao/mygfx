@@ -26,6 +26,14 @@ namespace math {
 
 		static Aabb Empty;
 		static Aabb Infinity;
+
+		float3 size() const {
+			return max - min;
+		}
+
+		float3 center() const {
+			return (max + min) / 2.0f;
+		}
 		
 		Aabb& merge(const Aabb& other)
 		{

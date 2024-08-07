@@ -139,9 +139,11 @@ layout(std140, binding = 2) uniform MaterialUniforms {
 
 #ifdef MATERIAL_METALLICROUGHNESS
 #define u_BaseColorSampler textures_2d[nonuniformEXT(u_BaseColorTexture)]
+#define u_MetallicRoughnessSampler textures_2d[nonuniformEXT(u_MetallicRoughnessTexture)]
 #endif
 
 #ifdef MATERIAL_SPECULARGLOSSINESS
+#define u_DiffuseSampler textures_2d[nonuniformEXT(u_DiffuseTexture)]
 #define u_SpecularGlossinessSampler textures_2d[nonuniformEXT(u_SpecularGlossinessTexture)]
 #endif
 

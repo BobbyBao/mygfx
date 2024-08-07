@@ -58,6 +58,10 @@ namespace mygfx {
 		void setCamera(Camera* camera);
 		void setEnvMap(Texture* cubeMap);
 
+		void setEnvIntensity(float envIntensity) {
+			mFrameUniforms.envIntensity = envIntensity;
+		}
+
 		void update(double delta);
 		void render(GraphicsApi& cmd);
 	protected:

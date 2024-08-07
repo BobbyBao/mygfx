@@ -42,9 +42,9 @@ namespace mygfx {
 
 		std::filesystem::path filePath = fileName;
 
-		auto parentPath = filePath.parent_path();
+		auto gltfPath = FileUtils::convertPath(filePath);
+		mFilePath = gltfPath.parent_path();
 
-		auto gltfPath = std::filesystem::absolute(parentPath);
 		result = cgltf_load_buffers(&options, data, gltfPath.string().c_str());
 		if (result != cgltf_result_success) {
 			LOG_ERROR("Unable to load resources.");
@@ -54,21 +54,22 @@ namespace mygfx {
 
 		mGltfModel = data;
 
+		loadMaterials();
+
+		loadImages();
+
 		loadScene();
+
 		cgltf_free(data);
 
 		return mRootNode;
 	}
 	
 	void ModelLoader::loadScene() {
+
 		mRootNode = new Node();
 		
-		loadImages();
-
-		loadMaterials();
-		
 		auto& gltfModel = *mGltfModel;
-
 		mNodes.resize(gltfModel.nodes_count);
 
 		for (int s = 0; s < gltfModel.scenes_count; s++) {
@@ -144,6 +145,16 @@ namespace mygfx {
 			bool hasSkinOrMorphing = (hasSkin() && node.skin) || numMorphTargets;
 			DefineList defineList;
 
+			auto find_attribute = [](const cgltf_primitive& primitive, cgltf_attribute_type attribute_type) -> auto {
+				for (int i = 0; i < primitive.attributes_count; i++) {
+					if (primitive.attributes[i].type == attribute_type) {
+						return &primitive.attributes[i];
+					}
+				}
+				return (cgltf_attribute*)nullptr;
+				};
+
+
 			for (size_t j = 0; j < mesh.primitives_count; j++) {
 				const cgltf_primitive& primitive = mesh.primitives[j];
 				if (primitive.indices == nullptr) {
@@ -167,16 +178,7 @@ namespace mygfx {
 				auto material = primitive.material ? mMaterials[primitive.material - mGltfModel->materials] : mMaterials.back();
 
 				Vector<Ref<HwBuffer>> vbs;
-
-				auto find_attribute = [](const cgltf_primitive& primitive, cgltf_attribute_type attribute_type) -> auto {
-					for (int i = 0; i < primitive.attributes_count; i++) {
-						if (primitive.attributes[i].type == attribute_type) {
-							return &primitive.attributes[i];
-						}
-					}
-					return (cgltf_attribute*)nullptr;
-				};
-
+				FormatList formats;
 				// Vertices
 				{
 					const float3* bufferPos = nullptr;
@@ -203,6 +205,7 @@ namespace mygfx {
 						auto vb = gfxApi().createBuffer(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, vertexCount * sizeof(float3), sizeof(float3), bufferPos);
 						vb->extra = (uint16_t)VertexAttribute::POSITION;
 						vbs.push_back(vb);
+						formats += Format::R32G32B32_SFLOAT;
 					}
 
 					if (auto attr = find_attribute(primitive, cgltf_attribute_type_normal)) {
@@ -212,6 +215,7 @@ namespace mygfx {
 						vb->extra = (uint16_t)VertexAttribute::NORMAL;
 						defineList.add("HAS_NORMAL_VEC3", vbs.size());
 						vbs.push_back(vb);
+						formats.append({ Format::END, Format::R32G32B32_SFLOAT });
 					}
 
 					if (auto attr = find_attribute(primitive, cgltf_attribute_type_texcoord)) {
@@ -224,6 +228,7 @@ namespace mygfx {
 							vb->extra = (uint16_t)VertexAttribute::UV_0;
 							defineList.add("HAS_TEXCOORD_0_VEC2", vbs.size());
 							vbs.push_back(vb);
+							formats.append({ Format::END, Format::R32G32_SFLOAT });
 						}
 
 					}
@@ -235,6 +240,7 @@ namespace mygfx {
 							vb->extra = (uint16_t)VertexAttribute::UV_0;
 							defineList.add("HAS_TEXCOORD_0_VEC2", vbs.size());
 							vbs.push_back(vb);
+							formats.append({ Format::END, Format::R32G32_SFLOAT });
 						}
 					}
 
@@ -250,6 +256,7 @@ namespace mygfx {
 							vb->extra = (uint16_t)VertexAttribute::COLOR;
 							defineList.add(numColorComponents == 3 ? "HAS_COLOR_0_VEC3" : "HAS_COLOR_0_VEC4", vbs.size());
 							vbs.push_back(vb);
+							formats.append({ Format::END, numColorComponents == 3 ? Format::R32G32B32_SFLOAT : Format::R32G32B32A32_SFLOAT });
 						}
 
 					}
@@ -261,6 +268,7 @@ namespace mygfx {
 							vb->extra = (uint16_t)VertexAttribute::COLOR;
 							defineList.add(numColorComponents == 3 ? "HAS_COLOR_0_VEC3" : "HAS_COLOR_0_VEC4", vbs.size());
 							vbs.push_back(vb);
+							formats.append({ Format::END, numColorComponents == 3 ? Format::R32G32B32_SFLOAT : Format::R32G32B32A32_SFLOAT });
 						}
 					}
 
@@ -274,6 +282,7 @@ namespace mygfx {
 							vb->extra = (uint16_t)VertexAttribute::TANGENTS;
 							defineList.add("HAS_TANGENT_VEC4", vbs.size());
 							vbs.push_back(vb);
+							formats.append({ Format::END, Format::R32G32B32A32_SFLOAT });
 
 						}
 						else {
@@ -337,6 +346,7 @@ namespace mygfx {
 							vb->extra = (uint16_t)VertexAttribute::BONE_INDICES;
 							defineList.add("HAS_JOINTS_0_VEC4", vbs.size());
 							vbs.push_back(vb);
+							formats.append({ Format::END, Format::R16G16B16A16_UINT });
 						}
 
 					}
@@ -350,6 +360,7 @@ namespace mygfx {
 							vb->extra = (uint16_t)VertexAttribute::BONE_WEIGHTS;
 							defineList.add("HAS_WEIGHTS_0_VEC4", vbs.size());
 							vbs.push_back(vb);
+							formats.append({ Format::END, Format::R32G32B32A32_SFLOAT });
 						}
 					}
 
@@ -367,9 +378,10 @@ namespace mygfx {
 					auto& subMesh = newMesh->addSubMesh(vertexData, drawArgs);
 				
 					subMesh.material = primitive.material ? getMaterial(primitive.material - mGltfModel->materials, hasSkinOrMorphing, &defineList) : getDefaultMaterial(&defineList);
+					subMesh.material->shader()->setVertexInput(formats);
 					subMesh.boundingBox = Aabb(posMin, posMax);
 					boundingBox.merge(subMesh.boundingBox);
-
+					
 					if (primitive.targets_count > 0) {
 						//auto targets = loadMorphTargets(primitive, vertexCount, (uint3*)indexBuffer.data(), (uint32_t)indexBuffer.size() / 3);
 						//subMesh.morphTargetBuffer = targets;
@@ -378,6 +390,7 @@ namespace mygfx {
 				}
 
 				newMesh->setBoundingBox(boundingBox);
+				mBoundingBox.merge(boundingBox);
 			}
 
 			renderable->setMesh(newMesh);
@@ -420,6 +433,8 @@ namespace mygfx {
 
 	void ModelLoader::loadImages()
 	{
+		FileUtils::pushPath(mFilePath);
+
 		for (int i = 0; i < mGltfModel->textures_count; i++) {
 			auto& srcTexture = mGltfModel->textures[i];
 			const cgltf_image* image = srcTexture.basisu_image ?
@@ -429,6 +444,7 @@ namespace mygfx {
 			std::string mime = image->mime_type ? image->mime_type : "";
 			size_t dataUriSize;
 			uint8_t* dataUriContent = uri ? parseDataUri(uri, &mime, &dataUriSize) : nullptr;
+			bool srgb = mSrgb[i];
 
 			if (mime.empty()) {
 				assert(uri && "Non-URI images must supply a mime type.");
@@ -460,7 +476,7 @@ namespace mygfx {
 				mTextures.push_back(tex);
 			}
 			else {
-				auto tex = Texture::createFromFile(uri);
+				auto tex = Texture::createFromFile(uri, {.srgb = srgb });
 				if (tex == nullptr) {
 					LOG_ERROR("Load texture failed : {}", uri);
 				}
@@ -469,16 +485,88 @@ namespace mygfx {
 			}
 
 		}
+
+		FileUtils::popPath();
 	}
 
 	void ModelLoader::loadMaterials()
 	{
 		mMaterials.resize(mGltfModel->materials_count);
+		mSrgb.resize(mGltfModel->textures_count);
+		for (int i = 0; i < mGltfModel->materials_count; i++) {
+			auto& mat = mGltfModel->materials[i];
 
-		if (mMaterials.empty()) {
-			mMaterials.emplace_back(getDefaultMaterial(nullptr));
+			if (mat.emissive_texture.texture) {
+				mSrgb[cgltf_texture_index(mGltfModel, mat.emissive_texture.texture)] = true;
+			}
+
+			if (mat.pbr_metallic_roughness.base_color_texture.texture) {
+				mSrgb[cgltf_texture_index(mGltfModel, mat.pbr_metallic_roughness.base_color_texture.texture)] = true;
+			}
+
+			if (mat.pbr_metallic_roughness.metallic_roughness_texture.texture) {
+				mSrgb[cgltf_texture_index(mGltfModel, mat.pbr_metallic_roughness.metallic_roughness_texture.texture)] = true;
+			}
+
+			if (mat.pbr_specular_glossiness.diffuse_texture.texture) {
+				mSrgb[cgltf_texture_index(mGltfModel, mat.pbr_specular_glossiness.diffuse_texture.texture)] = true;
+			}
+
+			if (mat.pbr_specular_glossiness.specular_glossiness_texture.texture) {
+				mSrgb[cgltf_texture_index(mGltfModel, mat.pbr_specular_glossiness.specular_glossiness_texture.texture)] = true;
+			}
 		}
 
+		if (mMaterials.empty()) {
+			//mMaterials.emplace_back(getDefaultMaterial(nullptr));
+		}
+
+	}
+
+	void getDefines(cgltf_material& mat, DefineList& defineList) {
+		defineList.add("USE_IBL")
+			.add("DEBUG_NONE", 0)
+			.add("DEBUG", 0);
+
+		if (mat.normal_texture.texture) {
+			defineList.add("HAS_NORMAL_MAP");
+		}
+
+		if (mat.emissive_texture.texture) {
+			defineList.add("HAS_EMISSIVE_MAP");
+		}
+
+		if (mat.occlusion_texture.texture) {
+			defineList.add("HAS_OCCLUSION_MAP");
+		}
+
+		if (mat.has_pbr_metallic_roughness) {
+			defineList.add("MATERIAL_METALLICROUGHNESS");
+
+			if (mat.pbr_metallic_roughness.base_color_texture.texture) {
+				defineList.add("HAS_BASE_COLOR_MAP");
+			}
+
+			// Metallic roughness workflow
+			if (mat.pbr_metallic_roughness.metallic_roughness_texture.texture) {
+				defineList.add("HAS_METALLIC_ROUGHNESS_MAP");
+			}
+
+		}
+
+		if (mat.has_pbr_specular_glossiness) {
+			defineList.add("MATERIAL_SPECULARGLOSSINESS");
+
+			if (mat.pbr_specular_glossiness.diffuse_texture.texture) {
+				defineList.add("HAS_DIFFUSE_MAP");
+			}
+
+			if (mat.pbr_specular_glossiness.specular_glossiness_texture.texture) {
+				defineList.add("HAS_SPECULAR_GLOSSINESS_MAP");
+				
+			}
+
+		}
 	}
 
 	Material* ModelLoader::getMaterial(size_t index, bool skined, const DefineList* marcos)
@@ -487,51 +575,59 @@ namespace mygfx {
 			return mMaterials[index];
 		}
 
-		auto defaultShader = mShader ? mShader : Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", marcos);
+		DefineList defineList;
+		if (marcos) {
+			defineList += *marcos;
+		}
 
 		auto& mat = mGltfModel->materials[index];
+		getDefines(mat, defineList);
+
+		auto defaultShader = mShader ? mShader : Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &defineList);
+		//defaultShader->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT });
+
 		Material* material = new Material(defaultShader, "MaterialUniforms");
 
 		if (mat.has_pbr_metallic_roughness) {
 			auto& baseColorFactor = mat.pbr_metallic_roughness.base_color_factor;
-			material->setShaderParameter("baseColorFactor", vec4((float)baseColorFactor[0], (float)baseColorFactor[1], (float)baseColorFactor[2], (float)baseColorFactor[3]));
-			material->setShaderParameter("roughnessFactor", (float)mat.pbr_metallic_roughness.roughness_factor);
-			material->setShaderParameter("metallicFactor", (float)mat.pbr_metallic_roughness.metallic_factor);
+			material->setShaderParameter("u_BaseColorFactor", vec4((float)baseColorFactor[0], (float)baseColorFactor[1], (float)baseColorFactor[2], (float)baseColorFactor[3]));
+			material->setShaderParameter("u_RoughnessFactor", (float)mat.pbr_metallic_roughness.roughness_factor);
+			material->setShaderParameter("u_MetallicFactor", (float)mat.pbr_metallic_roughness.metallic_factor);
 		}
 
 		if (mat.pbr_metallic_roughness.base_color_texture.texture) {
 			auto baseColorTexture = getTexture(mat.pbr_metallic_roughness.base_color_texture.texture - mGltfModel->textures);
-			material->setShaderParameter("baseColorTexture", baseColorTexture);
+			material->setShaderParameter("u_BaseColorTexture", baseColorTexture);
 			//Engine::get().addDebugImage(baseColorTexture);
 		}
 
 		// Metallic roughness workflow
 		if (mat.pbr_metallic_roughness.metallic_roughness_texture.texture) {
 			auto metallicRoughnessTexture = getTexture(mat.pbr_metallic_roughness.metallic_roughness_texture.texture - mGltfModel->textures);
-			material->setShaderParameter("metallicRoughnessTexture", metallicRoughnessTexture);
+			material->setShaderParameter("u_MetallicRoughnessTexture", metallicRoughnessTexture);
 		}
 
+		material->setShaderParameter("u_NormalScale", 1.0f);		
 		if (mat.normal_texture.texture) {
 			auto normalTexture = getTexture(mat.normal_texture.texture - mGltfModel->textures);
-			material->setShaderParameter("normalTexture", normalTexture);
-		}
-		else {
-			//material->setShaderParameter("normalTexture", Texture::Normal);
+			material->setShaderParameter("u_NormalTexture", normalTexture);
 		}
 
-		vec4 emissiveFactor = vec4((float)mat.emissive_factor[0], (float)mat.emissive_factor[1],
-			(float)mat.emissive_factor[2], mat.emissive_strength.emissive_strength);
-		material->setShaderParameter("emissiveFactor", emissiveFactor);
+
+		vec3 emissiveFactor = vec3((float)mat.emissive_factor[0], (float)mat.emissive_factor[1],
+			(float)mat.emissive_factor[2]);// , mat.emissive_strength.emissive_strength);
+		material->setShaderParameter("u_EmissiveFactor", emissiveFactor);
 
 		if (mat.emissive_texture.texture) {
 			auto emissiveTexture = getTexture(mat.emissive_texture.texture - mGltfModel->textures);
-			material->setShaderParameter("emissiveTexture", emissiveTexture);
+			material->setShaderParameter("u_EmissiveTexture", emissiveTexture);
 		}
 
-		material->setShaderParameter("aoStrength", 1.0f);
+		material->setShaderParameter("u_OcclusionStrength", 1.0f);
 		if (mat.occlusion_texture.texture) {
 			auto occlusionTexture = getTexture(mat.occlusion_texture.texture - mGltfModel->textures);
-			material->setShaderParameter("occlusionTexture", occlusionTexture);
+			material->setShaderParameter("u_OcclusionTexture", occlusionTexture);
+			material->setShaderParameter("u_OcclusionStrength", mat.occlusion_texture.scale);
 		}
 
 		if (mat.alpha_mode == cgltf_alpha_mode_blend) {
@@ -544,7 +640,7 @@ namespace mygfx {
 			material->setBlendMode(BlendMode::NONE);
 		}
 
-		material->setShaderParameter("alphaCutoff", mat.alpha_cutoff);
+		material->setShaderParameter("u_AlphaCutoff", mat.alpha_cutoff);
 		material->setDoubleSide(mat.double_sided);
 		mMaterials[index] = material;
 		return material;
@@ -560,13 +656,22 @@ namespace mygfx {
 
 	Ref<Material> ModelLoader::getDefaultMaterial(const DefineList* marcos)
 	{
-		auto defaultShader = Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", marcos);
+		DefineList macros;
+		macros.add("HAS_TEXCOORD_0_VEC2", 1)
+			.add("HAS_NORMAL_VEC3", 2)
+			.add("MATERIAL_METALLICROUGHNESS")
+			.add("LINEAR_OUTPUT")
+			.add("USE_IBL")
+			.add("DEBUG_NONE", 0)
+			.add("DEBUG", 0);
 
-		Ref<Material> material(makeRef<Material>(defaultShader, "MaterialUniforms"));
-		material->setShaderParameter("baseColorFactor", vec4(1.0f));
-		material->setShaderParameter("roughnessFactor", 0.5f);
-		material->setShaderParameter("metallicFactor", 0.0f);
-		material->setShaderParameter("aoStrength", 1.0f);
+		auto defaultShader = Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
+		defaultShader->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT });
+
+		Ref<Material> material(new Material(defaultShader, "MaterialUniforms"));
+		material->setShaderParameter("u_BaseColorFactor", vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
+		material->setShaderParameter("u_MetallicFactor", 0.0f);
+		material->setShaderParameter("u_RoughnessFactor", 0.5f);
 		return material;
 	}
 }

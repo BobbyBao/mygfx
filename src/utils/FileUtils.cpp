@@ -37,6 +37,15 @@ namespace utils {
 		return false;
 	}
 
+	Path FileUtils::convertPath(const Path& path) {
+		Path filePath(path);
+		if (!filePath.is_absolute()) {
+			filePath = getCurrentPath() / filePath;
+		}
+
+		return absolute(filePath);
+	}
+
 	std::vector<uint8_t> FileUtils::readAll(const Path& path) noexcept {
 		Path filePath(path);
 		if (!filePath.is_absolute()) {

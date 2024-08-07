@@ -2,6 +2,7 @@
 #include "Fwd.h"
 #include "core/Maths.h"
 #include "GraphicsDefs.h"
+#include "utils/FileUtils.h"
 
 struct cgltf_data;
 struct cgltf_node;
@@ -24,6 +25,10 @@ namespace mygfx {
 		Ref<Node> load(const String& fileName);
 
 		bool hasSkin() const;
+
+		auto& getBoundingBox() const {
+			return mBoundingBox;
+		}
 	protected:
 		void loadScene();
 		void loadNode(Node* parent, cgltf_node& node, float globalscale);
@@ -37,11 +42,14 @@ namespace mygfx {
 		float mScale = 1.0f;
 		bool mEnableSkin = true;
 		Ref<Shader> mShader;
+		utils::Path mFilePath;
 		cgltf_data* mGltfModel = nullptr;
 		Ref<Node> mRootNode;
+		Vector<bool> mSrgb;
 		std::vector<Ref<Texture>> mTextures;
 		std::vector<Ref<Material>> mMaterials;
 		std::vector<Node*> mNodes;
+		Aabb mBoundingBox;
 	};
 
 }

@@ -24,6 +24,7 @@ namespace utils {
 		static void pushPath(const Path& path);
 		static void popPath();
 		static bool exist(const Path& path);
+		static Path convertPath(const Path& path);
 		static std::vector<uint8_t> readAll(const Path& path) noexcept;
 		static std::string readAllText(const Path& path) noexcept;
 	};

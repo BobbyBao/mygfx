@@ -49,7 +49,8 @@ namespace mygfx {
 		DefineList& add(const String& key, int val);
 		DefineList& add(const String& key);
 
-		DefineList& operator+(const DefineList& def2);
+		DefineList operator+(const DefineList& def2);
+		DefineList& operator+=(const DefineList& def2);
 	};
 
 	class ShaderStruct

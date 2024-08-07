@@ -30,7 +30,13 @@ namespace mygfx {
 		return *this;
 	}
 
-	DefineList& DefineList::operator+(const DefineList& def2) {
+	DefineList DefineList::operator+(const DefineList& def2) {
+		DefineList ret(*this);
+		ret += def2;
+		return ret;
+	}
+
+	DefineList& DefineList::operator+=(const DefineList& def2) {
 		for (auto it = def2.begin(); it != def2.end(); it++)
 			(*this)[it->first] = it->second;
 		return *this;

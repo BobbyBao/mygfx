@@ -14,6 +14,7 @@ namespace mygfx {
 	static constexpr uint32_t MAX_BACKBUFFER_COUNT = 3;
 	static constexpr uint32_t MAX_MORPH_TARGETS = 256;
 	static constexpr bool InvertedDepth = true;
+	static constexpr bool LinearColorOutput = true;
 
 
 }

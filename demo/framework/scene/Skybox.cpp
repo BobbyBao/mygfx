@@ -1,4 +1,5 @@
 #include "Skybox.h"
+#include "resource/Texture.h"
 #include "resource/Shader.h"
 #include "resource/Material.h"
 #include "resource/Mesh.h"
@@ -11,6 +12,10 @@ namespace mygfx {
 
 	void Skybox::setCubeMap(Texture* tex) {
 		mCubeMap = tex;
+	}
+	
+	void Skybox::setIrrMap(Texture* tex) {
+		mIrrMap = tex;
 	}
 
 	void Skybox::addToScene() {
@@ -27,6 +32,10 @@ namespace mygfx {
 			material->setShaderParameter("u_MipLevel", 0);
 			mesh->setMaterial(material);
 			setMesh(mesh);
+		}
+
+		if (mGGXLUT == nullptr) {
+			mGGXLUT = Texture::createFromFile("textures/brdfLut.dds", SamplerInfo{ .srgb = true });
 		}
 
 		mScene->skybox = this;
