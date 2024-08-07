@@ -1,11 +1,9 @@
-//#version 450
-//#extension GL_ARB_separate_shader_objects : enable
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
 
 precision mediump float;
 #define MATH_PI 3.1415926535897932384626433832795
 //#define MATH_INV_PI (1.0 / MATH_PI)
-
-uniform samplerCube uCubeMap;
 
 // enum
 const int cLambertian = 0;
@@ -13,20 +11,22 @@ const int cGGX = 1;
 const int cCharlie = 2;
 
 
-//layout(push_constant) uniform FilterParameters {
-uniform  float u_roughness;
-uniform  int u_sampleCount;
-uniform  int u_width;
-uniform  float u_lodBias;
-uniform  int u_distribution; // enum
-uniform int u_currentFace;
-uniform int u_isGeneratingLUT;
+layout(std140, binding = 0) uniform UBO {
+    float u_roughness;
+    int u_sampleCount;
+    int u_width;
+    float u_lodBias;
+    int u_distribution; // enum
+    int u_currentFace;
+    int u_isGeneratingLUT;
+};
 
-//layout (location = 0) in vec2 inUV;
-in vec2 texCoord;
+uniform samplerCube uCubeMap;
 
 
-out vec4 fragmentColor;
+layout (location = 0) in vec2 texCoord;
+
+layout (location = 0) out vec4 fragmentColor;
 
 //layout(location = 6) out vec3 outLUT;
 

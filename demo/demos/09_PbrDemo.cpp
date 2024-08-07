@@ -30,9 +30,12 @@ namespace mygfx::demo {
 			//mScene->addChild(createCube());
 
 			auto skybox = mScene->createChild<Skybox>();
-			skybox->setCubeMap(Texture::createFromFile("textures/papermill/specular.dds", SamplerInfo {.srgb = true }));
-			auto irr = Texture::createFromFile("textures/papermill/diffuse.dds", SamplerInfo{ .srgb = true });
-			skybox->setIrrMap(irr);
+
+			//skybox->setCubeMap(Texture::createFromFile("textures/papermill/specular.dds", SamplerInfo {.srgb = true }));
+			//skybox->setIrrMap(Texture::createFromFile("textures/papermill/diffuse.dds", SamplerInfo{ .srgb = true }));
+		
+			skybox->setCubeMap(Texture::createFromFile("textures/field/ggx/specular.ktx2", SamplerInfo {.srgb = false }));
+			skybox->setIrrMap(Texture::createFromFile("textures/field/lambertian/diffuse.ktx2", SamplerInfo{ .srgb = false }));
 
 			ModelLoader modelLoader;
 			auto model = modelLoader.load("models/BoomBox/glTF/BoomBox.gltf");

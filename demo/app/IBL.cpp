@@ -2,7 +2,7 @@
 #include "Framework.h"
 
 namespace mygfx {
-	
+    
 	void IBL::init(Texture* cubeMap) {
 
 		mCubeMap = cubeMap;
@@ -19,4 +19,5 @@ namespace mygfx {
 
 
 	}
+
 }

@@ -134,7 +134,7 @@ namespace mygfx {
 
 	Ref<Texture> Texture::createFromFile(const String& fileName, SamplerInfo samplerInfo)
 	{
-		if (fileName.ends_with(".ktx")) {
+		if (fileName.ends_with(".ktx") || fileName.ends_with(".ktx2")) {
 			KtxTextureLoader dataProvider;
 			return dataProvider.load(fileName, samplerInfo);
 		} else if (fileName.ends_with(".dds")) {
@@ -191,10 +191,20 @@ namespace mygfx {
 
 	Ref<Texture> StbTextureLoader::onLoad(const Span<uint8_t>& content, SamplerInfo samplerInfo) {
 		int32_t width, height, channels;
-		mData = (char*)stbi_load_from_memory(content.data(), (int)content.size(), &width, &height, &channels, STBI_rgb_alpha);
+		Format format = Format::R8G8B8A8_UNORM;
+		mIsHdr = stbi_is_hdr_from_memory(content.data(), (int)content.size());
+
+		if (mIsHdr) {
+			mHdrData = stbi_loadf_from_memory(content.data(), (int)content.size(), &width, &height, &channels, STBI_rgb_alpha);
+			format = Format::R32G32B32A32_SFLOAT;
+		} else {
+			mData = (char*)stbi_load_from_memory(content.data(), (int)content.size(), &width, &height, &channels, STBI_rgb_alpha);
+		}
+
 		if (!mData) {
 			return nullptr;
 		}
+
 		uint32_t mipCount = Texture::maxLevelCount(width, height);
 
 		TextureData textureData;
@@ -203,7 +213,7 @@ namespace mygfx {
 		textureData.height = height;
 		textureData.depth = 1;
 		textureData.mipMapCount = mipCount;
-		textureData.format = Format::R8G8B8A8_UNORM;
+		textureData.format = format;
 
 		if (samplerInfo.srgb) {
 			textureData.format = setFormatGamma(textureData.format, true);

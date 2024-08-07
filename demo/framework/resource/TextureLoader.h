@@ -25,7 +25,14 @@ namespace mygfx {
 	protected:
 		void copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level) override;
 		void mipImage(uint32_t width, uint32_t height);
-		char* mData = nullptr;
+		
+		union
+		{
+			float* mHdrData = nullptr;
+			char* mData;
+		};
+
+		bool mIsHdr = false;
 	};
 
 	class KtxTextureLoader : public TextureLoader {
