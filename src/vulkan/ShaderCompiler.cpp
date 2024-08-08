@@ -118,6 +118,9 @@ namespace mygfx
 			}
 		}
 
+		if (pShaderEntryPoint == nullptr || pShaderEntryPoint[0] == 0) {
+			pShaderEntryPoint = "main";
+		}
 		//if (strcmp(pShaderEntryPoint, "main") != 0) {
 		//	options.AddMacroDefinition(pShaderEntryPoint, "main");
 		//}
@@ -126,7 +129,7 @@ namespace mygfx
 		shaderc::Compiler compiler;
 
 		try {
-			shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(shaderCode, kind, shaderName.c_str(), "main", options);
+			shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(shaderCode, kind, shaderName.c_str(), pShaderEntryPoint, options);
 			if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
 				auto error = result.GetErrorMessage();
 				LOG_ERROR(error);
@@ -222,7 +225,7 @@ namespace mygfx
 		}
 
 		assert(SpvData.size() != 0);
-		sm = device().createShaderModule(ToShaderStage(shader_type), SpvData, ShaderCodeType::SPIRV);
+		sm = device().createShaderModule(ToShaderStage(shader_type), SpvData, ShaderCodeType::SPIRV, pShaderEntryPoint);
 		return sm;
 
 	}

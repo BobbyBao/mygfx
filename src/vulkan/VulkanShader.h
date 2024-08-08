@@ -13,16 +13,18 @@ namespace mygfx
 {
 	class VulkanShaderModule : public HwShaderModule {
 	public:
-		VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType = ShaderCodeType::SPIRV);
+		VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType = ShaderCodeType::SPIRV, const char* pShaderEntryPoint = nullptr);
 
 		void collectShaderResource();
 
-		PushConstant pushConstants;
-		std::vector<SpecializationConst> specializationConsts;
+		Vector<PushConstant> pushConstants;
+		Vector<SpecializationConst> specializationConsts;
+		Vector<uint8_t> specializationData;
 		ShaderStage shaderStage;
 		VkShaderStageFlagBits vkShaderStage;
 		VkShaderStageFlags  nextStage;
-		std::vector<uint8_t> shaderCode;
+		Vector<uint8_t> shaderCode;
+		String entryPoint = "main";
 	};
 
 	class DescriptorSet;
@@ -42,14 +44,15 @@ namespace mygfx
 		uint32_t stageCount = 0;
 		VkShaderEXT shaders[MAX_SHADER_STAGE]{};
 		VkShaderStageFlagBits stages[MAX_SHADER_STAGE]{};
-		std::vector<VkDescriptorSet> desciptorSets;
+		Vector<VkDescriptorSet> desciptorSets;
+		Vector<PushConstant> pushConstants;
 	private:
-		std::vector<Ref<VulkanShaderModule>> mShaderModules;
-		std::vector<Ref<DescriptorSetLayout>> mDescriptorSetLayouts;
-		std::vector<VkDescriptorSetLayout> descriptorSetLayouts;
+		Vector<Ref<VulkanShaderModule>> mShaderModules;
+		Vector<Ref<DescriptorSetLayout>> mDescriptorSetLayouts;
+		Vector<VkDescriptorSetLayout> descriptorSetLayouts;
 		ProgramType programType;
-		VkShaderCodeTypeEXT shaderCodeType;		
-		std::vector<Ref<DescriptorSet>> mDesciptorSets;
+		VkShaderCodeTypeEXT shaderCodeType;
+		Vector<Ref<DescriptorSet>> mDesciptorSets;
 	};
 
 	VkShaderStageFlagBits ToVkShaderStage(ShaderStage stage);

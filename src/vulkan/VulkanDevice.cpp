@@ -427,8 +427,8 @@ namespace mygfx
 		return SamplerHandle{ .index = (uint16_t)index };
 	}
 
-	Ref<HwShaderModule> VulkanDevice::createShaderModule(ShaderStage stage, const ByteArray& shaderCode, ShaderCodeType shaderCodeType){
-		return makeShared<VulkanShaderModule>(stage, shaderCode, shaderCodeType);
+	Ref<HwShaderModule> VulkanDevice::createShaderModule(ShaderStage stage, const ByteArray& shaderCode, ShaderCodeType shaderCodeType, const char* pShaderEntryPoint){
+		return makeShared<VulkanShaderModule>(stage, shaderCode, shaderCodeType, pShaderEntryPoint);
 	}
 
 	Ref<HwShaderModule> VulkanDevice::compileShaderModule(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& pShaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines){
@@ -625,6 +625,10 @@ namespace mygfx
 
 	void VulkanDevice::bindPipelineState(const PipelineState& pipelineState) {
 		currentCmd->bindPipelineState(&pipelineState);
+	}
+	
+	void VulkanDevice::pushConstant(uint32_t index, const void* data, uint32_t size) {
+		currentCmd->pushConstant(index, data, size);
 	}
 
 	void VulkanDevice::bindUniforms(const Uniforms& uniforms) {

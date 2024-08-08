@@ -66,6 +66,7 @@ namespace mygfx {
 		void bindDepthState(const DepthState* depthState) const;
 		void bindStencilState(const StencilState* stencilState) const;
 		void bindPipelineState(const PipelineState* pipelineState) const;
+		void pushConstant(uint32_t binding, const void* data, uint32_t size) const;
 		void pushConstant(uint32_t binding, const BufferInfo& bufferInfo) const;
 
 		void bindUniforms(const Uniforms& uniforms) const {
@@ -121,6 +122,14 @@ namespace mygfx {
 		mutable StencilState mStencilState {};
 		mutable HwRenderPrimitive* mPrimitive = nullptr;
 	};
+		
+	inline void CommandBuffer::pushConstant(uint32_t index, const void* data, uint32_t size) const {
+		if (index < mProgram->pushConstants.size()) {
+			auto& pushConst = mProgram->pushConstants[index];
+			assert(size <= pushConst.size);
+			vkCmdPushConstants(cmd, mProgram->pipelineLayout, VK_SHADER_STAGE_ALL, pushConst.offset, size, data);
+		}
+	}
 
 	inline void CommandBuffer::pushConstant(uint32_t binding, const BufferInfo& bufferInfo) const {
 		auto bufferAddr = bufferInfo.buffer->deviceAddress + bufferInfo.offset;

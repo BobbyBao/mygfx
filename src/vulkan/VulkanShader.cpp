@@ -43,6 +43,22 @@ namespace mygfx
 			stages[i] = sm->vkShaderStage;
 			fullShaderStageFlags |= sm->vkShaderStage;
 
+			for (auto& pc : sm->pushConstants) {
+				bool found = false;
+				for (auto& pushConst : pushConstants) {
+					if (pushConst.name == pc.name) {
+						assert(pushConst.offset == pc.offset && pushConst.size == pc.size);
+						pushConst.stageFlags |= sm->shaderStage;
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) {
+					pushConstants.push_back(pc);
+				}
+			}
+
 			for (auto& res : sm->shaderResourceInfo) {
 				auto combineSet = combinedBindingMap.find(res->set);
 				if (combineSet == combinedBindingMap.end()) {
@@ -217,9 +233,27 @@ namespace mygfx
 
 	bool VulkanProgram::createShaders() {
 		VkShaderCreateInfoEXT shaderCreateInfos[MAX_SHADER_STAGE]{};
-
-		for (uint32_t i = 0; i < stageCount; i++) {
+		SmallVector<VkPushConstantRange, 16> pushConstRanges;
+		SmallVector<VkSpecializationMapEntry, 32> specializationMapEntries;
+		VkSpecializationInfo specializationInfo;
+		for (uint32_t i = 0; i < stageCount; i++) {			
 			VulkanShaderModule* sm = mShaderModules[i].get();
+			pushConstRanges.clear();
+			for (auto& pc : pushConstants) {
+				if (any(pc.stageFlags & sm->shaderStage)) {
+					pushConstRanges.push_back(VkPushConstantRange{(VkShaderStageFlags)pc.stageFlags, pc.offset, pc.size});
+				}
+			}
+
+			/*
+			specializationMapEntries.clear();
+			for (auto& sc : sm->specializationConsts) {
+				specializationMapEntries.push_back(VkSpecializationMapEntry{sc.id, 0, sc.size});				
+			}
+
+			specializationInfo.mapEntryCount = specializationMapEntries.size();
+			specializationInfo.pMapEntries = specializationMapEntries.data();*/
+
 			shaderCreateInfos[i].sType = VK_STRUCTURE_TYPE_SHADER_CREATE_INFO_EXT;
 			shaderCreateInfos[i].flags = stageCount > 1 ? VK_SHADER_CREATE_LINK_STAGE_BIT_EXT : 0;
 			shaderCreateInfos[i].stage = sm->vkShaderStage;
@@ -227,9 +261,17 @@ namespace mygfx
 			shaderCreateInfos[i].codeType = shaderCodeType;
 			shaderCreateInfos[i].pCode = sm->shaderCode.data();
 			shaderCreateInfos[i].codeSize = sm->shaderCode.size();
-			shaderCreateInfos[i].pName = "main";
+			shaderCreateInfos[i].pName = sm->entryPoint.data();
 			shaderCreateInfos[i].setLayoutCount = (uint32_t)descriptorSetLayouts.size();
 			shaderCreateInfos[i].pSetLayouts = descriptorSetLayouts.data();
+			shaderCreateInfos[i].pPushConstantRanges = pushConstRanges.data();
+			shaderCreateInfos[i].pushConstantRangeCount = (uint32_t)pushConstRanges.size();
+
+			if (specializationMapEntries.size() > 0) {
+				shaderCreateInfos[i].pSpecializationInfo = &specializationInfo;
+			} else {
+				shaderCreateInfos[i].pSpecializationInfo = nullptr;
+			}
 		}
 
 		VkResult result = g_vkCreateShadersEXT(gfx().device, stageCount, shaderCreateInfos, nullptr, shaders);
@@ -296,9 +338,14 @@ namespace mygfx
 		std::vector<Ref<ShaderResourceInfo>>& layout, bool image = false, bool storage = false, bool input = false);
 	static void getMembers(CompilerGLSL* compiler, ShaderStruct& u, const SPIRType& spirvType);
 
-	VulkanShaderModule::VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType) {
+	VulkanShaderModule::VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType, const char* pShaderEntryPoint) {
 
 		this->shaderCode = shaderCode;
+
+		if (pShaderEntryPoint && pShaderEntryPoint[0]) {
+			entryPoint = pShaderEntryPoint;
+		}
+
 		vkShaderStage = ToVkShaderStage(stage);
 		nextStage = GetNextShaderStage(stage);
 
@@ -312,29 +359,27 @@ namespace mygfx
 		auto res = compiler->get_shader_resources();
 
 		pushConstants.clear();
-		pushConstants.stageFlags = shaderStage;
 		if (!res.push_constant_buffers.empty()) {
 			//LOG_INFO("PushConstant :");
 			for (auto& pushConst : res.push_constant_buffers) {
 
+				auto& pc = pushConstants.emplace_back();
+				pc.stageFlags = shaderStage;
 				SPIRType type = compiler->get_type(pushConst.type_id);
 				auto strutSize = (uint32_t)compiler->get_declared_struct_size(type);
 
 				//LOG_INFO(pushConst.name, ": size ", strutSize, ", : member count ", type.member_types.size());
 
 				auto baseOffset = std::numeric_limits<uint32_t>::max();
-				pushConstants.name = pushConst.name;
+				pc.name = pushConst.name;
 
-				getMembers(compiler.get(), pushConstants, type);
-				for (auto& member : pushConstants.members) {
+				getMembers(compiler.get(), pc, type);
+				for (auto& member : pc.members) {
 					baseOffset = std::min(baseOffset, member.offset);
-					//if (StringUtil::find(member.name.toString(), "material", false) != -1 && member.type == UniformType::Struct) {
-						//pushMaterial = member;
-						//pushMaterialOffset = member.offset;
-					//}
 				}
-				pushConstants.offset = baseOffset;
-				pushConstants.size = strutSize - baseOffset;
+
+				pc.offset = baseOffset;
+				pc.size = strutSize - baseOffset;
 			}
 		}
 
