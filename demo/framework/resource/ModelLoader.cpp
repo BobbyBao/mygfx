@@ -7,6 +7,7 @@
 #include "scene/Node.h"
 #include "scene/Renderable.h"
 #include "scene/Camera.h"
+#include "scene/Light.h"
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
@@ -91,13 +92,15 @@ namespace mygfx {
 		Node* newNode = nullptr;
 		Renderable* renderable = nullptr;
 		Camera* camera = nullptr;
+		Light* light = nullptr;
 		if (node.mesh) {
 			newNode = renderable = parent->createChild<Renderable>();
 		} else if (node.camera) {
 			newNode = camera = parent->createChild<Camera>();
-			//createCamera(newNode, node.camera);
+			createCamera(camera, node.camera);
 		} else if (node.light) {
-			//createLight(newNode, node.light);
+			newNode = light = parent->createChild<Light>();
+			createLight(light, node.light);
 		}
 
 		if (node.has_mesh_gpu_instancing) {
@@ -401,7 +404,36 @@ namespace mygfx {
 
 	}
 
+	void ModelLoader::createCamera(Camera* camera, cgltf_camera* c) {
+		if (c->type == cgltf_camera_type_orthographic) {
+			camera->setOrtho(true);
+			camera->setOrthoSize({c->data.orthographic.xmag, c->data.orthographic.ymag});
+			camera->setNearPlane(c->data.orthographic.znear);
+			camera->setFarPlane(c->data.orthographic.zfar);			
+		} else {
+			camera->setOrtho(false);
+			camera->setFov(c->data.perspective.yfov);
 
+			if (c->data.perspective.has_aspect_ratio) {
+				camera->setAspectRatio(c->data.perspective.aspect_ratio);
+			}
+
+			camera->setNearPlane(c->data.perspective.znear);
+
+			if (c->data.perspective.has_zfar) {
+				camera->setFarPlane(c->data.perspective.zfar);
+			}
+		}
+	}
+	
+	void ModelLoader::createLight(Light* light, cgltf_light* l) {
+		light->setColor(make_vec3(l->color));
+		light->setIntensity(l->intensity);
+		light->setType((LightType)(l->type - 1));
+		light->setRange(l->range);
+		light->setSpotInnerConeAngle(l->spot_inner_cone_angle);
+		light->setSpotOuterConeAngle(l->spot_outer_cone_angle);
+	}
 	
 	// Parses a data URI and returns a blob that gets malloc'd in cgltf, which the caller must free.
 	// (implementation snarfed from meshoptimizer)

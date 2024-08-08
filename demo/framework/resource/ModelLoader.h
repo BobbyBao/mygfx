@@ -17,6 +17,8 @@ namespace mygfx {
 	class Texture;
 	class Material;
 	class Node;
+	class Camera;
+	class Light;
 
 	class ModelLoader {
 	public:
@@ -31,9 +33,11 @@ namespace mygfx {
 		}
 	protected:
 		void loadScene();
-		void loadNode(Node* parent, cgltf_node& node, float globalscale);
+		void loadMaterials();	
 		void loadImages();
-		void loadMaterials();
+		void loadNode(Node* parent, cgltf_node& node, float globalscale);
+		void createCamera(Camera* camera, cgltf_camera* c);
+		void createLight(Light* light, cgltf_light*l);
 		Texture* getTexture(size_t index);
 		Material* getMaterial(size_t index, bool skined, const DefineList* marcos);
 		Ref<Material> getDefaultMaterial(const DefineList* marcos);

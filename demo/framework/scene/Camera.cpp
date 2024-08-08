@@ -76,7 +76,7 @@ namespace mygfx {
     void Camera::updateProjection() const
     {
         if (mOrtho)
-            mProjection = orthographic(-mOrthoSize, mOrthoSize, -mOrthoSize, mOrthoSize, mNearPlane, mFarPlane, InvertedDepth);
+            mProjection = orthographic(-mOrthoSize.x, mOrthoSize.x, -mOrthoSize.y, mOrthoSize.y, mNearPlane, mFarPlane, InvertedDepth);
         else
             mProjection = perspective(mFov, mAspectRatio, mNearPlane, mFarPlane, InvertedDepth);
         

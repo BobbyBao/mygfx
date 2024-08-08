@@ -63,13 +63,13 @@ namespace mygfx::demo {
 
 			auto& renderCmds = mRenderQueue->getWriteCommands();
 			for (auto& renderable : mRenderables) {
-				uint32_t perRenderable = cmd.allocConstant(renderable.worldTransform);
+				uint32_t perObject = cmd.allocConstant(renderable.worldTransform);
 				uint32_t perMaterial = cmd.allocConstant(renderable.texIndex);
 				for (auto& prim : mMesh->renderPrimitives) {
 					auto& rc = renderCmds.emplace_back();
 					rc.renderPrimitive = prim;
 					rc.pipelineState = mShader->pipelineState;
-					rc.uniforms.set(perView, perRenderable, perMaterial);
+					rc.uniforms.set(perView, perObject, perMaterial);
 				}
 			}
 

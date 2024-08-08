@@ -35,10 +35,10 @@ namespace mygfx::demo {
 
 			auto world = identity<mat4>();
 
-			uint32_t perDraw = gfxApi().allocConstant(world);
+			uint32_t perObject = gfxApi().allocConstant(world);
 
 			cmd.bindPipelineState(mShader->pipelineState);
-			cmd.bindUniforms({ perView, perDraw});
+			cmd.bindUniforms({ perView, perObject});
 
 			for (auto& prim : mMesh->renderPrimitives) {
 				cmd.drawPrimitive(prim);

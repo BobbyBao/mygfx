@@ -12,6 +12,32 @@ namespace mygfx {
 		PARENT,
 		WORLD
 	};
+	
+
+#define PROPERTY_GET_SET(type, prop)\
+    type get##prop() const { return m##prop; }\
+    void set##prop(type v) { m##prop = v; }
+
+#define PROPERTY_GET(type, prop)\
+    type get##prop() const { return m##prop; }\
+
+
+#define PROPERTY_GET_SET_BOOL(type, prop)\
+    type is##prop() const { return m##prop; }\
+    void set##prop(type v) { m##prop = v; }
+
+#define PROPERTY_GET_BOOL(type, prop)\
+    type is##prop() const { return m##prop; }\
+
+#define PROPERTY_GET_WITH_BOOL(type, prop)\
+    type is##prop() const { return m##prop; }
+
+#define PROPERTY_GET_SET_1(type, prop)\
+    const type& get##prop() const { return m##prop; }\
+    void set##prop(const type& v) { m##prop = v; }
+
+#define PROPERTY_GET_1(type, prop)\
+    const type& get##prop() const { return m##prop; }\
 
 	class Node : public utils::RefCounted {
 	public:
@@ -45,14 +71,16 @@ namespace mygfx {
 
         Node* getParent() const { return mParent; }
         Scene* getScene() const { return mScene; }
-
-		const vec3& getPosition() const { return mPosition; }
-		const quat& getRotation() const { return mRotation; }
-		const vec3& getScale() const { return mScale; }
+		
+		PROPERTY_GET_SET_BOOL(bool, Active)
+		PROPERTY_GET_1(vec3, Position)
+		PROPERTY_GET_1(quat, Rotation)
+		PROPERTY_GET_1(vec3, Scale)
 
 		Node& setPosition(const vec3& p);
 		Node& setRotation(const quat& r);
 		Node& setScale(const vec3& s);
+
 		void setTRS(const vec3& p, const quat& r, const vec3& s, bool notifyChange = true);
 		void setTransform(const mat4& m);
 		void translate(const vec3& delta, TransformSpace space = TransformSpace::LOCAL);
@@ -92,5 +120,6 @@ namespace mygfx {
 		mutable bool mSkinning : 1 = false;
 		mutable bool mMorphing : 1 = false;
 	};
+	
 
 }

@@ -44,7 +44,7 @@ namespace mygfx::demo {
 
 			auto world = identity<mat4>();
 
-			uint32_t perDraw = gfxApi().allocConstant(world);
+			uint32_t perObject = gfxApi().allocConstant(world);
 			uint32_t perMaterial = gfxApi().allocConstant(Texture::Red->index());
 
 			RenderPassInfo renderInfo{
@@ -57,7 +57,7 @@ namespace mygfx::demo {
 			cmd.beginRendering(mRenderTarget, renderInfo);
 
 			cmd.bindPipelineState(mShader->pipelineState);
-			cmd.bindUniforms({ perView, perDraw, perMaterial });
+			cmd.bindUniforms({ perView, perObject, perMaterial });
 
 			for (auto& prim : mMesh->renderPrimitives) {
 				cmd.drawPrimitive(prim);

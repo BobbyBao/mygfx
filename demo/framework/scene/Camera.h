@@ -9,13 +9,19 @@ namespace mygfx {
 	public:
 		Camera();
 		
+		PROPERTY_GET_SET(float, Fov)
+		PROPERTY_GET_SET(float, AspectRatio)
+
+		PROPERTY_GET_SET(float, NearPlane)
+		PROPERTY_GET_SET(float, FarPlane)
+
+		PROPERTY_GET_SET_BOOL(bool, Ortho)
+		PROPERTY_GET_SET_1(float2, OrthoSize)
+
 		void setPerspective(float fov, float aspect, float znear, float zfar);
 
 		mat4 getEffectiveWorldTransform() const;
-
-		bool getNearPlane() const { return mNearPlane; }
-		bool getFarPlane() const { return mFarPlane; }
-		
+				
 		vec3 getDirection() const;
 		vec3 getUp() const;
 		vec3 getSide() const;
@@ -29,7 +35,7 @@ namespace mygfx {
 		void updateProjection() const;
 
 		bool	mOrtho = false;
-		float	mOrthoSize = 20.0f;
+		float2	mOrthoSize {100.0f};
 		float   mFov = pi<float>() / 4;
 		float   mAspectRatio = 1.0f;
 		float   mNearPlane = 0.1f;
