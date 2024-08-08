@@ -295,7 +295,10 @@ namespace mygfx {
 	}
 
 	void CommandBuffer::setPrimitiveRestartEnable(bool restartEnable) const {
-		g_vkCmdSetPrimitiveRestartEnableEXT(cmd, restartEnable);
+		if (mPrimitiveState.restartEnable != restartEnable) {
+			mPrimitiveState.restartEnable = restartEnable;
+			g_vkCmdSetPrimitiveRestartEnableEXT(cmd, restartEnable);
+		}
 	}
 
 	void CommandBuffer::bindShaderProgram(HwProgram* program) const

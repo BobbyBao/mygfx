@@ -19,10 +19,6 @@ namespace mygfx {
 		mCamera = camera;
 	}
 
-	void View::setEnvMap(Texture* cubeMap) {
-
-	}
-
 	void View::update(double delta) {
 
 		mFrameUniforms.viewMatrix = mCamera->getViewMatrix();
@@ -69,14 +65,14 @@ namespace mygfx {
 			objectUniforms.worldMatrix = renderable->getWorldTransform();
 			objectUniforms.normalMatrix = transpose(inverse(objectUniforms.worldMatrix));
 
-			uint32_t perDraw = gfxApi().allocConstant(objectUniforms);
+			uint32_t perObject = gfxApi().allocConstant(objectUniforms);
 
 			for (auto& prim : renderable->primitives) {
 
 				uint32_t perMaterial = prim.material->getMaterialUniforms();
 
 				cmd.bindPipelineState(prim.material->getPipelineState());			
-				cmd.bindUniforms(perMaterial == 0xffffffff ? Uniforms{ perView, perDraw } : Uniforms{ perView, perDraw, perMaterial });
+				cmd.bindUniforms(perMaterial == 0xffffffff ? Uniforms{ perView, perObject } : Uniforms{ perView, perObject, perMaterial });
 				cmd.drawPrimitive(prim.renderPrimitive);
 			}
 		}

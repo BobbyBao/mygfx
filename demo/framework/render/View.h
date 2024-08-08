@@ -56,7 +56,6 @@ namespace mygfx {
 
 		void setScene(Scene* scene);
 		void setCamera(Camera* camera);
-		void setEnvMap(Texture* cubeMap);
 
 		void setEnvIntensity(float envIntensity) {
 			mFrameUniforms.envIntensity = envIntensity;
