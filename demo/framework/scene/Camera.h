@@ -23,6 +23,8 @@ namespace mygfx {
 		const mat4& getViewMatrix() const;
 		const mat4& getProjMatrix() const;
 	protected:
+		Node* createNode() override;
+		void cloneProcess(Node* destNode) override;
 		void onTransformChanged() override;
 		void updateProjection() const;
 
@@ -32,7 +34,6 @@ namespace mygfx {
 		float   mAspectRatio = 1.0f;
 		float   mNearPlane = 0.1f;
 		float   mFarPlane = 1000.0f;
-		float	mZoom = 1.0f;
 
 		mutable mat4 mView;
 		mutable mat4 mProjection;

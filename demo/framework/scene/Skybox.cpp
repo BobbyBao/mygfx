@@ -10,6 +10,17 @@ namespace mygfx {
 	Skybox::Skybox() {
 	}
 
+	Node* Skybox::createNode() {
+		return new Skybox();
+	}
+
+	void Skybox::cloneProcess(Node* destNode) {
+		Skybox* skybox = (Skybox*)destNode;
+		skybox->mCubeMap = mCubeMap;
+		skybox->mIrrMap = mIrrMap;
+		skybox->mGGXLUT = mGGXLUT;
+	}
+
 	void Skybox::setCubeMap(Texture* tex) {
 		mCubeMap = tex;
 	}
@@ -30,6 +41,7 @@ namespace mygfx {
 			shader->setCullMode(CullMode::NONE);
 			Ref<Material> material = makeRef<Material>(shader.get(), "MaterialUniforms");
 			material->setShaderParameter("u_MipLevel", 0);
+			material->setShaderParameter("u_EnvBlurNormalized", 1.0f);
 			mesh->setMaterial(material);
 			setMesh(mesh);
 		}

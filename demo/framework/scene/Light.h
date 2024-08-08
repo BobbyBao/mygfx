@@ -9,6 +9,8 @@ namespace mygfx {
 	public:
 		Light();
 	protected:
+		Node* createNode() override;
+		void cloneProcess(Node* destNode) override;
 	};
 
 }

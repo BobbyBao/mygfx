@@ -21,17 +21,17 @@ layout(std140, binding = 0) uniform FrameUniforms {
     float u_EnvIntensity;
     float u_Exposure;
     int u_MipCount;
-    float u_EnvBlurNormalized;
+    float pad1_0;
     
     int u_LambertianEnvTexture;
     int u_GGXEnvTexture;
     int u_GGXLUTTexture;
-    float pad3;
+    float pad3_0;
 
     int u_CharlieEnvTexture;
     int u_CharlieLUTTexture;
     int u_SheenELUTTexture;
-    float pad4;
+    float pad4_0;
 
     mat3 u_EnvRotation;
 };

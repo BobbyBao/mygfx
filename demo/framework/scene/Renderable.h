@@ -21,7 +21,12 @@ namespace mygfx {
 		void setMesh(Mesh* m);
 
 		Vector<Primitive> primitives;
+
+		static Ref<Renderable> createCube(float size);
+
 	protected:
+		Node* createNode() override;
+		void cloneProcess(Node* destNode) override;
 		void addToScene() override;
 		void removeFromScene() override;
 		Ref<Mesh> mMesh;

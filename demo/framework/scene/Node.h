@@ -17,11 +17,12 @@ namespace mygfx {
 	public:
 		Node();
 		Node(const String& name, const vec3& pos = vec3 {0}, const quat& rot = identity<quat>(), const vec3& s = one<vec3>());
+		virtual Ref<Node> clone();
 
-		template<typename T>
-		T* createChild(const String& name, const vec3& pos = vec3{ 0 }, const quat& rot = identity<quat>(), const vec3& s = one<vec3>()) {
+		template<typename T, typename... Args>
+		T* createChild(Args... args) {
 
-			T* so = new T(name, pos, rot, s);
+			T* so = new T(std::forward<Args>(args)...);
 			addChild(so);
 			return so;			
 		}
@@ -63,6 +64,8 @@ namespace mygfx {
 		void updateTransform() const;
 
 	protected:
+		virtual Node* createNode();
+		virtual void cloneProcess(Node* destNode);
         void setScene(Scene* scene);
 		virtual void addToScene();
 		virtual void removeFromScene();

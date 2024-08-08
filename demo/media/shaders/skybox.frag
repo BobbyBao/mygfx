@@ -9,6 +9,7 @@ precision highp float;
 
 layout(std140, binding = 2) uniform MaterialUniforms {
     int u_MipLevel;
+    float u_EnvBlurNormalized;
 };
 
 layout(location = 0) in vec3 v_TexCoords;

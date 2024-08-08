@@ -29,7 +29,7 @@ namespace mygfx {
 		float envIntensity = 1.0f;
 		float exposure = 1.0f;
 		int mipCount = 1;
-		float envBlurNormalized = 1.0f;
+		float pad2;
 
 		int lambertianEnvTexture;
 		int ggxEnvTexture;

@@ -8,7 +8,8 @@ precision highp float;
 #include <tonemapping.glsl>
 
 layout(std140, binding = 2) uniform MaterialUniforms {
-    int u_MipLevel;
+    int u_MipLevel;   
+    float u_EnvBlurNormalized;
 };
 
 layout(location = 0) in vec3 v_TexCoords;

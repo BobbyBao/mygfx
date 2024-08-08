@@ -19,6 +19,8 @@ namespace mygfx {
 
 		Texture* getGGXLUT() const { return mGGXLUT; }
 	protected:
+		Node* createNode() override;
+		void cloneProcess(Node* destNode) override;
 		void addToScene() override;
 		void removeFromScene() override;
 

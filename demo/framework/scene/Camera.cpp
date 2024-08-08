@@ -4,7 +4,21 @@
 namespace mygfx {
 	
     Camera::Camera() = default;
-    
+
+	Node* Camera::createNode() {
+		return new Camera();
+	}
+
+	void Camera::cloneProcess(Node* destNode) {
+        Camera* camera = (Camera*)destNode;
+        camera->mOrtho = mOrtho;
+        camera->mOrthoSize = mOrthoSize;
+        camera->mFov = mFov;
+		camera->mAspectRatio = mAspectRatio;
+		camera->mNearPlane = mNearPlane;
+		camera->mFarPlane = mFarPlane;
+	}
+
 	void Camera::setPerspective(float fov, float aspect, float znear, float zfar)
 	{
 		mFov = radians(fov);

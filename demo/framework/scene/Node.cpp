@@ -13,6 +13,31 @@ namespace mygfx {
         mScale = s;
     }
     
+    Ref<Node> Node::clone() {
+		Ref<Node> node(createNode());
+
+        node->mName = mName;
+        node->mPosition = mPosition;
+        node->mRotation = mRotation;
+        node->mScale = mScale;
+        node->mActive = mActive;
+
+		cloneProcess(node);
+
+		for (auto& c : mChildren) {
+            node->addChild(c->clone());
+		}
+
+        return node;
+	}
+
+    Node* Node::createNode() {
+        return new Node();
+    }
+
+    void Node::cloneProcess(Node* destNode) {
+    }
+    
     void Node::setName(const char* name) {
         mName = name;
     }

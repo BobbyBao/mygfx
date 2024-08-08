@@ -67,7 +67,7 @@ namespace mygfx {
 		for (auto renderable : mScene->renderables) {
 			ObjectUniforms objectUniforms;
 			objectUniforms.worldMatrix = renderable->getWorldTransform();
-			objectUniforms.normalMatrix = objectUniforms.worldMatrix;
+			objectUniforms.normalMatrix = transpose(inverse(objectUniforms.worldMatrix));
 
 			uint32_t perDraw = gfxApi().allocConstant(objectUniforms);
 
