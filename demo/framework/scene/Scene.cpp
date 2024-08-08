@@ -6,8 +6,8 @@ namespace mygfx {
 		mScene = this;
 	}
 		
-	Node* Scene::instantiate(Node* model, Node* parent) {
-		Node* newNode = model->clone();
+	Ref<Node> Scene::instantiate(Node* model, Node* parent) {
+		auto newNode = model->clone();
 		if (parent) {
 			parent->addChild(newNode);
 		} else {
@@ -16,9 +16,9 @@ namespace mygfx {
 		return newNode;
 	}
 	
-	Node* Scene::instantiate(Node* model, Node* parent, const vec3& pos, const Quaternion& rot, const vec3& scale) {
-		Node* newNode = model->clone();
-		newNode->setTRS(scale, rot, scale);
+	Ref<Node> Scene::instantiate(Node* model, Node* parent, const vec3& pos, const Quaternion& rot, const vec3& scale) {
+		auto newNode = model->clone();
+		newNode->setTRS(pos, rot, scale);
 		if (parent) {
 			parent->addChild(newNode);
 		}
@@ -28,9 +28,9 @@ namespace mygfx {
 		return newNode;
 	}
 
-	Node* Scene::instantiate(Node* model, const vec3& pos, const Quaternion& rot, const vec3& scale) {
-		Node* newNode = model->clone();
-		newNode->setTRS(scale, rot, scale);	
+	Ref<Node> Scene::instantiate(Node* model, const vec3& pos, const Quaternion& rot, const vec3& scale) {
+		auto newNode = model->clone();
+		newNode->setTRS(pos, rot, scale);
 		addChild(newNode);		
 		return newNode;
 	}

@@ -55,7 +55,7 @@ namespace mygfx {
 
 		auto material = new Material(shader, "MaterialUniforms");
 		mesh->setMaterial(material);
-		material->setShaderParameter("u_BaseColorFactor", vec4{ 1.0f, 0.0f, 0.0f, 1.0f });
+		material->setShaderParameter("u_BaseColorFactor", vec4{ 1.0f, 1.0f, 1.0f, 1.0f });
 		material->setShaderParameter("u_MetallicFactor", 0.0f);
 		material->setShaderParameter("u_RoughnessFactor", 0.5f);
 
