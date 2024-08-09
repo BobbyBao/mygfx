@@ -175,12 +175,12 @@ namespace mygfx
 	}
 
 	DescriptorSet* VulkanDevice::getDynamicUniformSet(DescriptorSetLayout* layout) {
+		std::lock_guard<std::mutex> locker(mUniformSetLock);
 		uint32_t bindingNum = layout->numBindings();
 		if (bindingNum == 0) {
 			return nullptr;
 		}
 
-		std::lock_guard<std::mutex> locker(mUniformSetLock);
 		Ref<ResourceSet>& rs = mUniformSet[bindingNum - 1];
 		if (rs == nullptr) {
 			rs = makeShared<ResourceSet>();

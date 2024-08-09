@@ -91,10 +91,9 @@ namespace mygfx
 		}
 
 		enum ResourceSetType : int {
-			None = -1,
-			DynamicUniform = 0,
-			CombinedImageSampler = 1,
-			Sampler = 2,
+			Default = -1,
+			CombinedImageSampler,
+			Sampler,
 			SampledImage,
 			StorageImage,
 		};
@@ -116,49 +115,32 @@ namespace mygfx
 		for (auto& it : combinedBindingMap) {
 			std::ranges::sort(it.second, [](auto& v1, auto& v2) { return v1->dsLayoutBinding.binding < v2->dsLayoutBinding.binding; });
 
-			ResourceSetType resourceSetType = ResourceSetType::None;
-			if (isDynamicUniformSet(it.second)) {
-				resourceSetType = ResourceSetType::DynamicUniform;
-			} else {
-				for (auto& res : it.second) {
-					if (res->bindless) {
+			ResourceSetType resourceSetType = ResourceSetType::Default;
+			for (auto& res : it.second) {
+				if (res->bindless) {
 
-						assert(it.second.size() == 1);
-						if (res->dsLayoutBinding.descriptorType == DescriptorType::COMBINED_IMAGE_SAMPLER) {
-							resourceSetType = ResourceSetType::CombinedImageSampler;
-						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::STORAGE_IMAGE) {
-							resourceSetType = ResourceSetType::StorageImage;
-						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::SAMPLED_IMAGE) {
-							resourceSetType = ResourceSetType::SampledImage;
-						} else if (res->dsLayoutBinding.descriptorType == DescriptorType::SAMPLER) {
-							resourceSetType = ResourceSetType::Sampler;
-						}
+					assert(it.second.size() == 1);
+					if (res->dsLayoutBinding.descriptorType == DescriptorType::COMBINED_IMAGE_SAMPLER) {
+						resourceSetType = ResourceSetType::CombinedImageSampler;
 					}
-
+					else if (res->dsLayoutBinding.descriptorType == DescriptorType::STORAGE_IMAGE) {
+						resourceSetType = ResourceSetType::StorageImage;
+					}
+					else if (res->dsLayoutBinding.descriptorType == DescriptorType::SAMPLED_IMAGE) {
+						resourceSetType = ResourceSetType::SampledImage;
+					}
+					else if (res->dsLayoutBinding.descriptorType == DescriptorType::SAMPLER) {
+						resourceSetType = ResourceSetType::Sampler;
+					}
 				}
+
 			}
+			
 
 			auto dsLayout = new DescriptorSetLayout(it.second);
 			mDescriptorSetLayouts.emplace_back(dsLayout);
 
 			switch (resourceSetType) {
-			case ResourceSetType::DynamicUniform:
-			{
-				auto ds = gfx().getDynamicUniformSet(dsLayout);
-				desciptorSets.push_back(*ds);
-
-				
-				for(uint32_t j = 0; j < dsLayout->numBindings(); j++) {
-					auto sz = it.second[j]->size;
-					if (ds->dynamicBufferSize[j] < sz) {
-						ds->dynamicBufferSize[j] = sz;
-						gfx().updateDynamicDescriptorSet(it.second[j]->dsLayoutBinding.binding, sz, *ds);
-					}
-				}
-
-				mDesciptorSets.emplace_back(ds);
-			}
-			break;
 			case ResourceSetType::CombinedImageSampler:
 			{
 				auto ds = gfx().getTextureSet()->getDescriptorSet(dsLayout);
