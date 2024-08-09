@@ -1,5 +1,5 @@
 #pragma once
-#include "Fwd.h"
+#include "GraphicsFwd.h"
 #include "utils/BitmaskEnum.h"
 
 namespace utils {

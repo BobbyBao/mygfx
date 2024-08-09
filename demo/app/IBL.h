@@ -1,5 +1,5 @@
 #pragma once
-#include "Fwd.h"
+#include "core/Fwd.h"
 
 namespace mygfx {
 	

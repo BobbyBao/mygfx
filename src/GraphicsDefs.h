@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include "utils/BitmaskEnum.h"
 #include "GraphicsConsts.h"
-#include "Fwd.h"
+#include "GraphicsFwd.h"
 #include "Format.h"
 
 
