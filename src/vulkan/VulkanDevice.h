@@ -106,8 +106,6 @@ namespace mygfx
 		// Contains command buffers and semaphores to be presented to the queue
 		VkSubmitInfo submitInfo;
 		
-		Ref<VulkanSwapChain> swapChain;
-		
 		// Synchronization semaphores
 		struct {
 			// Swap chain image presentation

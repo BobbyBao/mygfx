@@ -141,8 +141,9 @@ namespace mygfx
 		mUploadHeap.create(uploadHeapMemSize);    // initialize an upload heap (uses suballocation for faster results)
 
 		mSwapchainDesc.windowInstance = windowInstance;
-		mSwapchainDesc.window = window;		
-		swapChain = makeShared<VulkanSwapChain>(mSwapchainDesc);
+		mSwapchainDesc.window = window;
+
+		Ref<VulkanSwapChain> swapChain = makeShared<VulkanSwapChain>(mSwapchainDesc);
 		swapChain->recreate(mSwapchainDesc);
 		mSwapChain = swapChain;
 	}
@@ -259,11 +260,12 @@ namespace mygfx
 		freeCommandBuffer(cmd);
 	}
 	
-	void VulkanDevice::reload(uint32_t destWidth, uint32_t destHeight) {
+	void VulkanDevice::resize(HwSwapchain* sc, uint32_t destWidth, uint32_t destHeight) {
 
 		// Ensure all operations on the device have been finished before destroying resources
 		vkDeviceWaitIdle(device);
 
+		VulkanSwapChain* swapChain = static_cast<VulkanSwapChain*>(sc);
 		// Recreate swap chain
 		mSwapchainDesc.width = destWidth;
 		mSwapchainDesc.height = destHeight;		
@@ -295,7 +297,7 @@ namespace mygfx
 		HwObject::gc(true);
 
 		// Clean up Vulkan resources
-		swapChain.reset();
+		mSwapChain.reset();
 
 		if (commandPool)
 		{
@@ -384,7 +386,6 @@ namespace mygfx
 		VulkanTexture* vkTex = static_cast<VulkanTexture*>(tex);
 		return vkTex->copyData(dataProvider);
 	}
-
 
 	VkSampler createVkSampler(const SamplerInfo& info) {
 
@@ -530,8 +531,9 @@ namespace mygfx
 		mRenderTarget = nullptr;
 	}
 
-	void VulkanDevice::prepareFrame(int v)
+	void VulkanDevice::makeCurrent(HwSwapchain* sc)
 	{
+		VulkanSwapChain* swapChain = static_cast<VulkanSwapChain*>(sc);
 		// Acquire the next image from the swap chain
 		VkResult result = swapChain->acquireNextImage(semaphores.presentComplete, &currentBuffer);
 		swapChain->renderTarget->currentIndex = currentBuffer;
@@ -788,7 +790,7 @@ namespace mygfx
 		currentCmd->resourceBarrier(barrierCount, pBarriers);
 	}
 
-	void VulkanDevice::submitFrame(int v)
+	void VulkanDevice::commit(HwSwapchain* sc)
 	{
 		currentCmd->end();
 
@@ -797,6 +799,7 @@ namespace mygfx
 		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
 		submitCmdBuffers[currentBuffer].push_back(currentCmd);
 
+		VulkanSwapChain* swapChain = static_cast<VulkanSwapChain*>(sc);
 		VkResult result = swapChain->queuePresent(queue, currentBuffer, semaphores.renderComplete);
 		// Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
 		if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR)) {

@@ -19,7 +19,6 @@ namespace mygfx {
 	};
 
 	struct PipelineState;
-	class HwRenderPrimitive;
 	struct RenderCommand;
 	class RenderQueue;
 

@@ -175,11 +175,12 @@ DECL_DRIVER_API_SYNCHRONOUS_N(void, updateTexture,
  * --------------------
  */
  
-DECL_DRIVER_API_N(reload, uint32_t, destWidth, uint32_t, destHeight)
-
 DECL_DRIVER_API_0(beginFrame)
-DECL_DRIVER_API_0(prepareFrame)
 DECL_DRIVER_API_0(endFrame)
+
+DECL_DRIVER_API_N(makeCurrent, HwSwapchain*, sc)
+DECL_DRIVER_API_N(resize, HwSwapchain*, sc, uint32_t, destWidth, uint32_t, destHeight)
+DECL_DRIVER_API_N(commit, HwSwapchain*, sc)
 
 DECL_DRIVER_API_N(updateDescriptorSet1, HwDescriptorSet*, descriptorSet, uint32_t, dstBinding, HwTextureView*, textureView)
 DECL_DRIVER_API_N(updateDescriptorSet2, HwDescriptorSet*, descriptorSet, uint32_t, dstBinding, HwBuffer*, buffer)
@@ -216,8 +217,6 @@ DECL_DRIVER_API_N(dispatchIndirect, HwBuffer*, buffer, uint64_t, offset)
 DECL_DRIVER_API_N(drawPrimitive, HwRenderPrimitive*, primitive)
 DECL_DRIVER_API_N(drawBatch, RenderQueue*, renderQueue)
 DECL_DRIVER_API_N(resourceBarrier, uint32_t, barrierCount, const Barrier*, pBarriers)
-
-DECL_DRIVER_API_0(submitFrame)
 
 #ifdef __clang__
 #pragma clang diagnostic pop

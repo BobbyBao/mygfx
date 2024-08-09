@@ -159,7 +159,7 @@ namespace mygfx {
         cpuName = strCPUName;
 #else
     #pragma message("Please add code to fetch CPU name for this platform")
-    cpuName = L"Unavailable";
+    cpuName = "Unavailable";
 #endif // _WINDOWS
     }
 
@@ -284,7 +284,7 @@ namespace mygfx {
 
 		onPreDraw(cmd);
 
-		cmd.prepareFrame();
+		cmd.makeCurrent(mSwapchain);
 
 		RenderPassInfo renderInfo { 
 			.clearFlags = TargetBufferFlags::ALL,
@@ -306,7 +306,7 @@ namespace mygfx {
 
 		cmd.endRendering(mSwapchain->renderTarget);
 
-		cmd.submitFrame();
+		cmd.commit(mSwapchain);
 		cmd.endFrame();
 		
 		cmd.flush();
@@ -401,7 +401,7 @@ namespace mygfx {
 
 		mPrepared = false;
 
-		gfxApi().reload(w, h);
+		gfxApi().resize(mSwapchain, w, h);
 
 		mWidth = w;
 		mHeight = h;
