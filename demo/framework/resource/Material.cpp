@@ -6,20 +6,31 @@
 namespace mygfx {
 
 	static HashSet<Material*> sMaterials;
-	static std::recursive_mutex sLock;
+	static HashSet<Material*> sAddMaterials;
+	static std::recursive_mutex sAddLock;
+	static HashSet<Material*> sRemoveMaterials;
+	static std::recursive_mutex sRemoveLock;
 
 	Material::Material() {
-		sMaterials.insert(this);
+		sAddLock.lock();
+		sAddMaterials.insert(this);
+		sAddLock.unlock();
 	}
 
 	Material::Material(Shader* shader, const String& materialUniformName) {
-		sMaterials.insert(this);
+
+		sAddLock.lock();
+		sAddMaterials.insert(this);
+		sAddLock.unlock();
 
 		setShader(shader, materialUniformName);
 	}
 
 	Material::~Material() {
-		sMaterials.erase(this);
+
+		sRemoveLock.lock();
+		sRemoveMaterials.insert(this);
+		sRemoveLock.unlock();
 	}
 
 	void Material::setShader(Shader* shader, const String& materialUniformName) {
@@ -122,6 +133,19 @@ namespace mygfx {
 	}
 	
 	void Material::updateAll() {
+
+		sAddLock.lock();
+		for (auto m : sAddMaterials) {
+			sMaterials.insert(m);
+		}
+		sAddLock.unlock();
+
+		sRemoveLock.lock();
+		for (auto m : sRemoveMaterials) {
+			sMaterials.erase(m);
+		}
+		sRemoveLock.unlock();
+
 		for (auto material : sMaterials) {
 			material->update();
 		}
