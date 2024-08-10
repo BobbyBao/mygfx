@@ -1,153 +1,158 @@
 #include "Material.h"
+#include "GraphicsApi.h"
 #include "Shader.h"
 #include "Texture.h"
-#include "GraphicsApi.h"
 
 namespace mygfx {
 
-	static HashSet<Material*> sMaterials;
-	static HashSet<Material*> sAddMaterials;
-	static std::recursive_mutex sAddLock;
-	static HashSet<Material*> sRemoveMaterials;
-	static std::recursive_mutex sRemoveLock;
+static HashSet<Material*> sMaterials;
+static HashSet<Material*> sAddMaterials;
+static std::recursive_mutex sAddLock;
+static HashSet<Material*> sRemoveMaterials;
+static std::recursive_mutex sRemoveLock;
 
-	Material::Material() {
-		sAddLock.lock();
-		sAddMaterials.insert(this);
-		sAddLock.unlock();
-	}
+Material::Material()
+{
+    sAddLock.lock();
+    sAddMaterials.insert(this);
+    sAddLock.unlock();
+}
 
-	Material::Material(Shader* shader, const String& materialUniformName) {
+Material::Material(Shader* shader, const String& materialUniformName)
+{
+    sAddLock.lock();
+    sAddMaterials.insert(this);
+    sAddLock.unlock();
 
-		sAddLock.lock();
-		sAddMaterials.insert(this);
-		sAddLock.unlock();
+    setShader(shader, materialUniformName);
+}
 
-		setShader(shader, materialUniformName);
-	}
+Material::~Material()
+{
+    sRemoveLock.lock();
+    sRemoveMaterials.insert(this);
+    sRemoveLock.unlock();
+}
 
-	Material::~Material() {
+void Material::setShader(Shader* shader, const String& materialUniformName)
+{
+    if (mShader == shader || shader == nullptr) {
+        return;
+    }
 
-		sRemoveLock.lock();
-		sRemoveMaterials.insert(this);
-		sRemoveLock.unlock();
-	}
+    mShader = shader;
+    mMaterialUniformName = materialUniformName;
+    mPipelineState = mShader->pipelineState;
+    mShaderResourceInfo = shader->getProgram()->getShaderResource(materialUniformName);
 
-	void Material::setShader(Shader* shader, const String& materialUniformName) {
-		if (mShader == shader || shader == nullptr) {
-			return;
-		}
+    if (mShaderResourceInfo) {
+        mMaterialData.resize(mShaderResourceInfo->getMemberSize());
+    }
+}
 
-		mShader = shader;
-		mMaterialUniformName = materialUniformName;	
-		mPipelineState = mShader->pipelineState;
-		mShaderResourceInfo = shader->getProgram()->getShaderResource(materialUniformName);
+void Material::setShaderParameter(const String& name, int v)
+{
+    if (mShaderResourceInfo) {
+        auto member = mShaderResourceInfo->getMember(name);
+        if (member) {
+            assert(member->size == sizeof(int));
+            std::memcpy(&mMaterialData[member->offset], &v, sizeof(int));
+        }
+    }
+}
 
-		if (mShaderResourceInfo) {
-			mMaterialData.resize(mShaderResourceInfo->getMemberSize());
-		}
-	}
-	
-	void Material::setShaderParameter(const String& name, int v) {
-		
-		if (mShaderResourceInfo) {
-			auto member = mShaderResourceInfo->getMember(name);
-			if (member) {
-				assert(member->size == sizeof(int));
-				std::memcpy(&mMaterialData[member->offset], &v, sizeof(int));
-			}
-		}
-	}
+void Material::setShaderParameter(const String& name, float v)
+{
+    if (mShaderResourceInfo) {
+        auto member = mShaderResourceInfo->getMember(name);
+        if (member) {
+            assert(member->size == sizeof(float));
+            std::memcpy(&mMaterialData[member->offset], &v, sizeof(float));
+        }
+    }
+}
 
-	void Material::setShaderParameter(const String& name, float v) {
-		
-		if (mShaderResourceInfo) {
-			auto member = mShaderResourceInfo->getMember(name);
-			if (member) {
-				assert(member->size == sizeof(float));
-				std::memcpy(&mMaterialData[member->offset], &v, sizeof(float));
-			}
-		}
-	}
-	
-	void Material::setShaderParameter(const String& name, const vec3& v) {
-		
-		if (mShaderResourceInfo) {
-			auto member = mShaderResourceInfo->getMember(name);
-			if (member) {
-				assert(member->size == sizeof(vec3));
-				std::memcpy(&mMaterialData[member->offset], &v, sizeof(vec3));
-			}
-		}
-	}
+void Material::setShaderParameter(const String& name, const vec3& v)
+{
+    if (mShaderResourceInfo) {
+        auto member = mShaderResourceInfo->getMember(name);
+        if (member) {
+            assert(member->size == sizeof(vec3));
+            std::memcpy(&mMaterialData[member->offset], &v, sizeof(vec3));
+        }
+    }
+}
 
-	void Material::setShaderParameter(const String& name, const vec4& v) {
-		
-		if (mShaderResourceInfo) {
-			auto member = mShaderResourceInfo->getMember(name);
-			if (member) {
-				assert(member->size == sizeof(vec4));
-				std::memcpy(&mMaterialData[member->offset], &v, sizeof(vec4));
-			}
-		}
-	}
+void Material::setShaderParameter(const String& name, const vec4& v)
+{
+    if (mShaderResourceInfo) {
+        auto member = mShaderResourceInfo->getMember(name);
+        if (member) {
+            assert(member->size == sizeof(vec4));
+            std::memcpy(&mMaterialData[member->offset], &v, sizeof(vec4));
+        }
+    }
+}
 
-	void Material::setShaderParameter(const String& name, Texture* tex)
-	{
-		if (mShaderResourceInfo) {
-			auto member = mShaderResourceInfo->getMember(name);
-			if (member) {
-				int32_t texIndex = tex->getSRV()->index();
-				assert(member->size == sizeof(int32_t));
-				std::memcpy(&mMaterialData[member->offset], &texIndex, sizeof(int32_t));
-			}
-		}
+void Material::setShaderParameter(const String& name, Texture* tex)
+{
+    if (mShaderResourceInfo) {
+        auto member = mShaderResourceInfo->getMember(name);
+        if (member) {
+            int32_t texIndex = tex->getSRV()->index();
+            assert(member->size == sizeof(int32_t));
+            std::memcpy(&mMaterialData[member->offset], &texIndex, sizeof(int32_t));
+        }
+    }
+}
 
-	}
+void Material::setDoubleSide(bool v)
+{
+    mPipelineState.rasterState.cullMode = v ? CullMode::NONE : CullMode::BACK;
+}
 
-	void Material::setDoubleSide(bool v) {
-		mPipelineState.rasterState.cullMode = v ? CullMode::NONE : CullMode::BACK;
-	}
-	
-	void Material::setWireframe(bool v) {
-		mPipelineState.rasterState.polygonMode = v ? PolygonMode::LINE : PolygonMode::FILL;
-	}
+void Material::setWireframe(bool v)
+{
+    mPipelineState.rasterState.polygonMode = v ? PolygonMode::LINE : PolygonMode::FILL;
+}
 
-	void Material::setBlendMode(BlendMode blendMode) {
-		mPipelineState.colorBlendState = ColorBlendState::get(blendMode);
-	}
+void Material::setBlendMode(BlendMode blendMode)
+{
+    mPipelineState.colorBlendState = ColorBlendState::get(blendMode);
+}
 
-	void Material::update() {
-		if (mMaterialData.empty()) {
-			return;
-		}
-		
-		void* pData;
-		BufferInfo bufferInfo;
-		if (!device().allocConstantBuffer((uint32_t)mMaterialData.size(), &pData, &bufferInfo)) {
-			return;
-		}
+void Material::update()
+{
+    if (mMaterialData.empty()) {
+        return;
+    }
 
-		std::memcpy(pData, mMaterialData.data(), mMaterialData.size());
-		mMaterialUniforms = bufferInfo.offset;
-	}
-	
-	void Material::updateAll() {
+    void* pData;
+    BufferInfo bufferInfo;
+    if (!device().allocConstantBuffer((uint32_t)mMaterialData.size(), &pData, &bufferInfo)) {
+        return;
+    }
 
-		sAddLock.lock();
-		for (auto m : sAddMaterials) {
-			sMaterials.insert(m);
-		}
-		sAddLock.unlock();
+    std::memcpy(pData, mMaterialData.data(), mMaterialData.size());
+    mMaterialUniforms = bufferInfo.offset;
+}
 
-		sRemoveLock.lock();
-		for (auto m : sRemoveMaterials) {
-			sMaterials.erase(m);
-		}
-		sRemoveLock.unlock();
+void Material::updateAll()
+{
+    sAddLock.lock();
+    for (auto m : sAddMaterials) {
+        sMaterials.insert(m);
+    }
+    sAddLock.unlock();
 
-		for (auto material : sMaterials) {
-			material->update();
-		}
-	}
+    sRemoveLock.lock();
+    for (auto m : sRemoveMaterials) {
+        sMaterials.erase(m);
+    }
+    sRemoveLock.unlock();
+
+    for (auto material : sMaterials) {
+        material->update();
+    }
+}
 }
