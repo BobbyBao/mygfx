@@ -9,6 +9,7 @@ namespace mygfx::demo {
 	public:
 		Ref<View> mView;
 		Ref<Scene> mScene;
+		Ref<Node> mCameraNode;
 		Ref<Camera> mCamera;
 		CameraController mCameraController;
 
@@ -18,7 +19,9 @@ namespace mygfx::demo {
 
 			float w = (float)mApp->getWidth();
 			float h = (float)mApp->getHeight();
-			mCamera = new Camera();
+
+			mCameraNode = new Node();
+			mCamera = mCameraNode->addComponent<Camera>();
 			mCamera->setPerspective(45.0f, w / h, 0.1f, 100.0f);
 
 			mCameraController.init(mCamera);
@@ -28,7 +31,7 @@ namespace mygfx::demo {
 			mView->setScene(mScene);
 			mView->setCamera(mCamera);
 
-			auto skybox = mScene->createChild<Skybox>();
+			auto skybox = mScene->createChild<Node>()->addComponent<Skybox>();
 
 			skybox->setCubeMap(Texture::createFromFile("textures/papermill/specular.dds", SamplerInfo{ .srgb = true }));
 			skybox->setIrrMap(Texture::createFromFile("textures/papermill/diffuse.dds", SamplerInfo{ .srgb = true }));

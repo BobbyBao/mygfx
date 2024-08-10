@@ -1,5 +1,7 @@
 #include "Node.h"
 #include "Scene.h"
+#include "Component.h"
+
 #include <glm/gtx/matrix_decompose.hpp>
 
 namespace mygfx {
@@ -13,29 +15,71 @@ namespace mygfx {
         mScale = s;
     }
     
-    Ref<Node> Node::clone() {
-		Ref<Node> node(createNode());
+    void Node::addComponent(Component* component) {
+        mComponents.emplace_back(component);
 
+        component->setOwner(this);
+        if (mScene) {
+            component->onAddToScene(mScene);
+        }
+    }
+        
+    void Node::setActive(bool value) {
+        mActive = value;
+
+        if (mActiveEffective != isActiveEffective()) {
+            mActiveEffective = isActiveEffective();
+            notifyActiveChanged();
+        }
+
+        onSetActive(value);
+    }
+
+    void Node::onSetActive(bool value) {
+        for (auto& child: mChildren) {
+            child->onParentSetActive(value);
+        }
+    }
+
+    void Node::onParentSetActive(bool value) {
+        mParentActive = value;
+
+        if (mActiveEffective != isActiveEffective()) {
+            mActiveEffective = isActiveEffective();
+            notifyActiveChanged();
+        }
+
+        for (auto& child: mChildren) {
+            child->onParentSetActive(value && mActive);
+        }
+    }
+
+    void Node::notifyActiveChanged() {
+        for (auto& component: mComponents) {
+            component->onActiveChanged();
+        }
+    }
+
+    Object* Node::createObject() {
+        return new Node();
+    }
+
+    void Node::cloneProcess(Object* destNode) {
+        Node* node = (Node*)destNode;
         node->mName = mName;
         node->mPosition = mPosition;
         node->mRotation = mRotation;
         node->mScale = mScale;
         node->mActive = mActive;
-
-		cloneProcess(node);
-
-		for (auto& c : mChildren) {
-            node->addChild(c->clone());
+        
+		for (auto& c : mComponents) {
+            node->addComponent(dynamicCast<Component>(c->clone()));
 		}
 
-        return node;
-	}
+		for (auto& c : mChildren) {
+            node->addChild(dynamicCast<Node>(c->clone()));
+		}
 
-    Node* Node::createNode() {
-        return new Node();
-    }
-
-    void Node::cloneProcess(Node* destNode) {
     }
     
     void Node::setName(const char* name) {
@@ -99,8 +143,13 @@ namespace mygfx {
             return;
         }
 
-        if (mScene != nullptr) {            
+        if (mScene != nullptr) {       
+
             removeFromScene();
+            
+            for (auto& component: mComponents) {
+                component->onRemoveFromScene(mScene);
+            }
         }
 
         mScene = scene;
@@ -108,6 +157,10 @@ namespace mygfx {
         if (mScene != nullptr) {
             
             addToScene();
+
+            for (auto& component: mComponents) {
+                component->onAddToScene(scene);
+            }
         }
 
         for (auto& child: mChildren) {
@@ -126,6 +179,10 @@ namespace mygfx {
 	void Node::hierarchyChanged()
 	{
 		onHierarchyChanged();
+        
+		for (auto& component : mComponents) {
+			component->onParentChanged(mParent);
+		}
 
         transformChanged();
 	}
@@ -135,6 +192,10 @@ namespace mygfx {
 		mWorldTransformDirty = true;
 
         onTransformChanged();
+        
+		for (auto& component : mComponents) {
+			component->onTransformChanged();
+		}
 
 		for (auto& child : mChildren) {
 			child->transformChanged();
@@ -167,6 +228,21 @@ namespace mygfx {
 		return *this;
 	}
 	
+	vec3 Node::getDirection() const
+	{
+        return getWorldRotation()* vec3(0.0f, 0.0f, -1.0f);
+	}
+
+    vec3 Node::getUp() const
+	{
+		return getWorldRotation() * vec3(0.0f, 1.0f, 0.0f);
+	}
+
+    vec3 Node::getSide() const
+	{
+		return getWorldRotation() * vec3(1.0f, 1.0f, 0.0f);
+	}
+
 	void Node::setTRS(const vec3& p, const quat& r, const vec3& s, bool notifyChange)
 	{
 		mPosition = p;

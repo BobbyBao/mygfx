@@ -10,11 +10,11 @@ namespace mygfx {
 	Skybox::Skybox() {
 	}
 
-	Node* Skybox::createNode() {
+	Object* Skybox::createObject() {
 		return new Skybox();
 	}
 
-	void Skybox::cloneProcess(Node* destNode) {
+	void Skybox::cloneProcess(Object* destNode) {
 		Skybox* skybox = (Skybox*)destNode;
 		skybox->mCubeMap = mCubeMap;
 		skybox->mIrrMap = mIrrMap;
@@ -29,8 +29,9 @@ namespace mygfx {
 		mIrrMap = tex;
 	}
 
-	void Skybox::addToScene() {
-		Renderable::addToScene();
+	void Skybox::onAddToScene(Scene* scene) {
+
+		Renderable::onAddToScene(scene);
 
 		if (mMesh == nullptr) {
 			auto mesh = Mesh::createFullScreen();
@@ -50,14 +51,15 @@ namespace mygfx {
 			mGGXLUT = Texture::createFromFile("textures/brdfLut.dds", SamplerInfo{ .srgb = true });
 		}
 
-		mScene->skybox = this;
+		scene->skybox = this;
 	}
 
-	void Skybox::removeFromScene() {
-		Renderable::removeFromScene();
+	void Skybox::onRemoveFromScene(Scene* scene) {
 
-		if (mScene->skybox == this) {
-			mScene->skybox = nullptr;
+		Renderable::onRemoveFromScene(scene);
+
+		if (scene->skybox == this) {
+			scene->skybox = nullptr;
 		}
 	}
 }

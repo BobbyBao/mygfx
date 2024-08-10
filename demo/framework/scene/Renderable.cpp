@@ -9,11 +9,11 @@ namespace mygfx {
 	
 	Renderable::Renderable() = default;
 
-	Node* Renderable::createNode() {
+	Object* Renderable::createObject() {
 		return new Renderable();
 	}
 
-	void Renderable::cloneProcess(Node* destNode) {
+	void Renderable::cloneProcess(Object* destNode) {
 		((Renderable*)destNode)->setMesh(mMesh);
 	}
 
@@ -30,15 +30,15 @@ namespace mygfx {
 		}
 	}
 		
-	void Renderable::addToScene() {
-		mScene->renderables.insert(this);
+	void Renderable::onAddToScene(Scene* scene) {
+		scene->renderables.insert(this);
 	}
 
-	void Renderable::removeFromScene() {
-		mScene->renderables.erase(this);
+	void Renderable::onRemoveFromScene(Scene* scene) {
+		scene->renderables.erase(this);
 	}
 
-	Ref<Renderable> Renderable::createCube(float size)
+	Ref<Node> Renderable::createCube(float size)
 	{
 		Ref<Mesh> mesh(Mesh::createCube(size));
 		DefineList macros;
@@ -59,9 +59,8 @@ namespace mygfx {
 		material->setShaderParameter("u_MetallicFactor", 0.0f);
 		material->setShaderParameter("u_RoughnessFactor", 0.5f);
 
-		Ref<Renderable> node(new Renderable());
-		node->setMesh(mesh);
-		node->setPosition({ 0.0f, 0.0f, 0.0f });
+		Ref<Node> node(new Node());
+		node->addComponent<Renderable>()->setMesh(mesh);
 		return node;
 	}
 

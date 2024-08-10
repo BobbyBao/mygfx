@@ -28,7 +28,7 @@ namespace mygfx {
 		mFrameUniforms.invProjectionMatrix = inverse(mFrameUniforms.projectionMatrix);
 		mFrameUniforms.invViewProjectionMatrix = inverse(mFrameUniforms.viewProjectionMatrix);
 
-		mFrameUniforms.camera = mCamera->getWorldPosition();
+		mFrameUniforms.camera = mCamera->getOwner()->getWorldPosition();
 		mFrameUniforms.nearZ = mCamera->getNearPlane();
 		mFrameUniforms.cameraDir = mCamera->getDirection();
 		mFrameUniforms.farZ = mCamera->getFarPlane();
@@ -62,7 +62,7 @@ namespace mygfx {
 
 		for (auto renderable : mScene->renderables) {
 			ObjectUniforms objectUniforms;
-			objectUniforms.worldMatrix = renderable->getWorldTransform();
+			objectUniforms.worldMatrix = renderable->getOwner()->getWorldTransform();
 			objectUniforms.normalMatrix = transpose(inverse(objectUniforms.worldMatrix));
 
 			uint32_t perObject = gfxApi().allocConstant(objectUniforms);

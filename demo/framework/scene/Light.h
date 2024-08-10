@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Node.h"
-
+#include "Component.h"
+#include "core/Maths.h"
 
 namespace mygfx {
 	
@@ -11,7 +11,7 @@ namespace mygfx {
 		Spot,
 	};
 
-	class Light : public Node {
+	class Light : public Component {
 	public:
 		Light();
 
@@ -23,8 +23,8 @@ namespace mygfx {
 		PROPERTY_GET_SET(float, SpotOuterConeAngle)
 
 	protected:
-		Node* createNode() override;
-		void cloneProcess(Node* destNode) override;
+		Object* createObject() override;
+		void cloneProcess(Object* destNode) override;
 
 		float3 mColor {1.0f};
 		float mIntensity {1.0f };

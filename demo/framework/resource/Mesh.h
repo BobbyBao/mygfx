@@ -1,6 +1,7 @@
 #pragma once
 #include "GraphicsHandles.h"
 #include "core/Maths.h"
+#include "core/Resource.h"
 
 namespace mygfx {
 	
@@ -18,7 +19,7 @@ namespace mygfx {
 		Aabb boundingBox;
 	};
 
-	class Mesh : public RefCounted {
+	class Mesh : public Resource {
 	public:
 		Mesh();
 		~Mesh();

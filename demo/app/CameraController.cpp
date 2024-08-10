@@ -1,6 +1,7 @@
 #include "CameraController.h"
 #include "ImGui.h"
 #include "scene/Camera.h"
+#include "scene/Node.h"
 
 namespace mygfx
 {
@@ -59,7 +60,7 @@ namespace mygfx
 
     void CameraController::lookAt(const vec3& eyePos, const vec3& lookAt)
     {
-        mCamera->lookAt(eyePos, lookAt);
+        mCamera->getOwner()->lookAt(eyePos, lookAt);
         auto& v = mCamera->getViewMatrix();
 
         mDistance = length(lookAt - eyePos);
@@ -95,18 +96,20 @@ namespace mygfx
 
         mLastMoveDir = mLastMoveDir + (movedir - mLastMoveDir) * (1.0f - std::exp(-(float)deltaTime * 3.0f));
         
-        mCamera->translate(mLastMoveDir * speed * (float)deltaTime);
+        auto node = mCamera->getOwner();
+
+        node->translate(mLastMoveDir * speed * (float)deltaTime);
 
         vec3 dir = polarToVector((float)yaw, (float)pitch) * mDistance;
 
-        lookAt(mCamera->getPosition(), mCamera->getPosition() - dir);
+        lookAt(node->getPosition(), node->getPosition() - dir);
 
         if (io.MouseDown[2]) {
-            mCamera->translate(10 * (float)deltaTime * (RIGHT * -io.MouseDelta.x + UP * io.MouseDelta.y));
+            node->translate(10 * (float)deltaTime * (RIGHT * -io.MouseDelta.x + UP * io.MouseDelta.y));
         }
 
         if(io.MouseWheel != 0.0f) {
-            mCamera->translate(FORWARD* io.MouseWheel);
+            node->translate(FORWARD* io.MouseWheel);
         }
     }
 
@@ -124,14 +127,15 @@ namespace mygfx
 		auto move = mCamera->getSide() * x * distance / 10.0f;
 		move += mCamera->getUp() * y * distance / 10.0f;
 		move += transform(transpose(v), (moveWASD() * mSpeed * (float)deltaTime));
-
+        
+        auto node = mCamera->getOwner();
 		// Trucks camera, moves the camera parallel to the view plane.
-        mCamera->setPosition(mCamera->getPosition() + move);
+        node->setPosition(node->getPosition() + move);
 
 		// Orbits camera, rotates a camera about the target
 		vec3 dir = mCamera->getDirection();
 		vec3 pol = polarToVector(yaw, pitch);
-		vec3 at = mCamera->getPosition() + (dir * mDistance);
+		vec3 at = node->getPosition() + (dir * mDistance);
 
 		lookAt(at + (pol * distance), at);
     }

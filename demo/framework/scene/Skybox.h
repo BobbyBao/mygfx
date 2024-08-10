@@ -19,10 +19,10 @@ namespace mygfx {
 
 		Texture* getGGXLUT() const { return mGGXLUT; }
 	protected:
-		Node* createNode() override;
-		void cloneProcess(Node* destNode) override;
-		void addToScene() override;
-		void removeFromScene() override;
+		Object* createObject() override;
+		void cloneProcess(Object* destNode) override;
+		void onAddToScene(Scene* scene) override;
+		void onRemoveFromScene(Scene* scene) override;
 
 		Ref<Texture> mCubeMap;
 		Ref<Texture> mIrrMap;

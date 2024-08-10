@@ -5,12 +5,17 @@ namespace mygfx {
 	Light::Light() {
 	}
 
-	Node* Light::createNode() {
+	Object* Light::createObject() {
 		return new Light();
 	}
 
-	void Light::cloneProcess(Node* destNode) {
+	void Light::cloneProcess(Object* destNode) {
 		Light* light = (Light*)destNode;
-
+		light->mColor = mColor;
+		light->mIntensity = mIntensity;
+		light->mType = mType;
+		light->mRange = mRange;
+		light->mSpotInnerConeAngle = mSpotInnerConeAngle;
+		light->mSpotOuterConeAngle = mSpotOuterConeAngle;
 	}
 }

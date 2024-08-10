@@ -2,13 +2,14 @@
 #include "GraphicsHandles.h"
 #include "PipelineState.h"
 #include "ShaderResourceInfo.h"
+#include "core/Resource.h"
 
 namespace mygfx {
 	
 	class Texture;
 	class GraphicsApi;
 
-	class Shader : public RefCounted {
+	class Shader : public Resource {
 	public:
 		Shader();
 		~Shader();

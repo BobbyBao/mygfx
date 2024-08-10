@@ -1,4 +1,7 @@
 #include "DemoApp.h"
+#include "Framework.h"
+#include "utils/Log.h"
+#include "scene/Component.h"
 
 using namespace mygfx;
 using namespace mygfx::demo;

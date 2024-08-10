@@ -2,6 +2,7 @@
 #include "core/Fwd.h"
 #include "core/Maths.h"
 #include "PipelineState.h"
+#include "core/Resource.h"
 
 namespace mygfx {
 
@@ -9,7 +10,7 @@ namespace mygfx {
 	class ShaderResourceInfo;
 	class Texture;
 
-	class Material : public utils::RefCounted {
+	class Material : public Resource {
 	public:
 		Material();
 		Material(Shader* shader, const String& materialUniformName);

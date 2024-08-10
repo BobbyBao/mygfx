@@ -1,15 +1,16 @@
 #include "Camera.h"
 #include "GraphicsConsts.h"
+#include "Node.h"
 
 namespace mygfx {
 	
     Camera::Camera() = default;
 
-	Node* Camera::createNode() {
+	Object* Camera::createObject() {
 		return new Camera();
 	}
 
-	void Camera::cloneProcess(Node* destNode) {
+	void Camera::cloneProcess(Object* destNode) {
         Camera* camera = (Camera*)destNode;
         camera->mOrtho = mOrtho;
         camera->mOrthoSize = mOrthoSize;
@@ -30,8 +31,8 @@ namespace mygfx {
 
     mat4 Camera::getEffectiveWorldTransform() const
 	{
-        auto result =  glm::mat4_cast(getWorldRotation());
-		result[3] = vec4(getWorldPosition(), 1.0f);
+        auto result =  glm::mat4_cast(mOwner->getWorldRotation());
+		result[3] = vec4(mOwner->getWorldPosition(), 1.0f);
         return result;
     }
 		
@@ -41,17 +42,17 @@ namespace mygfx {
 
 	vec3 Camera::getDirection() const
 	{
-        return ((mat3)getEffectiveWorldTransform()) * vec3(0.0f, 0.0f, -1.0f);
+        return mOwner->getDirection();
 	}
 
     vec3 Camera::getUp() const
 	{
-		return ((mat3)getEffectiveWorldTransform()) * vec3(0.0f, 1.0f, 0.0f);
+        return mOwner->getUp();
 	}
 
     vec3 Camera::getSide() const
 	{
-		return ((mat3)getEffectiveWorldTransform()) * vec3(1.0f, 1.0f, 0.0f);
+        return mOwner->getSide();
 	}
 
     const mat4& Camera::getViewMatrix() const

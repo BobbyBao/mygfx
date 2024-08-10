@@ -89,17 +89,17 @@ namespace mygfx {
 	
 	void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
 	{
-		Node* newNode = nullptr;
+		Node* newNode = parent->createChild<Node>();
 		Renderable* renderable = nullptr;
 		Camera* camera = nullptr;
 		Light* light = nullptr;
 		if (node.mesh) {
-			newNode = renderable = parent->createChild<Renderable>();
+			renderable = newNode->addComponent<Renderable>();
 		} else if (node.camera) {
-			newNode = camera = parent->createChild<Camera>();
+			camera = newNode->addComponent<Camera>();
 			createCamera(camera, node.camera);
 		} else if (node.light) {
-			newNode = light = parent->createChild<Light>();
+			light = newNode->addComponent<Light>();
 			createLight(light, node.light);
 		}
 

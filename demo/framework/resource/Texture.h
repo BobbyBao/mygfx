@@ -2,10 +2,11 @@
 #include "GraphicsHandles.h"
 #include "TextureData.h"
 #include "core/Maths.h"
+#include "core/Resource.h"
 
 namespace mygfx {
 	
-	class Texture : public RefCounted {
+	class Texture : public Resource {
 	public:
 		Texture();
 		

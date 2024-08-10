@@ -7,7 +7,7 @@ namespace mygfx {
 	}
 		
 	Ref<Node> Scene::instantiate(Node* model, Node* parent) {
-		auto newNode = model->clone();
+		Ref<Node> newNode = staticCast<Node>(model->clone());
 		if (parent) {
 			parent->addChild(newNode);
 		} else {
@@ -17,7 +17,7 @@ namespace mygfx {
 	}
 	
 	Ref<Node> Scene::instantiate(Node* model, Node* parent, const vec3& pos, const Quaternion& rot, const vec3& scale) {
-		auto newNode = model->clone();
+		Ref<Node> newNode = staticCast<Node>(model->clone());
 		newNode->setTRS(pos, rot, scale);
 		if (parent) {
 			parent->addChild(newNode);
@@ -29,7 +29,7 @@ namespace mygfx {
 	}
 
 	Ref<Node> Scene::instantiate(Node* model, const vec3& pos, const Quaternion& rot, const vec3& scale) {
-		auto newNode = model->clone();
+		Ref<Node> newNode = staticCast<Node>(model->clone());
 		newNode->setTRS(pos, rot, scale);
 		addChild(newNode);		
 		return newNode;

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Node.h"
+#include "Component.h"
+#include "core/Maths.h"
 
 
 namespace mygfx {
 
-	class Camera : public Node {
+	class Camera : public Component {
 	public:
 		Camera();
 		
@@ -29,8 +30,8 @@ namespace mygfx {
 		const mat4& getViewMatrix() const;
 		const mat4& getProjMatrix() const;
 	protected:
-		Node* createNode() override;
-		void cloneProcess(Node* destNode) override;
+		Object* createObject() override;
+		void cloneProcess(Object* destNode) override;
 		void onTransformChanged() override;
 		void updateProjection() const;
 
@@ -43,6 +44,8 @@ namespace mygfx {
 
 		mutable mat4 mView;
 		mutable mat4 mProjection;
+		mutable bool mViewDirty : 1 = true;
+		mutable bool mProjDirty : 1 = true;
 	};
 
 }

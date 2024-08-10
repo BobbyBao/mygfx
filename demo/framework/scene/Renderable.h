@@ -1,5 +1,5 @@
 #pragma once
-#include "Node.h"
+#include "Component.h"
 
 
 namespace mygfx {
@@ -14,7 +14,7 @@ namespace mygfx {
 		uint32_t primitiveUniforms = 0;
 	};
 
-	class Renderable : public Node {
+	class Renderable : public Component {
 	public:
 		Renderable();
 
@@ -22,13 +22,16 @@ namespace mygfx {
 
 		Vector<Primitive> primitives;
 
-		static Ref<Renderable> createCube(float size);
+		static Ref<Node> createCube(float size);
 
 	protected:
-		Node* createNode() override;
-		void cloneProcess(Node* destNode) override;
-		void addToScene() override;
-		void removeFromScene() override;
+		Object* createObject() override;
+		void cloneProcess(Object* destNode) override;
+		void onAddToScene(Scene* scene) override;
+		void onRemoveFromScene(Scene* scene) override;	
+		
+		mutable bool mSkinning : 1 = false;
+		mutable bool mMorphing : 1 = false;
 		Ref<Mesh> mMesh;
 	};
 
