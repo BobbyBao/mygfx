@@ -16,12 +16,12 @@ Object* Renderable::createObject()
 
 void Renderable::cloneProcess(Object* destNode)
 {
-    ((Renderable*)destNode)->setMesh(mMesh);
+    Renderable* renderable = static_cast<Renderable*>(destNode);
+    renderable->setMesh(mMesh);
 }
 
 void Renderable::setMesh(Mesh* m)
 {
-
     mMesh = m;
     primitives.clear();
 

@@ -17,7 +17,7 @@ VulkanTexture::VulkanTexture(VkImage image, VkFormat format)
 {
     mImage = image;
     vkFormat = format;
-    mRTV = createRTV(0, format);
+    mRTV = createRTV(0);
     isSwapchain = true;
 
     initState(ResourceState::PRESENT);
@@ -267,7 +267,6 @@ void VulkanTexture::initRenderTarget(const char* name, VkImageCreateFlags flags)
     createImage(&image_info, name);
 
     mRTV = createRTV();
-    // RTV = rtv_->index();
 
     if (usage & VK_IMAGE_USAGE_SAMPLED_BIT) {
         createSRV();
@@ -300,8 +299,8 @@ void VulkanTexture::initDepthStencil(const char* name)
     createImage(&image_info, name);
 
     // setImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    mDSV = createDSV();
-    // DSV = dsv_->index();
+    //mDSV = createDSV();
+    mDSV = createRTV();
 
     if (usage & VK_IMAGE_USAGE_SAMPLED_BIT) {
         createSRV();
@@ -338,10 +337,6 @@ Ref<VulkanTextureView> VulkanTexture::createSRV(int mipLevel, const char* name)
 
     info.format = vkFormat;
     info.subresourceRange.aspectMask = imgutil::getAspectFlags(vkFormat);
-    // if (info.format == VK_FORMAT_D32_SFLOAT)
-    //	info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    // else
-    //	info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
     if (mipLevel == -1) {
         info.subresourceRange.baseMipLevel = 0;
@@ -352,27 +347,26 @@ Ref<VulkanTextureView> VulkanTexture::createSRV(int mipLevel, const char* name)
     }
 
     info.subresourceRange.baseArrayLayer = 0;
-
-    return makeShared<VulkanTextureView>(info, mSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, name);
+    auto srv = makeShared<VulkanTextureView>(info, mSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, name);
+    mSRVs.push_back(srv);
+    return srv;
 }
 
-Ref<VulkanTextureView> VulkanTexture::createRTV(int mipLevel, VkFormat format, const char* name)
+Ref<VulkanTextureView> VulkanTexture::createRTV(int mipLevel, const char* name)
 {
     VkImageViewCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     info.image = mImage;
     info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
     if (layerCount * faceCount > 1) {
         info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
         info.subresourceRange.layerCount = layerCount * faceCount;
     } else {
         info.subresourceRange.layerCount = 1;
     }
-    if (format == VK_FORMAT_UNDEFINED)
-        info.format = vkFormat;
-    else
-        info.format = format;
 
+    info.format = vkFormat;
     info.components = {
         VK_COMPONENT_SWIZZLE_R,
         VK_COMPONENT_SWIZZLE_G,
@@ -395,7 +389,9 @@ Ref<VulkanTextureView> VulkanTexture::createRTV(int mipLevel, VkFormat format, c
 
     info.subresourceRange.baseArrayLayer = 0;
 
-    return makeShared<VulkanTextureView>(info, ResourceName.c_str());
+    auto rtv = makeShared<VulkanTextureView>(info, ResourceName.c_str());
+    mRTVs.push_back(rtv);
+    return rtv;
 }
 
 Ref<VulkanTextureView> VulkanTexture::createDSV(const char* name)
@@ -434,18 +430,6 @@ void VulkanTexture::setSampler(SamplerInfo samplerInfo)
     mSampler = gfx().createSampler(samplerInfo);
 }
 
-/*
-void VulkanTexture::updateDescriptor(VkImageLayout imageLayout)
-{
-        mImageLayout = imageLayout;
-        mSRV->updateDescriptor(mSampler, imageLayout);
-}
-
-void VulkanTexture::updateDescriptor()
-{
-        mSRV->updateDescriptor(mSampler, mImageLayout);
-}*/
-
 void VulkanTexture::setImageLayout(VkImageLayout newImageLayout)
 {
     VkImageSubresourceRange subresourceRange;
@@ -479,7 +463,6 @@ void VulkanTexture::setImageLayout(VkImageLayout oldImageLayout, VkImageLayout n
 
 bool VulkanTexture::copyData(TextureDataProvider* dataProvider)
 {
-
     // Upload Image
     {
         VkImageMemoryBarrier copy_barrier = {};

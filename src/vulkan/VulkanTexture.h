@@ -33,15 +33,13 @@ public:
     void createSRV();
 
     Ref<VulkanTextureView> createSRV(int mipLevel, const char* name = nullptr);
-    Ref<VulkanTextureView> createRTV(int mipLevel = -1, VkFormat format = VK_FORMAT_UNDEFINED, const char* name = nullptr);
+    Ref<VulkanTextureView> createRTV(int mipLevel = -1, const char* name = nullptr);
     Ref<VulkanTextureView> createDSV(const char* name = nullptr);
 
     void setSampler(SamplerInfo samplerInfo);
-
     void setImageLayout(VkImageLayout newImageLayout);
     void setImageLayout(VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
     void setImageLayout(VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkImageSubresourceRange subresourceRange);
-
     bool copyData(TextureDataProvider* dataProvider);
 
     template <typename T>
@@ -65,8 +63,6 @@ private:
     void initDepthStencil(const char* name = nullptr);
     void createImage(VkImageCreateInfo* pCreateInfo, const char* name = nullptr);
     void createImage(const char* pName, bool useSRGB = false);
-    void updateDescriptor(VkImageLayout imageLayout);
-    void updateDescriptor();
 
     VmaAllocation mImageAlloc = VK_NULL_HANDLE;
     VkImage mImage = VK_NULL_HANDLE;
@@ -74,6 +70,8 @@ private:
     SamplerHandle mSampler;
     VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     VkSampleCountFlagBits mSamples = VK_SAMPLE_COUNT_1_BIT;
+    Vector<Ref<VulkanTextureView>> mSRVs;
+    Vector<Ref<VulkanTextureView>> mRTVs;
 };
 
 } // namespace mygfx

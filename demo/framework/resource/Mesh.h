@@ -24,9 +24,6 @@ public:
     Mesh();
     ~Mesh();
 
-    auto& getName() const { return mName; }
-    void setName(const String& name) { mName = name; }
-
     uint32_t getSubMeshCount() const { return (uint32_t)mSubMeshes.size(); }
 
     const Vector<SubMesh>& getSubMeshes() const { return mSubMeshes; }
@@ -46,7 +43,6 @@ public:
     Vector<Ref<HwRenderPrimitive>> renderPrimitives;
 
 private:
-    String mName;
     Vector<SubMesh> mSubMeshes;
     Aabb mBoundingBox;
 };

@@ -340,14 +340,26 @@ bool VulkanDevice::allocIndexBuffer(uint32_t sizeInBytes, void** pData, BufferIn
     return mVertexBufferRing.allocBuffer(sizeInBytes, pData, pOut);
 }
 
-SharedPtr<HwBuffer> VulkanDevice::createBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t size, uint16_t stride, const void* data)
+Ref<HwBuffer> VulkanDevice::createBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t size, uint16_t stride, const void* data)
 {
     return makeShared<VulkanBuffer>(usage, memoryUsage, size, stride, data);
 }
 
-SharedPtr<HwTexture> VulkanDevice::createTexture(const TextureData& textureData, SamplerInfo sampler)
+Ref<HwTexture> VulkanDevice::createTexture(const TextureData& textureData, SamplerInfo sampler)
 {
     return makeShared<VulkanTexture>(textureData, sampler);
+}
+
+Ref<HwTextureView> VulkanDevice::createSRV(HwTexture* tex, int mipLevel, const char* name)
+{
+    VulkanTexture* vkTex = static_cast<VulkanTexture*>(tex);
+    return vkTex->createSRV(mipLevel);
+}
+
+Ref<HwTextureView> VulkanDevice::createRTV(HwTexture* tex, int mipLevel, const char* name)
+{
+    VulkanTexture* vkTex = static_cast<VulkanTexture*>(tex);
+    return vkTex->createRTV(mipLevel);
 }
 
 bool VulkanDevice::copyData(HwTexture* tex, TextureDataProvider* dataProvider)

@@ -140,6 +140,8 @@ DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwSwapchain>, createSwapchain, const SwapChain
 DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwRenderTarget>, createRenderTarget, const RenderTargetDesc&, desc)
 DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwBuffer>, createBuffer, BufferUsage, usage, MemoryUsage, memoryUsage, uint64_t, size, uint16_t, stride, const void*, data)
 DECL_DRIVER_API_SYNCHRONOUS_N(SharedPtr<HwTexture>, createTexture, const TextureData&, textureData, SamplerInfo, sampler)
+DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwTextureView>, createSRV, HwTexture*, tex, int, mipLevel, const char*, name)
+DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwTextureView>, createRTV, HwTexture*, tex, int, mipLevel, const char*, name)
 DECL_DRIVER_API_SYNCHRONOUS_N(bool, copyData, HwTexture*, tex, TextureDataProvider*, dataProvider)
 DECL_DRIVER_API_SYNCHRONOUS_N(SamplerHandle, createSampler, const SamplerInfo&, info)
 DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwShaderModule>, createShaderModule, ShaderStage, stage, const ByteArray&, shaderCode, ShaderCodeType, shaderCodeType, const char*, pShaderEntryPoint)
