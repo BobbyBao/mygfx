@@ -185,18 +185,21 @@ namespace mygfx {
 		windowInstance = SDL_GetProperty(SDL_GetWindowProperties(mSdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
 #endif
 		auto mDevice = new VulkanDevice();
-		if (!mDevice->init(mSettings)) {
+		if (!mDevice->create(mSettings)) {
 			return false;
 		}
 
 		mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice);
 
-		mDevice->create(windowInstance, window);
-		auto& gfx = gfxApi();
+		SwapChainDesc desc {
+			.windowInstance = windowInstance, 
+			.window = window,
+			.width = mWidth, .height = mHeight,
+		};
+
+		mSwapchain = mGraphicsApi->createSwapchain(desc);
 
 		Texture::staticInit();
-
-		mSwapchain = mDevice->getSwapChain();
 
 		mUI = new UIOverlay(mSdlWindow);
 		mUI->init();

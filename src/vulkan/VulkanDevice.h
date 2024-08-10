@@ -32,17 +32,15 @@ namespace mygfx
 		VulkanDevice();
 		~VulkanDevice();
 
-		bool init(const Settings& settings) override;
-		void create(void* windowInstance, void* window) override;
+		bool create(const Settings& settings) override;
+		
 		const char* getDeviceName() const override;
         Dispatcher getDispatcher() const noexcept override;
 
 		VmaAllocator vmaAllocator() { return vmaAllocator_; } 
 		DynamicBufferPool& getConstbufferRing() { return mConstantBufferRing; }
 		
-		//bool allocVertexBuffer(uint32_t numbeOfVertices, uint32_t strideInBytes, void** pData, BufferInfo* pOut);
 		bool allocVertexBuffer(uint32_t sizeInBytes, void** pData, BufferInfo* pOut);
-		//bool allocIndexBuffer(uint32_t numbeOfIndices, uint32_t strideInBytes, void** pData, BufferInfo* pOut);
 		bool allocIndexBuffer(uint32_t sizeInBytes, void** pData, BufferInfo* pOut);
 
 #define DECL_DRIVER_API(methodName, paramsDecl, params)                                            \
@@ -76,7 +74,6 @@ namespace mygfx
 		
 		void updateDynamicDescriptorSet(int index, uint32_t size, VkDescriptorSet descriptorSet);
 
-		DescriptorSet* getDynamicUniformSet(DescriptorSetLayout* layout);
 		CommandBuffer* getCommandBuffer(CommandQueueType queueType, uint32_t count = 1);
 		void freeCommandBuffer(CommandBuffer* cmd);
 		void executeCommand(CommandQueueType queueType, const std::function<void(const CommandBuffer&)>& fn);
@@ -124,9 +121,6 @@ namespace mygfx
 		std::vector<std::pair<SamplerInfo, VkSampler>> mSamplers;
 		DescriptorPoolManager mDescriptorPoolManager;
 		
-		std::mutex mUniformSetLock;
-		std::array<Ref<ResourceSet>, Uniforms::MAX_COUNT> mUniformSet;
-
 		Ref<DescriptorTable> mTextureSet;
 		Ref<DescriptorTable> mImageSet;
 		Ref<DescriptorTable> mBufferSet;

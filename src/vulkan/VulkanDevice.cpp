@@ -37,13 +37,8 @@ namespace mygfx
 	{
 	}
 	
-	bool VulkanDevice::init(const Settings& settings)
+	bool VulkanDevice::create(const Settings& settings)
 	{
-		mSwapchainDesc.width = settings.width;
-		mSwapchainDesc.height = settings.height;
-		mSwapchainDesc.fullscreen = settings.fullscreen;
-		mSwapchainDesc.vsync = settings.vsync;
-		
 		volkInitialize();
 
 		// Vulkan instance
@@ -115,11 +110,7 @@ namespace mygfx
 		mCommandQueues[0].Init(CommandQueueType::Graphics, queueFamilyIndices.graphics, 0, 3, "");
 		mCommandQueues[1].Init(CommandQueueType::Compute, queueFamilyIndices.compute, 0, 3, "");
 		mCommandQueues[2].Init(CommandQueueType::Copy, queueFamilyIndices.transfer, 1, 3, "");
-		return true;
-	}
 
-	void VulkanDevice::create(void* windowInstance, void* window)
-	{
 		createCommandPool();
 		createCommandBuffers();
 		createSynchronizationPrimitives();
@@ -138,14 +129,9 @@ namespace mygfx
 		mVertexBufferRing.create(BufferUsage::VERTEX | BufferUsage::INDEX, MAX_BACKBUFFER_COUNT, vertexBuffersMemSize, "VertexBuffers|IndexBuffers");
 						
 		const uint32_t uploadHeapMemSize = 64 * 1024 * 1024;
-		mUploadHeap.create(uploadHeapMemSize);    // initialize an upload heap (uses suballocation for faster results)
+		mUploadHeap.create(uploadHeapMemSize);
 
-		mSwapchainDesc.windowInstance = windowInstance;
-		mSwapchainDesc.window = window;
-
-		Ref<VulkanSwapChain> swapChain = makeShared<VulkanSwapChain>(mSwapchainDesc);
-		swapChain->recreate(mSwapchainDesc);
-		mSwapChain = swapChain;
+		return true;
 	}
 
 	const char* VulkanDevice::getDeviceName() const {
@@ -173,28 +159,7 @@ namespace mygfx
 
 		vkUpdateDescriptorSets(gfx().device, 1, &write, 0, NULL);
 	}
-
-	DescriptorSet* VulkanDevice::getDynamicUniformSet(DescriptorSetLayout* layout) {
-		std::lock_guard<std::mutex> locker(mUniformSetLock);
-		uint32_t bindingNum = layout->numBindings();
-		if (bindingNum == 0) {
-			return nullptr;
-		}
-
-		Ref<ResourceSet>& rs = mUniformSet[bindingNum - 1];
-		if (rs == nullptr) {
-			rs = makeShared<ResourceSet>();
-		}
-
-		auto ds = rs->getDescriptorSet(layout);
-	
-		for(uint32_t j = 0; j < bindingNum; j++) {
-			ds->dynamicBufferSize[j] = 256;
-			updateDynamicDescriptorSet(j, 256, *ds);
-		}
-		return ds;
-	}
-	
+		
 	void VulkanDevice::createCommandPool()
 	{
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
@@ -266,10 +231,12 @@ namespace mygfx
 		vkDeviceWaitIdle(device);
 
 		VulkanSwapChain* swapChain = static_cast<VulkanSwapChain*>(sc);
+
 		// Recreate swap chain
-		mSwapchainDesc.width = destWidth;
-		mSwapchainDesc.height = destHeight;		
-		swapChain->recreate(mSwapchainDesc);
+		SwapChainDesc desc = sc->desc;
+		desc.width = destWidth;
+		desc.height = destHeight;
+		swapChain->recreate(desc);
 		
 		// Command buffers need to be recreated as they may store
 		// references to the recreated frame buffer
@@ -450,7 +417,9 @@ namespace mygfx
 	}
 
 	SharedPtr<HwSwapchain> VulkanDevice::createSwapchain(const SwapChainDesc& desc) {
-		return makeShared<VulkanSwapChain>(desc);
+		auto sw = makeShared<VulkanSwapChain>(desc);
+		sw->recreate(desc);
+		return sw;
 	}
 	
 	SharedPtr<HwVertexInput> VulkanDevice::createVertexInput(const FormatList& fmts, const FormatList& fmts1)
@@ -533,6 +502,8 @@ namespace mygfx
 
 	void VulkanDevice::makeCurrent(HwSwapchain* sc)
 	{
+		mSwapChain = sc;
+
 		VulkanSwapChain* swapChain = static_cast<VulkanSwapChain*>(sc);
 		// Acquire the next image from the swap chain
 		VkResult result = swapChain->acquireNextImage(semaphores.presentComplete, &currentBuffer);
@@ -793,6 +764,8 @@ namespace mygfx
 	void VulkanDevice::commit(HwSwapchain* sc)
 	{
 		currentCmd->end();
+		
+		assert(sc == mSwapChain);
 
 		submitInfo.commandBufferCount = 1;
 		submitInfo.pCommandBuffers = &currentCmd->cmd;

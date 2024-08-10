@@ -9,6 +9,11 @@ namespace mygfx {
 		Object();
         		
         virtual Ref<Object> clone();
+
+        template<typename T>
+        T* cast() {
+            return dynamic_cast<T*>(this);
+        }
 		  
 	protected:
 		virtual Object* createObject();

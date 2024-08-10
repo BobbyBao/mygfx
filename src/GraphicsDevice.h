@@ -11,10 +11,6 @@ namespace mygfx {
 
 	struct Settings {
 		const char* name;
-		uint32_t width = 1280;
-		uint32_t height = 720;
-		bool fullscreen = false;
-		bool vsync = false;
 		bool validation = false;
 	};
 
@@ -35,8 +31,7 @@ namespace mygfx {
 		GraphicsDevice();
 		virtual ~GraphicsDevice();
 		
-		virtual bool init(const Settings& settings) = 0;		
-		virtual void create(void* windowInstance, void* window) = 0;
+		virtual bool create(const Settings& settings) = 0;
 		virtual const char* getDeviceName() const = 0;
 
 		// Returns the dispatcher. This is only called once during initialization of the CommandStream,
@@ -117,7 +112,6 @@ namespace mygfx {
 	protected:
 		void executeAll();
 		
-		SwapChainDesc mSwapchainDesc;
 		Ref<HwSwapchain> mSwapChain;
 		TimePoint mLastRenderTime;
 		std::vector<std::tuple<std::function<void()>, int>> postCall_;
