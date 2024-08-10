@@ -9,7 +9,6 @@
 #include "VulkanSwapChain.h"
 #include "VulkanTexture.h"
 #include "VulkanTools.h"
-
 #include "CommandQueue.h"
 #include "DescriptorPoolManager.h"
 #include "ResourceSet.h"

@@ -5,7 +5,7 @@
 
 namespace mygfx {
 
-void CommandBuffer::begin(VkCommandBufferUsageFlags flags, const VkCommandBufferInheritanceInfo* pInheritanceInfo) const
+void CommandBuffer::begin(VkCommandBufferUsageFlags flags, const VkCommandBufferInheritanceInfo* pInheritanceInfo) const VULKAN_NOEXCEPT
 {
     VkCommandBufferBeginInfo info = {
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -17,19 +17,19 @@ void CommandBuffer::begin(VkCommandBufferUsageFlags flags, const VkCommandBuffer
     begin(info);
 }
 
-void CommandBuffer::begin(const VkCommandBufferBeginInfo& beginInfo) const
+void CommandBuffer::begin(const VkCommandBufferBeginInfo& beginInfo) const VULKAN_NOEXCEPT
 {
-    VkResult result = vkBeginCommandBuffer(cmd, reinterpret_cast<const VkCommandBufferBeginInfo*>(&beginInfo));
-    VK_CHECK_MSG(result, "CommandBuffer::begin");
+    VkResult result = vkBeginCommandBuffer(cmd, &beginInfo);
+    VK_CHECK_MSG(result, "CommandBuffer::begin"); 
 }
 
-void CommandBuffer::end() const
+void CommandBuffer::end() const VULKAN_NOEXCEPT
 {
     VkResult result = vkEndCommandBuffer(cmd);
     VK_CHECK_MSG(result, "CommandBuffer::end");
 }
 
-void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& renderInfo) const
+void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& renderInfo) const VULKAN_NOEXCEPT
 {
     VulkanRenderTarget* pVkRT = (VulkanRenderTarget*)pRT;
 
@@ -170,7 +170,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
     resetState();
 }
 
-void CommandBuffer::endRendering(HwRenderTarget* pRT) const
+void CommandBuffer::endRendering(HwRenderTarget* pRT) const VULKAN_NOEXCEPT
 {
     // End dynamic rendering
     g_vkCmdEndRenderingKHR(cmd);
@@ -207,7 +207,7 @@ void CommandBuffer::endRendering(HwRenderTarget* pRT) const
     }
 }
 
-void CommandBuffer::resetState() const
+void CommandBuffer::resetState() const VULKAN_NOEXCEPT
 {
     g_vkCmdSetCullModeEXT(cmd, VK_CULL_MODE_BACK_BIT);
     g_vkCmdSetFrontFaceEXT(cmd, VK_FRONT_FACE_COUNTER_CLOCKWISE);
@@ -243,12 +243,12 @@ void CommandBuffer::resetState() const
     mPrimitive = nullptr;
 }
 
-void CommandBuffer::setViewportAndScissor(const VkRect2D& renderArea) const
+void CommandBuffer::setViewportAndScissor(const VkRect2D& renderArea) const VULKAN_NOEXCEPT
 {
     setViewportAndScissor(renderArea.offset.x, renderArea.offset.y, renderArea.extent.width, renderArea.extent.height);
 }
 
-void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t width, uint32_t height) const
+void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t width, uint32_t height) const VULKAN_NOEXCEPT
 {
     VkViewport viewport;
     viewport.x = static_cast<float>(topX);
@@ -268,54 +268,17 @@ void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t
     g_vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
 }
 
-void CommandBuffer::setViewport(uint32_t viewportCount, const VkViewport* pViewports) const
+void CommandBuffer::setViewport(uint32_t viewportCount, const VkViewport* pViewports) const VULKAN_NOEXCEPT
 {
     g_vkCmdSetViewportWithCountEXT(cmd, viewportCount, reinterpret_cast<const VkViewport*>(pViewports));
 }
 
-void CommandBuffer::setScissor(uint32_t scissorCount, const VkRect2D* pScissors) const
+void CommandBuffer::setScissor(uint32_t scissorCount, const VkRect2D* pScissors) const VULKAN_NOEXCEPT
 {
     g_vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
 }
 
-void CommandBuffer::setVertexInput(HwVertexInput* vertexInput) const
-{
-    VulkanVertexInput* vkVertexInput = (VulkanVertexInput*)vertexInput;
-    if (mVertexInput != vkVertexInput) {
-        mVertexInput = vkVertexInput;
-
-        g_vkCmdSetVertexInputEXT(cmd, (uint32_t)vkVertexInput->bindingDescriptions.size(), vkVertexInput->bindingDescriptions.data(),
-            (uint32_t)vkVertexInput->attributeDescriptions.size(), vkVertexInput->attributeDescriptions.data());
-    }
-}
-
-void CommandBuffer::setPrimitiveTopology(PrimitiveTopology primitiveTopology) const
-{
-    if (mPrimitiveState.primitiveTopology != primitiveTopology) {
-        mPrimitiveState.primitiveTopology = primitiveTopology;
-
-        g_vkCmdSetPrimitiveTopologyEXT(cmd, (VkPrimitiveTopology)primitiveTopology);
-    }
-}
-
-void CommandBuffer::setPrimitiveRestartEnable(bool restartEnable) const
-{
-    if (mPrimitiveState.restartEnable != restartEnable) {
-        mPrimitiveState.restartEnable = restartEnable;
-        g_vkCmdSetPrimitiveRestartEnableEXT(cmd, restartEnable);
-    }
-}
-
-void CommandBuffer::bindShaderProgram(HwProgram* program) const
-{
-    VulkanProgram* vkProgram = static_cast<VulkanProgram*>(program);
-    if (mProgram != program) {
-        mProgram = vkProgram;
-        g_vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);
-    }
-}
-
-void CommandBuffer::bindRasterState(const RasterState* rasterState) const
+void CommandBuffer::bindRasterState(const RasterState* rasterState) const VULKAN_NOEXCEPT
 {
     if (mRasterState == *rasterState) {
         return;
@@ -336,7 +299,7 @@ void CommandBuffer::bindRasterState(const RasterState* rasterState) const
     g_vkCmdSetDepthBiasEnableEXT(cmd, rasterState->depthBiasEnable);
 }
 
-void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) const
+void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) const VULKAN_NOEXCEPT
 {
 
     if (mColorBlendState == *colorBlendState) {
@@ -387,9 +350,8 @@ VkCompareOp convertComparisonFunc(const CompareOp func)
     }
 }
 
-void CommandBuffer::bindDepthState(const DepthState* depthState) const
+void CommandBuffer::bindDepthState(const DepthState* depthState) const VULKAN_NOEXCEPT
 {
-
     if (mDepthState == *depthState) {
         return;
     }
@@ -401,7 +363,7 @@ void CommandBuffer::bindDepthState(const DepthState* depthState) const
     g_vkCmdSetDepthCompareOpEXT(cmd, convertComparisonFunc(depthState->depthCompareOp));
 }
 
-void CommandBuffer::bindStencilState(const StencilState* stencilState) const
+void CommandBuffer::bindStencilState(const StencilState* stencilState) const VULKAN_NOEXCEPT
 {
 
     if (stencilState == nullptr || mStencilState == *stencilState) {
@@ -413,7 +375,7 @@ void CommandBuffer::bindStencilState(const StencilState* stencilState) const
     g_vkCmdSetStencilTestEnableEXT(cmd, stencilState->stencilTestEnable);
 }
 
-void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const
+void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const VULKAN_NOEXCEPT
 {
     setPrimitiveTopology(pipelineState->primitiveState.primitiveTopology);
     setPrimitiveRestartEnable(pipelineState->primitiveState.restartEnable);
@@ -567,7 +529,7 @@ void SetSubResourceRange(const HwResource* pResource, VkImageMemoryBarrier& imag
     }
 }
 
-void CommandBuffer::resourceBarrier(uint32_t barrierCount, const Barrier* pBarriers) const
+void CommandBuffer::resourceBarrier(uint32_t barrierCount, const Barrier* pBarriers) const VULKAN_NOEXCEPT
 {
     std::vector<VkImageMemoryBarrier> imageBarriers;
     std::vector<VkBufferMemoryBarrier> bufferBarriers;
@@ -792,7 +754,7 @@ VkPipelineStageFlags pipelineStageForLayout(VkImageLayout layout)
     }
 }
 
-void CommandBuffer::setImageLayout(VkImage image, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, const VkImageSubresourceRange& subresourceRange) const VULKAN_HPP_NOEXCEPT
+void CommandBuffer::setImageLayout(VkImage image, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, const VkImageSubresourceRange& subresourceRange) const VULKAN_NOEXCEPT
 {
     // Create an image barrier object
     VkImageMemoryBarrier imageMemoryBarrier;
@@ -819,7 +781,7 @@ void CommandBuffer::pipelineBarrier(VkPipelineStageFlags srcStageMask,
     uint32_t bufferMemoryBarrierCount,
     const VkBufferMemoryBarrier* pBufferMemoryBarriers,
     uint32_t imageMemoryBarrierCount,
-    const VkImageMemoryBarrier* pImageMemoryBarriers) const VULKAN_HPP_NOEXCEPT
+    const VkImageMemoryBarrier* pImageMemoryBarriers) const VULKAN_NOEXCEPT
 {
     vkCmdPipelineBarrier(cmd,
         static_cast<VkPipelineStageFlags>(srcStageMask),
@@ -838,7 +800,7 @@ void CommandBuffer::pipelineBarrier(VkPipelineStageFlags srcStageMask,
     VkDependencyFlags dependencyFlags,
     std::span<const VkMemoryBarrier> const& memoryBarriers,
     std::span<const VkBufferMemoryBarrier> const& bufferMemoryBarriers,
-    std::span<const VkImageMemoryBarrier> const& imageMemoryBarriers) const VULKAN_HPP_NOEXCEPT
+    std::span<const VkImageMemoryBarrier> const& imageMemoryBarriers) const VULKAN_NOEXCEPT
 {
     vkCmdPipelineBarrier(cmd,
         static_cast<VkPipelineStageFlags>(srcStageMask),
