@@ -31,11 +31,11 @@ namespace mygfx {
 	}
 		
 	void Renderable::onAddToScene(Scene* scene) {
-		scene->renderables.insert(this);
+		scene->mRenderables.insert(this);
 	}
 
 	void Renderable::onRemoveFromScene(Scene* scene) {
-		scene->renderables.erase(this);
+		scene->mRenderables.erase(this);
 	}
 
 	Ref<Node> Renderable::createCube(float size)

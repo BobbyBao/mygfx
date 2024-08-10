@@ -51,15 +51,15 @@ namespace mygfx {
 			mGGXLUT = Texture::createFromFile("textures/lut_ggx.png", SamplerInfo::create(Filter::LINEAR, SamplerAddressMode::CLAMP_TO_EDGE));
 		}
 
-		scene->skybox = this;
+		scene->mSkybox = this;
 	}
 
 	void Skybox::onRemoveFromScene(Scene* scene) {
 
 		Renderable::onRemoveFromScene(scene);
 
-		if (scene->skybox == this) {
-			scene->skybox = nullptr;
+		if (scene->mSkybox == this) {
+			scene->mSkybox = nullptr;
 		}
 	}
 }
