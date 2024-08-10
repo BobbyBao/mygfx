@@ -3,6 +3,7 @@ include_directories(external)
 
 add_subdirectory(external/stb)
 add_subdirectory(external/glm)
+include_directories(external/glm)
 
 add_subdirectory(external/imgui)
 add_subdirectory(external/ktx)

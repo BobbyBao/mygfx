@@ -2,8 +2,8 @@
 
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
+#include <glm.hpp>
+#include <ext.hpp>
 
 namespace math {
 

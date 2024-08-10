@@ -4,136 +4,132 @@
 #include <random>
 
 namespace mygfx::demo {
-	
-	class ComputeShaderDemo : public Demo {
-	public:
-		const static uint32_t PARTICLE_COUNT = 256 * 1024;
 
-		Ref<HwBuffer> mSBO;
-		Ref<Shader> mShader;
-		Ref<Shader> mComputeShader;
+class ComputeShaderDemo : public Demo {
+public:
+    const static uint32_t PARTICLE_COUNT = 256 * 1024;
 
-		Ref<Texture> mParticleTexture;
-		Ref<Texture> mGradientTexture;
+    Ref<HwBuffer> mSBO;
+    Ref<Shader> mShader;
+    Ref<Shader> mComputeShader;
 
-		float timer = 0.0f;
-		float animStart = 20.0f;
-		bool pause = false;
-		bool attachToCursor = false;
-		float mouseX = 0, mouseY = 0;
+    Ref<Texture> mParticleTexture;
+    Ref<Texture> mGradientTexture;
 
-		struct Particle {
-			vec2 pos;
-			vec2 vel;
-			float gradientPos;
-		};
+    float timer = 0.0f;
+    float animStart = 20.0f;
+    bool pause = false;
+    bool attachToCursor = false;
+    float mouseX = 0, mouseY = 0;
 
-		struct UniformData {						// Compute shader uniform block object
-			float deltaT;							//		Frame delta time
-			float destX;							//		x position of the attractor
-			float destY;							//		y position of the attractor
-			uint32_t particleCount = PARTICLE_COUNT;
-		} uniformData;
-		
-		Result<void> start() override {
+    struct Particle {
+        vec2 pos;
+        vec2 vel;
+        float gradientPos;
+        float pad;
+    };
 
-			std::default_random_engine rndEngine((unsigned)time(nullptr));
-			std::uniform_real_distribution<float> rndDist(-1.0f, 1.0f);
+    struct UniformData { // Compute shader uniform block object
+        float deltaT; //		Frame delta time
+        float destX; //		x position of the attractor
+        float destY; //		y position of the attractor
+        uint32_t particleCount = PARTICLE_COUNT;
+    } uniformData;
 
-			// Initial particle positions
-			std::vector<Particle> particleBuffer(PARTICLE_COUNT);
-			for (auto& particle : particleBuffer) {
-				particle.pos = glm::vec2(rndDist(rndEngine), rndDist(rndEngine));
-				particle.vel = glm::vec3(0.0f, 0.0f, particle.pos.x / 2.0f);			
-			}
+    Result<void> start() override
+    {
 
-			mSBO = gfxApi().createBuffer1(BufferUsage::STORAGE | BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, std::span{ particleBuffer });
+        std::default_random_engine rndEngine((unsigned)time(nullptr));
+        std::uniform_real_distribution<float> rndDist(-1.0f, 1.0f);
 
-			mComputeShader = new Shader(csCode);
-			mComputeShader->updateDescriptorSet(0, 0, mSBO);
+        // Initial particle positions
+        std::vector<Particle> particleBuffer(PARTICLE_COUNT);
+        for (auto& particle : particleBuffer) {
+            particle.pos = glm::vec2(rndDist(rndEngine), rndDist(rndEngine));
+            particle.vel = glm::vec3(0.0f, 0.0f, particle.pos.x / 2.0f);
+        }
 
-			mShader = new Shader(vsCode, fsCode);
-			mShader->setVertexInput({
-				Format::R32G32_SFLOAT, 
-				Format::R32G32_SFLOAT, 
-				Format::R32_SFLOAT });
-			mShader->setBlendMode(BlendMode::ADD);
-			mShader->pipelineState.primitiveState.primitiveTopology = PrimitiveTopology::POINT_LIST;
+        mSBO = gfxApi().createBuffer1(BufferUsage::STORAGE | BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, std::span { particleBuffer });
 
-			mParticleTexture = Texture::createFromFile("textures/particle_rgba.ktx", {.srgb = true});
-			mGradientTexture = Texture::createFromFile("textures/particle_gradient_rgba.ktx", {.srgb = true});
+        mComputeShader = new Shader(csCode);
+        mComputeShader->updateDescriptorSet(0, 0, mSBO);
 
-			mShader->updateDescriptorSet(0, 0, mParticleTexture);
-			mShader->updateDescriptorSet(0, 1, mGradientTexture);
+        mShader = new Shader(vsCode, fsCode);
+        mShader->setVertexInput({ Format::R32G32_SFLOAT,
+            Format::R32G32_SFLOAT,
+            Format::R32_SFLOAT,
+            Format::R32_SFLOAT });
+        mShader->setBlendMode(BlendMode::ADD);
+        mShader->pipelineState.primitiveState.primitiveTopology = PrimitiveTopology::POINT_LIST;
 
-			co_return;
-		}
+        mParticleTexture = Texture::createFromFile("textures/particle_rgba.ktx", { .srgb = true });
+        mGradientTexture = Texture::createFromFile("textures/particle_gradient_rgba.ktx", { .srgb = true });
 
-		void gui() override {
-			ImGui::Checkbox("Pause", &pause);
-			ImGui::Checkbox("Attach To Cursor", &attachToCursor);
-			ImGui::Value("Cursor X", mouseX);
-			ImGui::Value("Cursor Y", mouseY);
-			ImGui::Value("Dest X", uniformData.destX);
-			ImGui::Value("Dest Y", uniformData.destY);
-		}
+        mShader->updateDescriptorSet(0, 0, mParticleTexture);
+        mShader->updateDescriptorSet(0, 1, mGradientTexture);
 
-		void preDraw(GraphicsApi& cmd) override {
+        co_return;
+    }
 
-			if(pause){
-				return;
-			}
+    void gui() override
+    {
+        ImGui::Checkbox("Pause", &pause);
+        ImGui::Checkbox("Attach To Cursor", &attachToCursor);
+        ImGui::Value("Cursor X", mouseX);
+        ImGui::Value("Cursor Y", mouseY);
+        ImGui::Value("Dest X", uniformData.destX);
+        ImGui::Value("Dest Y", uniformData.destY);
+    }
 
-			auto width = mApp->getWidth();
-			auto height = mApp->getHeight();
-			float frameTimer = (float)mApp->getDeltaTime();
+    void preDraw(GraphicsApi& cmd) override
+    {
 
-			if (!attachToCursor)
-			{
-				if (animStart > 0.0f)
-				{
-					animStart -= frameTimer * 5.0f;
-				}
-				else if (animStart <= 0.0f)
-				{
-					timer += frameTimer * 0.04f;
-					if (timer > 1.f)
-						timer = 0.f;
-				}
-			}
+        if (pause) {
+            return;
+        }
 
-			uniformData.deltaT = frameTimer;
-			if (!attachToCursor)
-			{
-				uniformData.destX = sin(glm::radians(timer * 360.0f)) * 0.75f;
-				uniformData.destY = 0.0f;
-			}
-			else
-			{
-				SDL_GetMouseState(&mouseX, &mouseY);
+        auto width = mApp->getWidth();
+        auto height = mApp->getHeight();
+        float frameTimer = (float)mApp->getDeltaTime();
 
-				float normalizedMx = (mouseX - static_cast<float>(width / 2)) / static_cast<float>(width / 2);
-				float normalizedMy = (height - mouseY - static_cast<float>(height / 2)) / static_cast<float>(height / 2);
-				uniformData.destX = normalizedMx;
-				uniformData.destY = normalizedMy;
-			}
+        if (!attachToCursor) {
+            if (animStart > 0.0f) {
+                animStart -= frameTimer * 5.0f;
+            } else if (animStart <= 0.0f) {
+                timer += frameTimer * 0.04f;
+                if (timer > 1.f)
+                    timer = 0.f;
+            }
+        }
 
-			cmd.bindShaderProgram(mComputeShader->getProgram());
-			auto ubo = cmd.allocConstant(uniformData);
-			cmd.bindUniforms({ ubo });
-			cmd.dispatch(PARTICLE_COUNT / 256, 1, 1);
-		}
+        uniformData.deltaT = frameTimer;
+        if (!attachToCursor) {
+            uniformData.destX = sin(glm::radians(timer * 360.0f)) * 0.75f;
+            uniformData.destY = 0.0f;
+        } else {
+            SDL_GetMouseState(&mouseX, &mouseY);
 
-		void draw(GraphicsApi& cmd) override {
+            float normalizedMx = (mouseX - static_cast<float>(width / 2)) / static_cast<float>(width / 2);
+            float normalizedMy = (height - mouseY - static_cast<float>(height / 2)) / static_cast<float>(height / 2);
+            uniformData.destX = normalizedMx;
+            uniformData.destY = normalizedMy;
+        }
 
-			cmd.bindPipelineState(mShader->pipelineState);
-			cmd.bindVertexBuffer(0, mSBO, 0);
-			cmd.bindUniforms({});
-			cmd.draw(PARTICLE_COUNT, 1, 0, 0);
+        cmd.bindShaderProgram(mComputeShader->getProgram());
+        auto ubo = cmd.allocConstant(uniformData);
+        cmd.bindUniforms({ ubo });
+        cmd.dispatch(PARTICLE_COUNT / 256, 1, 1);
+    }
 
-		}
+    void draw(GraphicsApi& cmd) override
+    {
+        cmd.bindPipelineState(mShader->pipelineState);
+        cmd.bindVertexBuffer(0, mSBO, 0);
+        cmd.bindUniforms({});
+        cmd.draw(PARTICLE_COUNT, 1, 0, 0);
+    }
 
-		const char* csCode = R"(
+    const char* csCode = R"(
 		#version 450
 		#extension GL_EXT_scalar_block_layout : require
 		struct Particle
@@ -141,6 +137,7 @@ namespace mygfx::demo {
 			vec2 pos;
 			vec2 vel;
 			float gradientPos;
+			float pad;
 		};
 
 		// Binding 0 : Position storage buffer
@@ -211,7 +208,7 @@ namespace mygfx::demo {
 		}
 		)";
 
-		const char* vsCode = R"(
+    const char* vsCode = R"(
 		#version 450
 
 		layout (location = 0) in vec2 inPos;
@@ -236,7 +233,7 @@ namespace mygfx::demo {
 		}
 		)";
 
-		const char* fsCode = R"(
+    const char* fsCode = R"(
 		#version 450
 
 		layout (binding = 0) uniform sampler2D samplerColorMap;
@@ -253,9 +250,7 @@ namespace mygfx::demo {
 			outFragColor.rgb = texture(samplerColorMap, gl_PointCoord).rgb * color;
 		}
 		)";
+};
 
-
-	};
-
-	DEF_DEMO(ComputeShaderDemo, "Compute Shader Demo");
+DEF_DEMO(ComputeShaderDemo, "Compute Shader Demo");
 }

@@ -25,7 +25,6 @@ public:
 
         ImGui::SliderFloat("envIntensity", &frameUniforms.envIntensity, 0.0f, 10.0f);
         ImGui::SliderFloat("exposure", &frameUniforms.exposure, 0.0f, 10.0f);
-
     }
 };
 

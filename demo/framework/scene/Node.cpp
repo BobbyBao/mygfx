@@ -2,7 +2,7 @@
 #include "Component.h"
 #include "Scene.h"
 
-#include <glm/gtx/matrix_decompose.hpp>
+#include <gtx/matrix_decompose.hpp>
 
 namespace mygfx {
 

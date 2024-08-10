@@ -1,5 +1,4 @@
 #include "IBL.h"
-
 #include "Framework.h"
 
 namespace mygfx {

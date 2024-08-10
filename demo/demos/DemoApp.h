@@ -6,53 +6,56 @@
 
 namespace mygfx::demo {
 
-	using namespace math;
-	
-	class DemoApp;
+using namespace math;
 
-	class Demo : public utils::RefCounted {
-	public:
-		virtual Result<void> start() {
-			co_return;
-		}
-		virtual void gui() {}
-		virtual void update(double delta) {}
-		virtual void preDraw(GraphicsApi& cmd) {}
-		virtual void draw(GraphicsApi& cmd) {}
-		virtual void stop() {}
-	protected:
-		const char* mName = "";
-		String mDesc;
-		DemoApp* mApp = nullptr;
+class DemoApp;
 
-		friend class DemoApp;
-	};
+class Demo : public utils::RefCounted {
+public:
+    virtual Result<void> start()
+    {
+        co_return;
+    }
+    virtual void gui() { }
+    virtual void update(double delta) { }
+    virtual void preDraw(GraphicsApi& cmd) { }
+    virtual void draw(GraphicsApi& cmd) { }
+    virtual void stop() { }
 
-	struct DemoDesc {
-		const char* name;
-		std::function<Demo* ()> creator;
-		DemoDesc(const char* name, const std::function<Demo* ()>& creator);
-	};
+protected:
+    const char* mName = "";
+    String mDesc;
+    DemoApp* mApp = nullptr;
 
-#define DEF_DEMO(TYPE, NAME)\
-	inline static DemoDesc s_##TYPE(NAME, []() { return new TYPE(); });
+    friend class DemoApp;
+};
 
-	class DemoApp : public Application {
-	public:
-		DemoApp(int argc = 0, char** argv = nullptr);
+struct DemoDesc {
+    const char* name;
+    std::function<Demo*()> creator;
+    DemoDesc(const char* name, const std::function<Demo*()>& creator);
+};
 
-		void setDemo(int index);
-		void setDemo(Demo* demo);
-	protected:
-		Result<void> onStart() override;
-		void onDestroy() override;
-		void onGUI() override;
-		void onUpdate(double delta) override;
-		void onPreDraw(GraphicsApi& cmd) override;
-		void onDraw(GraphicsApi& cmd) override;
+#define DEF_DEMO(TYPE, NAME) \
+    inline static DemoDesc s_##TYPE(NAME, []() { return new TYPE(); });
 
-		int mActiveDemoIndex = -1;
-		Ref<Demo> mActiveDemo;
-	};
+class DemoApp : public Application {
+public:
+    DemoApp(int argc = 0, char** argv = nullptr);
+
+    void setDemo(int index);
+    void setDemo(Demo* demo);
+
+protected:
+    Result<void> onStart() override;
+    void onDestroy() override;
+    void onGUI() override;
+    void onUpdate(double delta) override;
+    void onPreDraw(GraphicsApi& cmd) override;
+    void onDraw(GraphicsApi& cmd) override;
+
+    int mActiveDemoIndex = -1;
+    Ref<Demo> mActiveDemo;
+};
 
 }

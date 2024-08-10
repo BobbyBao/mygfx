@@ -3,51 +3,50 @@
 #include "resource/Texture.h"
 
 namespace mygfx::demo {
-	
-	class DescriptorSetDemo : public Demo {
-	public:
-		Ref<Mesh> mMesh;
-		Ref<Shader> mShader;
 
-		Result<void> start() override {
+class DescriptorSetDemo : public Demo {
+public:
+    Ref<Mesh> mMesh;
+    Ref<Shader> mShader;
 
-			mMesh = Mesh::createCube();
-			
-			mShader = new Shader(vsCode, fsCode);
-			mShader->setVertexInput({
-				Format::R32G32B32_SFLOAT, Format::END,
-				Format::R32G32_SFLOAT, Format::END,
-				Format::R32G32B32_SFLOAT });
+    Result<void> start() override
+    {
 
-			mShader->updateDescriptorSet(0, 2, Texture::Green);
-			
-			co_return;
-		}
+        mMesh = Mesh::createCube();
 
-		void draw(GraphicsApi& cmd) override {
+        mShader = new Shader(vsCode, fsCode);
+        mShader->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END,
+            Format::R32G32_SFLOAT, Format::END,
+            Format::R32G32B32_SFLOAT });
 
-			auto w = mApp->getWidth();
-			auto h = mApp->getHeight();
-			float aspect = w / (float)h;
-			auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
+        mShader->updateDescriptorSet(0, 2, Texture::Green);
 
-			uint32_t perView = gfxApi().allocConstant(vp);
+        co_return;
+    }
 
-			auto world = identity<mat4>();
+    void draw(GraphicsApi& cmd) override
+    {
 
-			uint32_t perObject = gfxApi().allocConstant(world);
+        auto w = mApp->getWidth();
+        auto h = mApp->getHeight();
+        float aspect = w / (float)h;
+        auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
 
-			cmd.bindPipelineState(mShader->pipelineState);
-			cmd.bindUniforms({ perView, perObject});
+        uint32_t perView = gfxApi().allocConstant(vp);
 
-			for (auto& prim : mMesh->renderPrimitives) {
-				cmd.drawPrimitive(prim);
-			}
+        auto world = identity<mat4>();
 
-		}
+        uint32_t perObject = gfxApi().allocConstant(world);
 
+        cmd.bindPipelineState(mShader->pipelineState);
+        cmd.bindUniforms({ perView, perObject });
 
-		const char* vsCode = R"(
+        for (auto& prim : mMesh->renderPrimitives) {
+            cmd.drawPrimitive(prim);
+        }
+    }
+
+    const char* vsCode = R"(
 			#version 450
 			
 			layout (binding = 0) uniform PerView {
@@ -73,7 +72,7 @@ namespace mygfx::demo {
 			}
 		)";
 
-		const char* fsCode = R"(
+    const char* fsCode = R"(
 			#version 450
 
 			#extension GL_EXT_nonuniform_qualifier : require
@@ -90,9 +89,7 @@ namespace mygfx::demo {
 				outFragColor = texture(baseColorMap, inUV);
 			}
 		)";
+};
 
-
-	};
-
-	DEF_DEMO(DescriptorSetDemo, "DescriptorSet Demo");
+DEF_DEMO(DescriptorSetDemo, "DescriptorSet Demo");
 }

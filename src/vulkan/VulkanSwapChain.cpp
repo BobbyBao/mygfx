@@ -371,6 +371,8 @@ void VulkanSwapChain::create(uint32_t* width, uint32_t* height, bool vsync, bool
     rt->height = *height;
     rt->colorAttachments.clear();
 
+    colorTextures.clear();
+
     for (uint32_t i = 0; i < imageCount; i++) {
         auto& t = colorTextures.emplace_back(new VulkanTexture(images[i], colorFormat));
         rt->colorAttachments.emplace_back(t->rtv());

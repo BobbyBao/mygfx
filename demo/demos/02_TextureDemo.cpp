@@ -3,44 +3,45 @@
 #include "resource/Texture.h"
 
 namespace mygfx::demo {
-	
-	class TextureDemo : public Demo {
-	public:
-		Ref<Mesh> mMesh;
-		Ref<Shader> mShader;
 
-		Result<void> start() override {
+class TextureDemo : public Demo {
+public:
+    Ref<Mesh> mMesh;
+    Ref<Shader> mShader;
 
-			mShader = ShaderLibs::getSimpleLightShader();
+    Result<void> start() override
+    {
 
-			mMesh = Mesh::createCube();
-			
-			co_return;
-		}
+        mShader = ShaderLibs::getSimpleLightShader();
 
-		void draw(GraphicsApi& cmd) override {
+        mMesh = Mesh::createCube();
 
-			float w = (float)mApp->getWidth();
-			float h = (float)mApp->getHeight();
-			float aspect = w / h;
-			auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
+        co_return;
+    }
 
-			uint32_t perView = gfxApi().allocConstant(vp);
+    void draw(GraphicsApi& cmd) override
+    {
 
-			auto world = identity<mat4>();
+        float w = (float)mApp->getWidth();
+        float h = (float)mApp->getHeight();
+        float aspect = w / h;
+        auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
 
-			uint32_t perObject = gfxApi().allocConstant(world);
-			uint32_t perMaterial = gfxApi().allocConstant(Texture::Red->index());
+        uint32_t perView = gfxApi().allocConstant(vp);
 
-			cmd.bindPipelineState(mShader->pipelineState);
-			cmd.bindUniforms({ perView, perObject, perMaterial });
+        auto world = identity<mat4>();
 
-			for (auto& prim : mMesh->renderPrimitives) {
-				cmd.drawPrimitive(prim);
-			}
+        uint32_t perObject = gfxApi().allocConstant(world);
+        uint32_t perMaterial = gfxApi().allocConstant(Texture::Red->index());
 
-		}
-	};
+        cmd.bindPipelineState(mShader->pipelineState);
+        cmd.bindUniforms({ perView, perObject, perMaterial });
 
-	DEF_DEMO(TextureDemo, "Texture Demo");	
+        for (auto& prim : mMesh->renderPrimitives) {
+            cmd.drawPrimitive(prim);
+        }
+    }
+};
+
+DEF_DEMO(TextureDemo, "Texture Demo");
 }

@@ -1,18 +1,17 @@
 #include "UIOverlay.h"
 #include "GraphicsApi.h"
-#include "utils/FileUtils.h"
+#include "core/Maths.h"
 #include "resource/Shader.h"
 #include "resource/Texture.h"
-#include "core/Maths.h"
+#include "utils/FileUtils.h"
 
 #include <SDL.h>
 #include <SDL3/SDL_iostream.h>
 
 #include <imgui/backends/imgui_impl_sdl3.h>
 
-namespace mygfx
-{
-	const char* vsCode = R"(
+namespace mygfx {
+const char* vsCode = R"(
 			#version 450
 
 			#extension GL_ARB_separate_shader_objects : enable
@@ -44,7 +43,7 @@ namespace mygfx
 			}
 )";
 
-	const char* fsCode = R"(
+const char* fsCode = R"(
 			#version 450
 
 			#extension GL_ARB_separate_shader_objects : enable
@@ -72,220 +71,214 @@ namespace mygfx
 				}
 			}
 )";
-	static ImFont* addFont(const char* filePath, float size_pixels, const ImFontConfig* font_cfg = nullptr, const ImWchar* glyph_ranges = nullptr)
-	{
-		auto& io = ImGui::GetIO();
-		auto file = SDL_IOFromFile(filePath, "rb");
-		if (!file) {
-			return nullptr;
-		}
+static ImFont* addFont(const char* filePath, float size_pixels, const ImFontConfig* font_cfg = nullptr, const ImWchar* glyph_ranges = nullptr)
+{
+    auto& io = ImGui::GetIO();
+    auto file = SDL_IOFromFile(filePath, "rb");
+    if (!file) {
+        return nullptr;
+    }
 
-		auto fileSize = SDL_GetIOSize(file);
-		auto bytes = ImGui::MemAlloc(fileSize);
-		SDL_ReadIO(file, bytes, fileSize);
-		SDL_CloseIO(file);
-		return io.Fonts->AddFontFromMemoryTTF(bytes, (int)fileSize, size_pixels, font_cfg, glyph_ranges);
-	}
+    auto fileSize = SDL_GetIOSize(file);
+    auto bytes = ImGui::MemAlloc(fileSize);
+    SDL_ReadIO(file, bytes, fileSize);
+    SDL_CloseIO(file);
+    return io.Fonts->AddFontFromMemoryTTF(bytes, (int)fileSize, size_pixels, font_cfg, glyph_ranges);
+}
 
-	UIOverlay::UIOverlay(SDL_Window* wnd)
-	{
-#if defined(__ANDROID__)		
-		if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XXHIGH) {
-			scale = 3.5f;
-		}
-		else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XHIGH) {
-			scale = 2.5f;
-		}
-		else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_HIGH) {
-			scale = 2.0f;
-		};
+UIOverlay::UIOverlay(SDL_Window* wnd)
+{
+#if defined(__ANDROID__)
+    if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XXHIGH) {
+        scale = 3.5f;
+    } else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XHIGH) {
+        scale = 2.5f;
+    } else if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_HIGH) {
+        scale = 2.0f;
+    };
 #endif
 
-		// Init ImGui
-		ImGui::CreateContext();
+    // Init ImGui
+    ImGui::CreateContext();
 
-		// Dimensions
-		ImGuiIO& io = ImGui::GetIO();
-		io.FontGlobalScale = scale;
-		
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
-		//io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
-		
-		auto& style = ImGui::GetStyle();
+    // Dimensions
+    ImGuiIO& io = ImGui::GetIO();
+    io.FontGlobalScale = scale;
 
-		ImGui::StyleColorsDark();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
+    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoTaskBarIcons;
+    // io.ConfigFlags |= ImGuiConfigFlags_ViewportsNoMerge;
 
-		// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-			style.WindowRounding = 0.0f;
-			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-		}
+    auto& style = ImGui::GetStyle();
 
-		ImGui_ImplSDL3_InitForVulkan(wnd);
-	}
+    ImGui::StyleColorsDark();
 
-	UIOverlay::~UIOverlay()	{
-		
-		freeResources();
+    // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        style.WindowRounding = 0.0f;
+        style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+    }
 
-		ImGui_ImplSDL3_Shutdown();
+    ImGui_ImplSDL3_InitForVulkan(wnd);
+}
 
-		if (ImGui::GetCurrentContext()) {
-			ImGui::DestroyContext();
-		}
+UIOverlay::~UIOverlay()
+{
 
-	}
+    freeResources();
 
-	void UIOverlay::init()
-	{
-		ImGuiIO& io = ImGui::GetIO();
+    ImGui_ImplSDL3_Shutdown();
 
-		mProgram = new Shader(vsCode, fsCode);
-		mProgram->setVertexInput({Format::R32G32_SFLOAT, Format::R32G32_SFLOAT, Format::R8G8B8A8_UNORM });
-		mProgram->setBlendMode(BlendMode::ALPHA);
-		mProgram->pipelineState.rasterState.cullMode = CullMode::NONE;
+    if (ImGui::GetCurrentContext()) {
+        ImGui::DestroyContext();
+    }
+}
 
-		float size = 18.0f;
+void UIOverlay::init()
+{
+    ImGuiIO& io = ImGui::GetIO();
 
-		font = addFont("fonts/arial.ttf", size);
+    mProgram = new Shader(vsCode, fsCode);
+    mProgram->setVertexInput({ Format::R32G32_SFLOAT, Format::R32G32_SFLOAT, Format::R8G8B8A8_UNORM });
+    mProgram->setBlendMode(BlendMode::ALPHA);
+    mProgram->pipelineState.rasterState.cullMode = CullMode::NONE;
 
-		// Create font texture
-		unsigned char* fontData;
-		int texWidth, texHeight;
-		io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
+    float size = 18.0f;
 
-		size_t dataSize = texWidth * texHeight * 4 * sizeof(char);
+    font = addFont("fonts/arial.ttf", size);
 
-		//SRS - Set ImGui style scale factor to handle retina and other HiDPI displays (same as font scaling above)
-		ImGuiStyle& style = ImGui::GetStyle();
-		style.ScaleAllSizes(scale);
+    // Create font texture
+    unsigned char* fontData;
+    int texWidth, texHeight;
+    io.Fonts->GetTexDataAsRGBA32(&fontData, &texWidth, &texHeight);
 
-		mFontTexture = Texture::create2D(texWidth, texHeight, Format::R8G8B8A8_UNORM, MemoryBlock(fontData, dataSize));
-		io.Fonts->TexID = (void*)(int64_t)mFontTexture->index();
+    size_t dataSize = texWidth * texHeight * 4 * sizeof(char);
 
-	}
-	
-	bool UIOverlay::handleEvent(const SDL_Event& event)
-	{
-		if (ImGui::GetCurrentContext() == nullptr) {
-			return false;
-		}
+    // SRS - Set ImGui style scale factor to handle retina and other HiDPI displays (same as font scaling above)
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.ScaleAllSizes(scale);
 
-		return ImGui_ImplSDL3_ProcessEvent(&event);
-	}
+    mFontTexture = Texture::create2D(texWidth, texHeight, Format::R8G8B8A8_UNORM, MemoryBlock(fontData, dataSize));
+    io.Fonts->TexID = (void*)(int64_t)mFontTexture->index();
+}
 
-	void UIOverlay::update()
-	{
-		ImGui_ImplSDL3_NewFrame();
+bool UIOverlay::handleEvent(const SDL_Event& event)
+{
+    if (ImGui::GetCurrentContext() == nullptr) {
+        return false;
+    }
 
-		ImGui::NewFrame();
-	}
-	
-	void UIOverlay::draw(GraphicsApi& cmd)
-	{
-		ImGui::Render();
-		
-		ImDrawData* imDrawData = ImGui::GetDrawData();
-		int32_t vertexOffset = 0;
-		int32_t indexOffset = 0;
+    return ImGui_ImplSDL3_ProcessEvent(&event);
+}
 
-		if ((!imDrawData) || (imDrawData->CmdListsCount == 0)) {
-			return;
-		}
+void UIOverlay::update()
+{
+    ImGui_ImplSDL3_NewFrame();
 
-		ImGuiIO& io = ImGui::GetIO();
+    ImGui::NewFrame();
+}
 
-		char* pVertices = NULL;
-		BufferInfo VerticesView;
-		gfxApi().allocVertexBuffer(imDrawData->TotalVtxCount, sizeof(ImDrawVert), (void**)&pVertices, &VerticesView);
+void UIOverlay::draw(GraphicsApi& cmd)
+{
+    ImGui::Render();
 
-		char* pIndices = NULL;
-		BufferInfo indicesView;
-		gfxApi().allocIndexBuffer(imDrawData->TotalIdxCount, sizeof(ImDrawIdx), (void**)&pIndices, &indicesView);
+    ImDrawData* imDrawData = ImGui::GetDrawData();
+    int32_t vertexOffset = 0;
+    int32_t indexOffset = 0;
 
-		// Upload data
+    if ((!imDrawData) || (imDrawData->CmdListsCount == 0)) {
+        return;
+    }
 
-		ImDrawVert* vtxDst = (ImDrawVert*)pVertices;
-		ImDrawIdx* idxDst = (ImDrawIdx*)pIndices;
+    ImGuiIO& io = ImGui::GetIO();
 
-		for (int n = 0; n < imDrawData->CmdListsCount; n++) {
-			const ImDrawList* cmd_list = imDrawData->CmdLists[n];
-			memcpy(vtxDst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
-			memcpy(idxDst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-			vtxDst += cmd_list->VtxBuffer.Size;
-			idxDst += cmd_list->IdxBuffer.Size;
-		}
+    char* pVertices = NULL;
+    BufferInfo VerticesView;
+    gfxApi().allocVertexBuffer(imDrawData->TotalVtxCount, sizeof(ImDrawVert), (void**)&pVertices, &VerticesView);
 
-		cmd.setViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0, 1);
-		
-		cmd.bindVertexBuffer(0, VerticesView.buffer, VerticesView.offset);
-		cmd.bindIndexBuffer(indicesView.buffer, indicesView.offset, IndexType::UINT16);
-				
-		float L = 0.0f;
-		float R = ImGui::GetIO().DisplaySize.x;
-		float B = ImGui::GetIO().DisplaySize.y;
-		float T = 0.0f;
+    char* pIndices = NULL;
+    BufferInfo indicesView;
+    gfxApi().allocIndexBuffer(imDrawData->TotalIdxCount, sizeof(ImDrawIdx), (void**)&pIndices, &indicesView);
 
-		auto m = glm::ortho(L, R, B, T, -1.0f, 1.0f);
+    // Upload data
 
-		uint32_t perView = gfxApi().allocConstant(m);
-		
-		cmd.bindPipelineState(mProgram->pipelineState);
-		cmd.bindUniforms({perView});
-				
-		uint32_t topX, topY, width, height;
+    ImDrawVert* vtxDst = (ImDrawVert*)pVertices;
+    ImDrawIdx* idxDst = (ImDrawIdx*)pIndices;
 
-		for (int32_t i = 0; i < imDrawData->CmdListsCount; i++)
-		{
-			const ImDrawList* cmd_list = imDrawData->CmdLists[i];
-			for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++)
-			{
-				const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
-				topX = std::max((int32_t)(pcmd->ClipRect.x), 0);
-				topY = std::max((int32_t)(pcmd->ClipRect.y), 0);
-				width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
-				height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
-				cmd.setScissor(topX, topY, width, height);
-				cmd.drawIndexed(pcmd->ElemCount, 1, indexOffset, vertexOffset, (uint32_t)(uint64_t)pcmd->TextureId);
-				indexOffset += pcmd->ElemCount;
-			}
-			vertexOffset += cmd_list->VtxBuffer.Size;
-		}
+    for (int n = 0; n < imDrawData->CmdListsCount; n++) {
+        const ImDrawList* cmd_list = imDrawData->CmdLists[n];
+        memcpy(vtxDst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+        memcpy(idxDst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+        vtxDst += cmd_list->VtxBuffer.Size;
+        idxDst += cmd_list->IdxBuffer.Size;
+    }
 
-		// Update and Render additional Platform Windows
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-			ImGui::UpdatePlatformWindows();
-			ImGui::RenderPlatformWindowsDefault();
-		}
-	}
+    cmd.setViewport(0, 0, ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0, 1);
 
-	void UIOverlay::resize(uint32_t width, uint32_t height)
-	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2((float)(width), (float)(height));
-	}
+    cmd.bindVertexBuffer(0, VerticesView.buffer, VerticesView.offset);
+    cmd.bindIndexBuffer(indicesView.buffer, indicesView.offset, IndexType::UINT16);
 
-	void UIOverlay::freeResources()
-	{
-		mProgram.reset();
-		mFontTexture.reset();
-	}
+    float L = 0.0f;
+    float R = ImGui::GetIO().DisplaySize.x;
+    float B = ImGui::GetIO().DisplaySize.y;
+    float T = 0.0f;
+
+    auto m = glm::ortho(L, R, B, T, -1.0f, 1.0f);
+
+    uint32_t perView = gfxApi().allocConstant(m);
+
+    cmd.bindPipelineState(mProgram->pipelineState);
+    cmd.bindUniforms({ perView });
+
+    uint32_t topX, topY, width, height;
+
+    for (int32_t i = 0; i < imDrawData->CmdListsCount; i++) {
+        const ImDrawList* cmd_list = imDrawData->CmdLists[i];
+        for (int32_t j = 0; j < cmd_list->CmdBuffer.Size; j++) {
+            const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[j];
+            topX = std::max((int32_t)(pcmd->ClipRect.x), 0);
+            topY = std::max((int32_t)(pcmd->ClipRect.y), 0);
+            width = (uint32_t)(pcmd->ClipRect.z - pcmd->ClipRect.x);
+            height = (uint32_t)(pcmd->ClipRect.w - pcmd->ClipRect.y);
+            cmd.setScissor(topX, topY, width, height);
+            cmd.drawIndexed(pcmd->ElemCount, 1, indexOffset, vertexOffset, (uint32_t)(uint64_t)pcmd->TextureId);
+            indexOffset += pcmd->ElemCount;
+        }
+        vertexOffset += cmd_list->VtxBuffer.Size;
+    }
+
+    // Update and Render additional Platform Windows
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+        ImGui::UpdatePlatformWindows();
+        ImGui::RenderPlatformWindowsDefault();
+    }
+}
+
+void UIOverlay::resize(uint32_t width, uint32_t height)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.DisplaySize = ImVec2((float)(width), (float)(height));
+}
+
+void UIOverlay::freeResources()
+{
+    mProgram.reset();
+    mFontTexture.reset();
+}
 
 }
 
 namespace ImGui {
 
-	void Texture(mygfx::Texture* tex, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col) {
-		if (tex->getSRV()) {
-			ImGui::Image((ImTextureID)(int64_t)tex->getSRV()->index(), image_size, uv0, uv1, tint_col, border_col);
-		}
-		else {
-			ImGui::Image((ImTextureID)(int64_t)mygfx::Texture::Magenta->getSRV()->index(), image_size);
-		}
-	}
+void Texture(mygfx::Texture* tex, const ImVec2& image_size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
+{
+    if (tex->getSRV()) {
+        ImGui::Image((ImTextureID)(int64_t)tex->getSRV()->index(), image_size, uv0, uv1, tint_col, border_col);
+    } else {
+        ImGui::Image((ImTextureID)(int64_t)mygfx::Texture::Magenta->getSRV()->index(), image_size);
+    }
 }
-
+}

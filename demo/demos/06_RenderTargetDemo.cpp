@@ -3,73 +3,76 @@
 #include "resource/Texture.h"
 
 namespace mygfx::demo {
-	
-	class RenderTargetDemo : public Demo {
-	public:
-		Ref<Mesh> mMesh;
-		Ref<Shader> mShader;
-		Ref<Texture> mRenderTexture;
-		Ref<HwRenderTarget> mRenderTarget;
 
-		Result<void> start() override {
+class RenderTargetDemo : public Demo {
+public:
+    Ref<Mesh> mMesh;
+    Ref<Shader> mShader;
+    Ref<Texture> mRenderTexture;
+    Ref<HwRenderTarget> mRenderTarget;
 
-			mShader = ShaderLibs::getSimpleLightShader();
+    Result<void> start() override
+    {
 
-			mMesh = Mesh::createCube();
+        mShader = ShaderLibs::getSimpleLightShader();
 
-			mRenderTexture = Texture::createRenderTarget(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
-			
-			RenderTargetDesc desc {
-				.width = 1024,
-				.height = 1024
-			};
-			
-			desc.colorAttachments.emplace_back(mRenderTexture->getRTV());
-			mRenderTarget = gfxApi().createRenderTarget(desc);
+        mMesh = Mesh::createCube();
 
-			co_return;
-		}
+        mRenderTexture = Texture::createRenderTarget(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
 
-		void gui() override {
-			if (ImGui::Begin("RenderTarget")) {
-				ImGui::Texture(mRenderTexture, { 1024, 1024 });
-			}
-			ImGui::End();
-		}
+        RenderTargetDesc desc {
+            .width = 1024,
+            .height = 1024
+        };
 
-		void preDraw(GraphicsApi& cmd) override {
-			
-			auto w = mApp->getWidth();
-			auto h = mApp->getHeight();
-			float aspect = w / (float)h;
-			auto vp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
+        desc.colorAttachments.emplace_back(mRenderTexture->getRTV());
+        mRenderTarget = gfxApi().createRenderTarget(desc);
 
-			uint32_t perView = gfxApi().allocConstant(vp);
+        co_return;
+    }
 
-			auto world = identity<mat4>();
+    void gui() override
+    {
+        if (ImGui::Begin("RenderTarget")) {
+            ImGui::Texture(mRenderTexture, { 1024, 1024 });
+        }
+        ImGui::End();
+    }
 
-			uint32_t perObject = gfxApi().allocConstant(world);
-			uint32_t perMaterial = gfxApi().allocConstant(Texture::Red->index());
+    void preDraw(GraphicsApi& cmd) override
+    {
 
-			RenderPassInfo renderInfo{
-				.clearFlags = TargetBufferFlags::ALL,
-				.clearColor = {0.25f, 0.25f, 0.25f, 1.0f}
-			};
+        auto w = mApp->getWidth();
+        auto h = mApp->getHeight();
+        float aspect = w / (float)h;
+        auto vp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 
-			renderInfo.viewport = { .left = 0, .top = 0, .width = 1024, .height = 1024 };
+        uint32_t perView = gfxApi().allocConstant(vp);
 
-			cmd.beginRendering(mRenderTarget, renderInfo);
+        auto world = identity<mat4>();
 
-			cmd.bindPipelineState(mShader->pipelineState);
-			cmd.bindUniforms({ perView, perObject, perMaterial });
+        uint32_t perObject = gfxApi().allocConstant(world);
+        uint32_t perMaterial = gfxApi().allocConstant(Texture::Red->index());
 
-			for (auto& prim : mMesh->renderPrimitives) {
-				cmd.drawPrimitive(prim);
-			}
+        RenderPassInfo renderInfo {
+            .clearFlags = TargetBufferFlags::ALL,
+            .clearColor = { 0.25f, 0.25f, 0.25f, 1.0f }
+        };
 
-			cmd.endRendering(mRenderTarget);
-		}
-	};
+        renderInfo.viewport = { .left = 0, .top = 0, .width = 1024, .height = 1024 };
 
-	DEF_DEMO(RenderTargetDemo, "RenderTarget Demo");	
+        cmd.beginRendering(mRenderTarget, renderInfo);
+
+        cmd.bindPipelineState(mShader->pipelineState);
+        cmd.bindUniforms({ perView, perObject, perMaterial });
+
+        for (auto& prim : mMesh->renderPrimitives) {
+            cmd.drawPrimitive(prim);
+        }
+
+        cmd.endRendering(mRenderTarget);
+    }
+};
+
+DEF_DEMO(RenderTargetDemo, "RenderTarget Demo");
 }
