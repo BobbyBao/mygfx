@@ -360,7 +360,7 @@ namespace mygfx {
 		bool	srgb : 1 = false;
 		//uint8_t reserve : 7;
 
-		constexpr static SamplerInfo create(Filter filter, SamplerAddressMode addressMode) {
+		constexpr static SamplerInfo create(Filter filter, SamplerAddressMode addressMode, bool srgb = false) {
 			SamplerInfo ret{};
 			ret.magFilter = filter;
 			ret.minFilter = filter;
@@ -368,6 +368,7 @@ namespace mygfx {
 			ret.addressModeU = addressMode;
 			ret.addressModeV = addressMode;
 			ret.addressModeW = addressMode;
+			ret.srgb = srgb;
 			return ret;
 		}
 

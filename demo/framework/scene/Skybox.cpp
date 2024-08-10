@@ -48,7 +48,7 @@ namespace mygfx {
 		}
 
 		if (mGGXLUT == nullptr) {
-			mGGXLUT = Texture::createFromFile("textures/brdfLut.dds", SamplerInfo{ .srgb = true });
+			mGGXLUT = Texture::createFromFile("textures/lut_ggx.png", SamplerInfo::create(Filter::LINEAR, SamplerAddressMode::CLAMP_TO_EDGE));
 		}
 
 		scene->skybox = this;

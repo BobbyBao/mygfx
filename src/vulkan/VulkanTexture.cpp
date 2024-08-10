@@ -263,6 +263,8 @@ namespace mygfx
 		image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		image_info.usage = usage;  
 		image_info.flags = flags;
+		if (faceCount == 6)
+			image_info.flags |= VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
 		image_info.tiling = VK_IMAGE_TILING_OPTIMAL;   // VK_IMAGE_TILING_LINEAR should never be used and will never be faster
 
 		createImage(&image_info, name);

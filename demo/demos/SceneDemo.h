@@ -33,8 +33,9 @@ namespace mygfx::demo {
 
 			auto skybox = mScene->createChild<Node>()->addComponent<Skybox>();
 
-			skybox->setCubeMap(Texture::createFromFile("textures/papermill/specular.dds", SamplerInfo{ .srgb = true }));
-			skybox->setIrrMap(Texture::createFromFile("textures/papermill/diffuse.dds", SamplerInfo{ .srgb = true }));
+            SamplerInfo sampler = SamplerInfo::create(Filter::LINEAR, SamplerAddressMode::CLAMP_TO_EDGE, true);
+			skybox->setCubeMap(Texture::createFromFile("textures/papermill/specular.dds", sampler));
+			skybox->setIrrMap(Texture::createFromFile("textures/papermill/diffuse.dds", sampler));
 
 			mView->setEnvIntensity(0.75f);
 

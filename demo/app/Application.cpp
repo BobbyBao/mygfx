@@ -166,13 +166,11 @@ namespace mygfx {
 	bool Application::init()
 	{
 		mSettings.name = mTitle.c_str();
-		mSettings.width = mWidth;
-		mSettings.height = mHeight;
 		
 		getCPUDescription(mCPUName);
 
-		void* window;
-		void* windowInstance;
+		void* window = nullptr;
+		void* windowInstance = nullptr;
 
 		mSdlWindow = SDL_CreateWindow(mTitle.c_str(), mWidth, mHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
 		if (!mSdlWindow) {

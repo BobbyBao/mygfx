@@ -61,6 +61,8 @@ namespace mygfx {
 			mFrameUniforms.envIntensity = envIntensity;
 		}
 
+		auto& frameUniforms() {  return mFrameUniforms; }
+
 		void update(double delta);
 		void render(GraphicsApi& cmd);
 	protected:
