@@ -22,16 +22,12 @@ namespace mygfx {
 #define PROPERTY_GET(type, prop)\
     type get##prop() const { return m##prop; }\
 
-
 #define PROPERTY_GET_SET_BOOL(type, prop)\
     type is##prop() const { return m##prop; }\
     void set##prop(type v) { m##prop = v; }
 
 #define PROPERTY_GET_BOOL(type, prop)\
     type is##prop() const { return m##prop; }\
-
-#define PROPERTY_GET_WITH_BOOL(type, prop)\
-    type is##prop() const { return m##prop; }
 
 #define PROPERTY_GET_SET_1(type, prop)\
     const type& get##prop() const { return m##prop; }\

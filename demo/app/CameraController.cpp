@@ -48,9 +48,9 @@ namespace mygfx
         mDistance = -1;
         mLastMoveDir = vec3(0, 0, 0);	
 	}
-
-    void CameraController::init(Camera* camera) {
-        mCamera = camera;
+    
+    void CameraController::onSetOwner(Node* node) {
+        mCamera = node->getComponent<Camera>();
     }
 
     void CameraController::reset(const vec3& eyePos, const vec3& lookAt)
@@ -144,8 +144,6 @@ namespace mygfx
 
 		ImGuiIO& io = ImGui::GetIO();
 
-		//If the mouse was not used by the GUI then it's for the camera
-		//
 		if (io.WantCaptureMouse) {
 			io.MouseDelta.x = 0;
 			io.MouseDelta.y = 0;
@@ -156,10 +154,8 @@ namespace mygfx
 		auto pitch = mPitch;
 		auto distance = mDistance;
 
-		// Choose camera movement depending on setting
-		if (mCameraMode == Mode::Orbit) {
+		if (mCameraMode == CameraMode::Orbit) {
 
-			// If nothing has changed, don't calculate an update (we are getting micro changes in view causing bugs)
 			if (!io.MouseWheel && (!io.MouseDown[0] || (!io.MouseDelta.x && !io.MouseDelta.y)))
 				return;
 
@@ -179,7 +175,7 @@ namespace mygfx
 				panning ? io.MouseDelta.y / 100.0f : 0.0f,
 				distance, io.DeltaTime);
 		}
-		else if (mCameraMode == Mode::FreeFlight) {
+		else if (mCameraMode == CameraMode::FreeFlight) {
 
 			if ((io.KeyCtrl == false) && (io.MouseDown[1] == true)) {
 				yaw -= io.MouseDelta.x / 100.f;

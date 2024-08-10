@@ -13,7 +13,7 @@ namespace mygfx::demo {
 
 			SceneDemo::start();
 
-			mCameraController.lookAt(vec3{ 0.0f, 0.0f, 12.0f }, vec3{ 0.0f });
+			mCameraController->lookAt(vec3{ 0.0f, 0.0f, 12.0f }, vec3{ 0.0f });
 
 			int GRID_SIZE = 5;
 			float SPACE = 2.0f;

@@ -3,20 +3,17 @@
 
 namespace mygfx
 {
+	enum class CameraMode {
+		Orbit,
+		FreeFlight
+	};
 
-	class CameraController
+	class CameraController : public Component
 	{
 	public:
 		CameraController();
 
-		enum class Mode {
-			Orbit,
-			FreeFlight
-		};
-
-		void init(Camera* camera);
-
-		void setMode(CameraController::Mode mode) {
+		void setMode(CameraMode mode) {
 			mCameraMode = mode;
 		}
 
@@ -35,14 +32,15 @@ namespace mygfx
 	private:
 		void updateCameraPolar(float yaw, float pitch, float x, float y, float distance, float deltaTime = 0.0);
 		void updateCameraWASD(float yaw, float pitch, float deltaTime);
+		void onSetOwner(Node* node) override;
 
-		Mode mCameraMode = Mode::Orbit;
-		Vector3             mLastMoveDir;
-		float               mDistance;
-		float               mSpeed = 40.0f;
-		float               mYaw = 0.0f;
-		float               mPitch = 0.0f;
-		Ref<Camera>     mCamera = nullptr;	
+		CameraMode	mCameraMode = CameraMode::Orbit;
+		Vector3     mLastMoveDir;
+		float       mDistance;
+		float       mSpeed = 40.0f;
+		float       mYaw = 0.0f;
+		float       mPitch = 0.0f;
+		Ref<Camera> mCamera = nullptr;	
 
 	};
 

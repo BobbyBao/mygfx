@@ -19,6 +19,7 @@ namespace mygfx {
         mComponents.emplace_back(component);
 
         component->setOwner(this);
+
         if (mScene) {
             component->onAddToScene(mScene);
         }

@@ -11,7 +11,7 @@ namespace mygfx::demo {
 		Ref<Scene> mScene;
 		Ref<Node> mCameraNode;
 		Ref<Camera> mCamera;
-		CameraController mCameraController;
+		CameraController* mCameraController;
 
 		Result<void> start() override {
 
@@ -24,8 +24,8 @@ namespace mygfx::demo {
 			mCamera = mCameraNode->addComponent<Camera>();
 			mCamera->setPerspective(45.0f, w / h, 0.1f, 100.0f);
 
-			mCameraController.init(mCamera);
-			mCameraController.lookAt(vec3{ 0.0f, 0.0f, 4.0f }, vec3{ 0.0f });
+			mCameraController = mCameraNode->addComponent<CameraController>();
+			mCameraController->lookAt(vec3{ 0.0f, 0.0f, 4.0f }, vec3{ 0.0f });
 
 			mView = new View(mApp->getSwapChain());
 			mView->setScene(mScene);
@@ -44,7 +44,7 @@ namespace mygfx::demo {
 
 		void update(double delta) override {
 
-			mCameraController.update((float)delta);
+			mCameraController->update((float)delta);
 
 			mView->update(delta);
 		}
