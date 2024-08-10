@@ -1,65 +1,70 @@
 #include "Skybox.h"
-#include "resource/Texture.h"
-#include "resource/Shader.h"
+#include "Scene.h"
 #include "resource/Material.h"
 #include "resource/Mesh.h"
-#include "Scene.h"
+#include "resource/Shader.h"
+#include "resource/Texture.h"
 
 namespace mygfx {
-	
-	Skybox::Skybox() {
-	}
 
-	Object* Skybox::createObject() {
-		return new Skybox();
-	}
+Skybox::Skybox()
+{
+}
 
-	void Skybox::cloneProcess(Object* destNode) {
-		Skybox* skybox = (Skybox*)destNode;
-		skybox->mCubeMap = mCubeMap;
-		skybox->mIrrMap = mIrrMap;
-		skybox->mGGXLUT = mGGXLUT;
-	}
+Object* Skybox::createObject()
+{
+    return new Skybox();
+}
 
-	void Skybox::setCubeMap(Texture* tex) {
-		mCubeMap = tex;
-	}
-	
-	void Skybox::setIrrMap(Texture* tex) {
-		mIrrMap = tex;
-	}
+void Skybox::cloneProcess(Object* destNode)
+{
+    Skybox* skybox = (Skybox*)destNode;
+    skybox->mCubeMap = mCubeMap;
+    skybox->mIrrMap = mIrrMap;
+    skybox->mGGXLUT = mGGXLUT;
+}
 
-	void Skybox::onAddToScene(Scene* scene) {
+void Skybox::setCubeMap(Texture* tex)
+{
+    mCubeMap = tex;
+}
 
-		Renderable::onAddToScene(scene);
+void Skybox::setIrrMap(Texture* tex)
+{
+    mIrrMap = tex;
+}
 
-		if (mMesh == nullptr) {
-			auto mesh = Mesh::createFullScreen();
-			DefineList macros;
-			macros.add("LINEAR_OUTPUT");
-			Ref<Shader> shader = Shader::fromFile("shaders/skybox.vert", "shaders/skybox.frag", &macros);
-			shader->setVertexInput({});
-			shader->setCullMode(CullMode::NONE);
-			Ref<Material> material = makeRef<Material>(shader.get(), "MaterialUniforms");
-			material->setShaderParameter("u_MipLevel", 0);
-			material->setShaderParameter("u_EnvBlurNormalized", 1.0f);
-			mesh->setMaterial(material);
-			setMesh(mesh);
-		}
+void Skybox::onAddToScene(Scene* scene)
+{
+    Renderable::onAddToScene(scene);
 
-		if (mGGXLUT == nullptr) {
-			mGGXLUT = Texture::createFromFile("textures/lut_ggx.png", SamplerInfo::create(Filter::LINEAR, SamplerAddressMode::CLAMP_TO_EDGE));
-		}
+    if (mMesh == nullptr) {
+        auto mesh = Mesh::createFullScreen();
+        DefineList macros;
+        macros.add("LINEAR_OUTPUT");
+        Ref<Shader> shader = Shader::fromFile("shaders/skybox.vert", "shaders/skybox.frag", &macros);
+        shader->setVertexInput({});
+        shader->setCullMode(CullMode::NONE);
+        Ref<Material> material = makeRef<Material>(shader.get(), "MaterialUniforms");
+        material->setShaderParameter("u_MipLevel", 0);
+        material->setShaderParameter("u_EnvBlurNormalized", 1.0f);
+        mesh->setMaterial(material);
+        setMesh(mesh);
+    }
 
-		scene->mSkybox = this;
-	}
+    if (mGGXLUT == nullptr) {
+        mGGXLUT = Texture::createFromFile("textures/lut_ggx.png", SamplerInfo::create(Filter::LINEAR, SamplerAddressMode::CLAMP_TO_EDGE));
+    }
 
-	void Skybox::onRemoveFromScene(Scene* scene) {
+    scene->mSkybox = this;
+}
 
-		Renderable::onRemoveFromScene(scene);
+void Skybox::onRemoveFromScene(Scene* scene)
+{
+    Renderable::onRemoveFromScene(scene);
 
-		if (scene->mSkybox == this) {
-			scene->mSkybox = nullptr;
-		}
-	}
+    if (scene->mSkybox == this) {
+        scene->mSkybox = nullptr;
+    }
+}
 }

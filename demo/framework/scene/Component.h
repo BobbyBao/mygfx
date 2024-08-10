@@ -2,42 +2,43 @@
 #include "core/Fwd.h"
 #include "core/Object.h"
 
-
 namespace mygfx {
-	
-    class Node;
-    class Scene;
 
-	class Component : public Object {
-	public:
-		Component();
-        
-        Scene* getScene() const;
+class Node;
+class Scene;
 
-		Node* getOwner() const { return mOwner; }
-        bool enabled() const { return mEnable; }
-        bool isEnabledEffective() const { return mEnabledEffective; }
+class Component : public Object {
+public:
+    Component();
 
-        void setEnabled(bool enable);
-	protected:
-        void setOwner(Node* node);
-        virtual void onActive();
-        virtual void onDeactive();
-        virtual void onSetOwner(Node* node);
-        virtual void onAddToScene(Scene* scene);
-        virtual void onRemoveFromScene(Scene* scene);
-        virtual void onActiveChanged();
-        virtual void onParentChanged(Node* parent);
-        virtual void onTransformChanged();
-                        
-        Node* mOwner = nullptr;
-    private:
-        void checkActivateState();
+    Scene* getScene() const;
 
-        bool mEnable = true;
-        bool mEnabledEffective = true;
+    Node* getOwner() const { return mOwner; }
+    bool enabled() const { return mEnable; }
+    bool isEnabledEffective() const { return mEnabledEffective; }
 
-        friend class Node;
-	};
+    void setEnabled(bool enable);
+
+protected:
+    void setOwner(Node* node);
+    virtual void onActive();
+    virtual void onDeactive();
+    virtual void onSetOwner(Node* node);
+    virtual void onAddToScene(Scene* scene);
+    virtual void onRemoveFromScene(Scene* scene);
+    virtual void onActiveChanged();
+    virtual void onParentChanged(Node* parent);
+    virtual void onTransformChanged();
+
+    Node* mOwner = nullptr;
+
+private:
+    void checkActivateState();
+
+    bool mEnable = true;
+    bool mEnabledEffective = true;
+
+    friend class Node;
+};
 
 }

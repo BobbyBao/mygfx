@@ -3,49 +3,49 @@
 #include "Component.h"
 #include "core/Maths.h"
 
-
 namespace mygfx {
 
-	class Camera : public Component {
-	public:
-		Camera();
-		
-		PROPERTY_GET_SET(float, Fov)
-		PROPERTY_GET_SET(float, AspectRatio)
+class Camera : public Component {
+public:
+    Camera();
 
-		PROPERTY_GET_SET(float, NearPlane)
-		PROPERTY_GET_SET(float, FarPlane)
+    PROPERTY_GET_SET(float, Fov)
+    PROPERTY_GET_SET(float, AspectRatio)
 
-		PROPERTY_GET_SET_BOOL(bool, Ortho)
-		PROPERTY_GET_SET_1(float2, OrthoSize)
+    PROPERTY_GET_SET(float, NearPlane)
+    PROPERTY_GET_SET(float, FarPlane)
 
-		void setPerspective(float fov, float aspect, float znear, float zfar);
+    PROPERTY_GET_SET_BOOL(bool, Ortho)
+    PROPERTY_GET_SET_1(float2, OrthoSize)
 
-		mat4 getEffectiveWorldTransform() const;
-				
-		vec3 getDirection() const;
-		vec3 getUp() const;
-		vec3 getSide() const;
+    void setPerspective(float fov, float aspect, float znear, float zfar);
 
-		const mat4& getViewMatrix() const;
-		const mat4& getProjMatrix() const;
-	protected:
-		Object* createObject() override;
-		void cloneProcess(Object* destNode) override;
-		void onTransformChanged() override;
-		void updateProjection() const;
+    mat4 getEffectiveWorldTransform() const;
 
-		bool	mOrtho = false;
-		float2	mOrthoSize {100.0f};
-		float   mFov = pi<float>() / 4;
-		float   mAspectRatio = 1.0f;
-		float   mNearPlane = 0.1f;
-		float   mFarPlane = 1000.0f;
+    vec3 getDirection() const;
+    vec3 getUp() const;
+    vec3 getSide() const;
 
-		mutable mat4 mView;
-		mutable mat4 mProjection;
-		mutable bool mViewDirty : 1 = true;
-		mutable bool mProjDirty : 1 = true;
-	};
+    const mat4& getViewMatrix() const;
+    const mat4& getProjMatrix() const;
+
+protected:
+    Object* createObject() override;
+    void cloneProcess(Object* destNode) override;
+    void onTransformChanged() override;
+    void updateProjection() const;
+
+    bool mOrtho = false;
+    float2 mOrthoSize { 100.0f };
+    float mFov = pi<float>() / 4;
+    float mAspectRatio = 1.0f;
+    float mNearPlane = 0.1f;
+    float mFarPlane = 1000.0f;
+
+    mutable mat4 mView;
+    mutable mat4 mProjection;
+    mutable bool mViewDirty : 1 = true;
+    mutable bool mProjDirty : 1 = true;
+};
 
 }

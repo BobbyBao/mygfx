@@ -1,7 +1,7 @@
 #include "Resource.h"
 
 namespace mygfx {
-	
-	Resource::Resource() = default;
+
+Resource::Resource() = default;
 
 }

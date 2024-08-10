@@ -1,22 +1,24 @@
 #include "Object.h"
 
 namespace mygfx {
-	
-	Object::Object() = default;
-	
-    Ref<Object> Object::clone() {
-		Ref<Object> node(createObject());
 
-		cloneProcess(node);
+Object::Object() = default;
 
-        return node;
-	}
+Ref<Object> Object::clone()
+{
+    Ref<Object> node(createObject());
 
-	Object* Object::createObject() {
-		return nullptr;
-	}
+    cloneProcess(node);
 
-	void Object::cloneProcess(Object* destNode) {
+    return node;
+}
 
-	}
+Object* Object::createObject()
+{
+    return nullptr;
+}
+
+void Object::cloneProcess(Object* destNode)
+{
+}
 }

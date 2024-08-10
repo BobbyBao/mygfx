@@ -5,48 +5,48 @@
 #include "core/Resource.h"
 
 namespace mygfx {
-	
-	class Texture;
-	class GraphicsApi;
 
-	class Shader : public Resource {
-	public:
-		Shader();
-		~Shader();
+class Texture;
+class GraphicsApi;
 
-		Shader(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
-		Shader(const String& csCode);
+class Shader : public Resource {
+public:
+    Shader();
+    ~Shader();
 
-		void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
-		void loadShader(const String& cs);
+    Shader(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
+    Shader(const String& csCode);
 
-		const std::vector<Ref<HwShaderModule>>& shaderModules() const { return mShaderModules; }
-		VertexAttribute getVertexSemantic() const { return pipelineState.vertexSemantic; }
-		HwProgram* getProgram() { return mProgram; }
+    void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
+    void loadShader(const String& cs);
 
-		void setVertexInput(const FormatList& fmts, const FormatList& fmts1 = {});
-		void setVertexSemantic(VertexAttribute vertexSemantic);
-		void setBlendMode(BlendMode blendMode);
-		void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
-		void setCullMode(CullMode cullMode);
-		void setDepthTest(bool test, bool write);
+    const std::vector<Ref<HwShaderModule>>& shaderModules() const { return mShaderModules; }
+    VertexAttribute getVertexSemantic() const { return pipelineState.vertexSemantic; }
+    HwProgram* getProgram() { return mProgram; }
 
-		void updateDescriptorSet(uint32_t set, uint32_t binding, Texture* tex);
-		void updateDescriptorSet(uint32_t set, uint32_t binding, HwTextureView* texView);
-		void updateDescriptorSet(uint32_t set, uint32_t binding, HwBuffer* buffer);
-		void updateDescriptorSet(uint32_t set, uint32_t binding, const BufferInfo& bufferInfo);
+    void setVertexInput(const FormatList& fmts, const FormatList& fmts1 = {});
+    void setVertexSemantic(VertexAttribute vertexSemantic);
+    void setBlendMode(BlendMode blendMode);
+    void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
+    void setCullMode(CullMode cullMode);
+    void setDepthTest(bool test, bool write);
 
-		PipelineState pipelineState;
+    void updateDescriptorSet(uint32_t set, uint32_t binding, Texture* tex);
+    void updateDescriptorSet(uint32_t set, uint32_t binding, HwTextureView* texView);
+    void updateDescriptorSet(uint32_t set, uint32_t binding, HwBuffer* buffer);
+    void updateDescriptorSet(uint32_t set, uint32_t binding, const BufferInfo& bufferInfo);
 
-		static Ref<Shader> fromFile(const String& vs, const String& fs, const DefineList* marcos = nullptr);
-	protected:
-		void init();
-		bool addShader(ShaderStage shaderStage, const String& shaderName, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros = nullptr);
+    PipelineState pipelineState;
 
-		std::vector<Ref<HwShaderModule>> mShaderModules;
-		Ref<HwVertexInput> mVertexInput;
-		Ref<HwProgram> mProgram;		
-	};
+    static Ref<Shader> fromFile(const String& vs, const String& fs, const DefineList* marcos = nullptr);
 
+protected:
+    void init();
+    bool addShader(ShaderStage shaderStage, const String& shaderName, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros = nullptr);
+
+    std::vector<Ref<HwShaderModule>> mShaderModules;
+    Ref<HwVertexInput> mVertexInput;
+    Ref<HwProgram> mProgram;
+};
 
 }

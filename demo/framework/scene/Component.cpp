@@ -2,71 +2,79 @@
 #include "Node.h"
 
 namespace mygfx {
-	
-	Component::Component() = default;
-	
-    Scene* Component::getScene() const 
-    {
-        return mOwner ? mOwner->getScene() : nullptr;
-    }
 
-    void Component::onActive() {
-    }
+Component::Component() = default;
 
-    void Component::onDeactive() {
-    }
+Scene* Component::getScene() const
+{
+    return mOwner ? mOwner->getScene() : nullptr;
+}
 
-    void Component::setOwner(Node* node)
-    {
-        mOwner = node;
+void Component::onActive()
+{
+}
 
-        onSetOwner(node);
-    }
+void Component::onDeactive()
+{
+}
 
-    void Component::onSetOwner(Node* node)
-    {
-    }
-    
-    void Component::onActiveChanged()
-    {
+void Component::setOwner(Node* node)
+{
+    mOwner = node;
+
+    onSetOwner(node);
+}
+
+void Component::onSetOwner(Node* node)
+{
+}
+
+void Component::onActiveChanged()
+{
+    checkActivateState();
+}
+
+void Component::setEnabled(bool enable)
+{
+    if (enable != mEnable) {
+        mEnable = enable;
         checkActivateState();
     }
+}
 
-    void Component::setEnabled(bool enable) {
-        if (enable != mEnable) {
-            mEnable = enable;
-            checkActivateState();
-        }
+void Component::checkActivateState()
+{
+    bool enabled = mEnable;
+    if (mOwner) {
+        enabled &= mOwner->isActiveEffective();
     }
 
-    void Component::checkActivateState() {
-        bool enabled = mEnable;
-        if (mOwner) {
-            enabled &= mOwner->isActiveEffective();
-        }
-
-        if (enabled != mEnabledEffective) {
-            mEnabledEffective = enabled;
-            if (getScene()) {
-                if (enabled) {
-                    onActive();
-                } else {
-                    onDeactive();
-                }
+    if (enabled != mEnabledEffective) {
+        mEnabledEffective = enabled;
+        if (getScene()) {
+            if (enabled) {
+                onActive();
+            } else {
+                onDeactive();
             }
         }
     }
-    
-    void Component::onAddToScene(Scene* scene) {
-    }
-    
-    void Component::onRemoveFromScene(Scene* scene) {
-    }
+}
 
-	void Component::onParentChanged(Node* parent) {
-	}
+void Component::onAddToScene(Scene* scene)
+{
+}
 
-	void Component::onTransformChanged() {
-	}
+void Component::onRemoveFromScene(Scene* scene)
+{
+}
+
+void Component::onParentChanged(Node* parent)
+{
+}
+
+void Component::onTransformChanged()
+{
+}
 
 }

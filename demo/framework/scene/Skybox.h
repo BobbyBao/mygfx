@@ -2,31 +2,31 @@
 
 #include "Renderable.h"
 
-
 namespace mygfx {
-	
-	class Texture;
 
-	class Skybox : public Renderable {
-	public:
-		Skybox();
+class Texture;
 
-		Texture* getCubeMap() const { return mCubeMap; }
-		void setCubeMap(Texture* tex);
+class Skybox : public Renderable {
+public:
+    Skybox();
 
-		Texture* getIrrMap() const { return mIrrMap; }
-		void setIrrMap(Texture* tex);
+    Texture* getCubeMap() const { return mCubeMap; }
+    void setCubeMap(Texture* tex);
 
-		Texture* getGGXLUT() const { return mGGXLUT; }
-	protected:
-		Object* createObject() override;
-		void cloneProcess(Object* destNode) override;
-		void onAddToScene(Scene* scene) override;
-		void onRemoveFromScene(Scene* scene) override;
+    Texture* getIrrMap() const { return mIrrMap; }
+    void setIrrMap(Texture* tex);
 
-		Ref<Texture> mCubeMap;
-		Ref<Texture> mIrrMap;
-		Ref<Texture> mGGXLUT;
-	};
+    Texture* getGGXLUT() const { return mGGXLUT; }
+
+protected:
+    Object* createObject() override;
+    void cloneProcess(Object* destNode) override;
+    void onAddToScene(Scene* scene) override;
+    void onRemoveFromScene(Scene* scene) override;
+
+    Ref<Texture> mCubeMap;
+    Ref<Texture> mIrrMap;
+    Ref<Texture> mGGXLUT;
+};
 
 }

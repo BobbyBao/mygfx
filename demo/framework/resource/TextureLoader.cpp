@@ -1,6 +1,6 @@
 #include "TextureLoader.h"
-#include "Texture.h"
 #include "GraphicsApi.h"
+#include "Texture.h"
 #include "utils/FileUtils.h"
 #include <ktx.h>
 #include <gl_format.h>
