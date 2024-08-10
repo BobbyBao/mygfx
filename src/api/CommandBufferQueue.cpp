@@ -29,31 +29,35 @@ using namespace utils;
 namespace mygfx {
 
 CommandBufferQueue::CommandBufferQueue(size_t requiredSize, size_t bufferSize)
-        : mRequiredSize((requiredSize + (CircularBuffer::getBlockSize() - 1u)) & ~(CircularBuffer::getBlockSize() -1u)),
-          mCircularBuffer(bufferSize),
-          mFreeSpace(mCircularBuffer.size()) {
+    : mRequiredSize((requiredSize + (CircularBuffer::getBlockSize() - 1u)) & ~(CircularBuffer::getBlockSize() - 1u))
+    , mCircularBuffer(bufferSize)
+    , mFreeSpace(mCircularBuffer.size())
+{
     assert(mCircularBuffer.size() > requiredSize);
 }
 
-CommandBufferQueue::~CommandBufferQueue() {
+CommandBufferQueue::~CommandBufferQueue()
+{
     assert(mCommandBuffersToExecute.empty());
 }
 
-void CommandBufferQueue::requestExit() {
+void CommandBufferQueue::requestExit()
+{
     std::lock_guard<utils::Mutex> const lock(mLock);
     mExitRequested = EXIT_REQUESTED;
     mCondition.notify_one();
 }
 
-bool CommandBufferQueue::isExitRequested() const {
+bool CommandBufferQueue::isExitRequested() const
+{
     std::lock_guard<utils::Mutex> const lock(mLock);
-    //ASSERT_PRECONDITION( mExitRequested == 0 || mExitRequested == EXIT_REQUESTED,
-    //        "mExitRequested is corrupted (value = 0x%08x)!", mExitRequested);
+    // ASSERT_PRECONDITION( mExitRequested == 0 || mExitRequested == EXIT_REQUESTED,
+    //         "mExitRequested is corrupted (value = 0x%08x)!", mExitRequested);
     return (bool)mExitRequested;
 }
 
-
-void CommandBufferQueue::flush() noexcept {
+void CommandBufferQueue::flush() noexcept
+{
     SYSTRACE_CALL();
 
     CircularBuffer& circularBuffer = mCircularBuffer;
@@ -63,7 +67,7 @@ void CommandBufferQueue::flush() noexcept {
 
     // add the terminating command
     // always guaranteed to have enough space for the NoopCommand
-    new(circularBuffer.allocate(sizeof(NoopCommand))) NoopCommand(nullptr);
+    new (circularBuffer.allocate(sizeof(NoopCommand))) NoopCommand(nullptr);
 
     // end of this slice
     void* const head = circularBuffer.getHead();
@@ -80,7 +84,7 @@ void CommandBufferQueue::flush() noexcept {
     mCommandBuffersToExecute.push_back({ tail, head });
 
     // circular buffer is too small, we corrupted the stream
-    //ASSERT_POSTCONDITION(used <= mFreeSpace,
+    // ASSERT_POSTCONDITION(used <= mFreeSpace,
     //        "Backend CommandStream overflow. Commands are corrupted and unrecoverable.\n"
     //        "Please increase minCommandBufferSizeMB inside the Config passed to Engine::create.\n"
     //        "Space used at this time: %u bytes",
@@ -102,14 +106,15 @@ void CommandBufferQueue::flush() noexcept {
 
     mCondition.notify_one();
     if (mFreeSpace < requiredSize) {
-        //SYSTRACE_NAME("waiting: CircularBuffer::flush()");
+        // SYSTRACE_NAME("waiting: CircularBuffer::flush()");
         mCondition.wait(lock, [this, requiredSize]() -> bool {
             return mFreeSpace >= requiredSize;
         });
     }
 }
 
-std::vector<CommandBufferQueue::Slice> CommandBufferQueue::waitForCommands() const {
+std::vector<CommandBufferQueue::Slice> CommandBufferQueue::waitForCommands() const
+{
     if (!UTILS_HAS_THREADING) {
         return std::move(mCommandBuffersToExecute);
     }
@@ -118,13 +123,14 @@ std::vector<CommandBufferQueue::Slice> CommandBufferQueue::waitForCommands() con
         mCondition.wait(lock);
     }
 
-    //ASSERT_PRECONDITION( mExitRequested == 0 || mExitRequested == EXIT_REQUESTED,
-    //        "mExitRequested is corrupted (value = 0x%08x)!", mExitRequested);
+    // ASSERT_PRECONDITION( mExitRequested == 0 || mExitRequested == EXIT_REQUESTED,
+    //         "mExitRequested is corrupted (value = 0x%08x)!", mExitRequested);
 
     return std::move(mCommandBuffersToExecute);
 }
 
-void CommandBufferQueue::releaseBuffer(CommandBufferQueue::Slice const& buffer) {
+void CommandBufferQueue::releaseBuffer(CommandBufferQueue::Slice const& buffer)
+{
     std::lock_guard<utils::Mutex> const lock(mLock);
     mFreeSpace += uintptr_t(buffer.end) - uintptr_t(buffer.begin);
     mCondition.notify_one();

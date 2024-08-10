@@ -90,11 +90,6 @@ void Node::cloneProcess(Object* destNode)
     }
 }
 
-void Node::setName(const char* name)
-{
-    mName = name;
-}
-
 void Node::addChild(Node* child)
 {
     child->setParent(this);

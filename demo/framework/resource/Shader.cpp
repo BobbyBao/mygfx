@@ -54,7 +54,6 @@ void Shader::loadShader(const String& vs, const String& fs, const DefineList* ma
     }
 
     FileUtils::pushPath(vsPath.parent_path());
-
     addShader(ShaderStage::VERTEX, vsPath.filename().string(), vsSource, ShaderSourceType::GLSL, "", "", macros);
     FileUtils::popPath();
 

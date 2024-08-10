@@ -1,7 +1,7 @@
 #pragma once
-#include <string>
-#include <sstream>
 #include <format>
+#include <sstream>
+#include <string>
 
 #include <assert.h>
 
@@ -9,35 +9,35 @@
 
 namespace utils {
 
-	class Log {
-	public:
-		enum class LogLevel {
-			Debug = 0,
-			Info,
-			Warn,
-			Error,
-			None
-		};
+class Log {
+public:
+    enum class LogLevel {
+        Debug = 0,
+        Info,
+        Warn,
+        Error,
+        None
+    };
 
-		static void write(LogLevel level, const std::string& msg);
-		static void write(LogLevel level, const char* msg);
+    static void write(LogLevel level, const std::string& msg);
+    static void write(LogLevel level, const char* msg);
 
-		template <typename... Args>
-		static void logMessageF(LogLevel level, std::string_view fmt, Args&&... args)
-		{
-			std::string str = std::vformat(fmt, std::make_format_args(args...));
-			write(level, str.c_str());
-		}
+    template <typename... Args>
+    static void logMessageF(LogLevel level, std::string_view fmt, Args&&... args)
+    {
+        std::string str = std::vformat(fmt, std::make_format_args(args...));
+        write(level, str.c_str());
+    }
 
-		static void logMessageF(LogLevel level, std::string_view str)
-		{
-			write(level, str.data());
-		}
+    static void logMessageF(LogLevel level, std::string_view str)
+    {
+        write(level, str.data());
+    }
 
-		inline static void(*onWriteFn)(LogLevel level, const char* msg) = nullptr;
-	private:
+    inline static void (*onWriteFn)(LogLevel level, const char* msg) = nullptr;
 
-	};
+private:
+};
 
 }
 

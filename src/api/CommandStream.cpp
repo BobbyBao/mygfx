@@ -21,7 +21,7 @@
 #include <utils/CallStack.h>
 #endif
 
-//#include <utils/Log.h>
+// #include <utils/Log.h>
 #include <utils/Profiler.h>
 #include <utils/Systrace.h>
 
@@ -49,22 +49,23 @@ static void printParameterPack(io::ostream& out, const FIRST& first, const REMAI
     printParameterPack(out, rest...);
 }*/
 
-static UTILS_NOINLINE UTILS_UNUSED std::string extractMethodName(std::string& command) noexcept {
+static UTILS_NOINLINE UTILS_UNUSED std::string extractMethodName(std::string& command) noexcept
+{
     constexpr const char startPattern[] = "::Command<&(mygfx::Driver::";
     auto pos = command.rfind(startPattern);
     auto end = command.rfind('(');
     pos += sizeof(startPattern) - 1;
-    return command.substr(pos, end-pos);
+    return command.substr(pos, end - pos);
 }
 
 // ------------------------------------------------------------------------------------------------
 
 CommandStream::CommandStream(Driver& driver, CircularBuffer* buffer) noexcept
-        : mDriver(driver),
-          mCurrentBuffer(buffer),
-          mDispatcher(driver.getDispatcher())
+    : mDriver(driver)
+    , mCurrentBuffer(buffer)
+    , mDispatcher(driver.getDispatcher())
 #ifndef NDEBUG
-          , mThreadId(ThreadUtils::getThreadId())
+    , mThreadId(ThreadUtils::getThreadId())
 #endif
 {
 #ifdef __ANDROID__
@@ -74,7 +75,8 @@ CommandStream::CommandStream(Driver& driver, CircularBuffer* buffer) noexcept
 #endif
 }
 
-void CommandStream::execute(void* buffer) {
+void CommandStream::execute(void* buffer)
+{
     SYSTRACE_CALL();
     SYSTRACE_CONTEXT();
 
@@ -83,7 +85,7 @@ void CommandStream::execute(void* buffer) {
     if (SYSTRACE_TAG) {
         if (UTILS_UNLIKELY(mUsePerformanceCounter)) {
             // we want to remove all this when tracing is completely disabled
-            profiler.resetEvents(Profiler::EV_CPU_CYCLES  | Profiler::EV_BPU_MISSES);
+            profiler.resetEvents(Profiler::EV_CPU_CYCLES | Profiler::EV_BPU_MISSES);
             profiler.start();
         }
     }
@@ -106,19 +108,21 @@ void CommandStream::execute(void* buffer) {
             SYSTRACE_VALUE32("GLThread (CPI x10)", counters.getCPI() * 10);
             SYSTRACE_VALUE32("GLThread (BPU miss)", counters.getBranchMisses());
             SYSTRACE_VALUE32("GLThread (I / BPU miss)",
-                    counters.getInstructions() / counters.getBranchMisses());
+                counters.getInstructions() / counters.getBranchMisses());
         }
     }
 }
 
-void CommandStream::queueCommand(std::function<void()> command) {
-    new(allocateCommand(CustomCommand::align(sizeof(CustomCommand)))) CustomCommand(std::move(command));
+void CommandStream::queueCommand(std::function<void()> command)
+{
+    new (allocateCommand(CustomCommand::align(sizeof(CustomCommand)))) CustomCommand(std::move(command));
 }
 
-template<typename... ARGS>
-template<void (Driver::*METHOD)(ARGS...)>
-template<std::size_t... I>
-void CommandType<void (Driver::*)(ARGS...)>::Command<METHOD>::log(std::index_sequence<I...>) noexcept  {
+template <typename... ARGS>
+template <void (Driver::*METHOD)(ARGS...)>
+template <std::size_t... I>
+void CommandType<void (Driver::*)(ARGS...)>::Command<METHOD>::log(std::index_sequence<I...>) noexcept
+{
 #if DEBUG_COMMAND_STREAM
     static_assert(UTILS_HAS_RTTI, "DEBUG_COMMAND_STREAM can only be used with RTTI");
     std::string command = utils::CallStack::demangleTypeName(typeid(Command).name()).c_str();
@@ -128,10 +132,11 @@ void CommandType<void (Driver::*)(ARGS...)>::Command<METHOD>::log(std::index_seq
 #endif
 }
 
-template<typename... ARGS>
-template<void (Driver::*METHOD)(ARGS...)>
-void CommandType<void (Driver::*)(ARGS...)>::Command<METHOD>::log() noexcept  {
-    log(std::make_index_sequence<std::tuple_size<SavedParameters>::value>{});
+template <typename... ARGS>
+template <void (Driver::*METHOD)(ARGS...)>
+void CommandType<void (Driver::*)(ARGS...)>::Command<METHOD>::log() noexcept
+{
+    log(std::make_index_sequence<std::tuple_size<SavedParameters>::value> {});
 }
 
 /*
@@ -150,7 +155,8 @@ void CommandType<void (Driver::*)(ARGS...)>::Command<METHOD>::log() noexcept  {
 
 // ------------------------------------------------------------------------------------------------
 
-void CustomCommand::execute(Driver&, CommandBase* base, intptr_t* next) noexcept {
+void CustomCommand::execute(Driver&, CommandBase* base, intptr_t* next) noexcept
+{
     *next = CustomCommand::align(sizeof(CustomCommand));
     static_cast<CustomCommand*>(base)->mCommand();
     static_cast<CustomCommand*>(base)->~CustomCommand();

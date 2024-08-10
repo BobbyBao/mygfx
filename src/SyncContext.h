@@ -1,45 +1,45 @@
 #pragma once
 
-#include <thread>
-#include <functional>
 #include "GraphicsConsts.h"
+#include <functional>
 #include <semaphore>
+#include <thread>
 
-namespace mygfx
-{
-	static constexpr int MAX_FRAME_COUNT = 2;
+namespace mygfx {
 
-	class SyncContext {
-	public:
+static constexpr int MAX_FRAME_COUNT = 2;
 
-		static std::thread::id mainThreadID;
-		static std::thread::id renderThreadID;
+class SyncContext {
+public:
+    static std::thread::id mainThreadID;
+    static std::thread::id renderThreadID;
 
-		inline static double waitLogicMSec;
-		inline static double waitRenderMSec;
+    inline static double waitLogicMSec;
+    inline static double waitRenderMSec;
 
-		bool singleLoop() const;
+    bool singleLoop() const;
 
-		uint32_t workContext() const
-		{
-			return workFrame_;
-		}
+    uint32_t workContext() const
+    {
+        return workFrame_;
+    }
 
-		int renderFrame() const {
-			return renderFrame_;
-		}
+    int renderFrame() const
+    {
+        return renderFrame_;
+    }
 
-		void mainSemPost();
-		bool mainSemWait();
-		void renderSemPost();
-		void waitRender();
-		virtual void swapContext();
-	protected:
-		int workFrame_ = 0;
-		int renderFrame_ = -1;
+    void mainSemPost();
+    bool mainSemWait();
+    void renderSemPost();
+    void waitRender();
+    virtual void swapContext();
 
-		std::binary_semaphore renderSem_ = std::binary_semaphore{ 1 };
-		std::binary_semaphore mainSem_ = std::binary_semaphore{ 0 };
+protected:
+    int workFrame_ = 0;
+    int renderFrame_ = -1;
 
-	};
+    std::binary_semaphore renderSem_ = std::binary_semaphore { 1 };
+    std::binary_semaphore mainSem_ = std::binary_semaphore { 0 };
+};
 }

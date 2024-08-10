@@ -1,60 +1,61 @@
 #pragma once
 
+#include "../GraphicsHandles.h"
+#include "../ShaderResourceInfo.h"
+#include "DescriptorSetLayout.h"
+#include "VulkanDefs.h"
 #include <fstream>
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include "VulkanDefs.h"
-#include "../GraphicsHandles.h"
-#include "../ShaderResourceInfo.h"
-#include "DescriptorSetLayout.h"
 
-namespace mygfx
-{
-	class VulkanShaderModule : public HwShaderModule {
-	public:
-		VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType = ShaderCodeType::SPIRV, const char* pShaderEntryPoint = nullptr);
+namespace mygfx {
 
-		void collectShaderResource();
+class VulkanShaderModule : public HwShaderModule {
+public:
+    VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType = ShaderCodeType::SPIRV, const char* pShaderEntryPoint = nullptr);
 
-		Vector<PushConstant> pushConstants;
-		Vector<SpecializationConst> specializationConsts;
-		Vector<uint8_t> specializationData;
-		ShaderStage shaderStage;
-		VkShaderStageFlagBits vkShaderStage;
-		VkShaderStageFlags  nextStage;
-		Vector<uint8_t> shaderCode;
-		String entryPoint = "main";
-	};
+    void collectShaderResource();
 
-	class DescriptorSet;
+    Vector<PushConstant> pushConstants;
+    Vector<SpecializationConst> specializationConsts;
+    Vector<uint8_t> specializationData;
+    ShaderStage shaderStage;
+    VkShaderStageFlagBits vkShaderStage;
+    VkShaderStageFlags nextStage;
+    Vector<uint8_t> shaderCode;
+    String entryPoint = "main";
+};
 
-	class VulkanProgram : public HwProgram {
-	public:
-		VulkanProgram();
-		VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count);
-		~VulkanProgram();
+class DescriptorSet;
 
-		ShaderResourceInfo* getShaderResource(const String& name);
-		DescriptorSet* getDescriptorSet(uint32_t index);
-		bool createShaders();
-		VkPipelineBindPoint getBindPoint() const { return (VkPipelineBindPoint)programType; }
-		static constexpr int MAX_SHADER_STAGE = 8;
-		VkPipelineLayout pipelineLayout = 0;
-		uint32_t stageCount = 0;
-		VkShaderEXT shaders[MAX_SHADER_STAGE]{};
-		VkShaderStageFlagBits stages[MAX_SHADER_STAGE]{};
-		Vector<VkDescriptorSet> desciptorSets;
-		Vector<PushConstant> pushConstants;
-	private:
-		Vector<Ref<VulkanShaderModule>> mShaderModules;
-		Vector<Ref<DescriptorSetLayout>> mDescriptorSetLayouts;
-		Vector<VkDescriptorSetLayout> descriptorSetLayouts;
-		ProgramType programType;
-		VkShaderCodeTypeEXT shaderCodeType;
-		Vector<Ref<DescriptorSet>> mDesciptorSets;
-	};
+class VulkanProgram : public HwProgram {
+public:
+    VulkanProgram();
+    VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count);
+    ~VulkanProgram();
 
-	VkShaderStageFlagBits ToVkShaderStage(ShaderStage stage);
+    ShaderResourceInfo* getShaderResource(const String& name);
+    DescriptorSet* getDescriptorSet(uint32_t index);
+    bool createShaders();
+    VkPipelineBindPoint getBindPoint() const { return (VkPipelineBindPoint)programType; }
+    static constexpr int MAX_SHADER_STAGE = 8;
+    VkPipelineLayout pipelineLayout = 0;
+    uint32_t stageCount = 0;
+    VkShaderEXT shaders[MAX_SHADER_STAGE] {};
+    VkShaderStageFlagBits stages[MAX_SHADER_STAGE] {};
+    Vector<VkDescriptorSet> desciptorSets;
+    Vector<PushConstant> pushConstants;
 
-}        // namespace mygfx
+private:
+    Vector<Ref<VulkanShaderModule>> mShaderModules;
+    Vector<Ref<DescriptorSetLayout>> mDescriptorSetLayouts;
+    Vector<VkDescriptorSetLayout> descriptorSetLayouts;
+    ProgramType programType;
+    VkShaderCodeTypeEXT shaderCodeType;
+    Vector<Ref<DescriptorSet>> mDesciptorSets;
+};
+
+VkShaderStageFlagBits ToVkShaderStage(ShaderStage stage);
+
+} // namespace mygfx

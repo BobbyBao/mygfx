@@ -1,105 +1,115 @@
 #include "GraphicsDevice.h"
-#include "utils/Log.h"
-#include "api/Dispatcher.h"
 #include "FrameListener.h"
+#include "api/Dispatcher.h"
+#include "utils/Log.h"
 
 namespace mygfx {
 
-	GraphicsDevice* gInstance;
+GraphicsDevice* gInstance;
 
-	GraphicsDevice::GraphicsDevice() 	
-	{
-		gInstance = this;	
-	}
+GraphicsDevice::GraphicsDevice()
+{
+    gInstance = this;
+}
 
-	GraphicsDevice::~GraphicsDevice()
-	{
-		gInstance = nullptr;
-	}
-	
-	Dispatcher GraphicsDevice::getDispatcher() const noexcept {
-		return {};
-	}
+GraphicsDevice::~GraphicsDevice()
+{
+    gInstance = nullptr;
+}
 
-	void GraphicsDevice::execute(std::function<void(void)> const& fn) noexcept {
-		fn();
-	}
-	
-	void GraphicsDevice::swapContext() {
-		
-		SyncContext::swapContext();
+Dispatcher GraphicsDevice::getDispatcher() const noexcept
+{
+    return {};
+}
 
-		FrameChangeListener::callFrameChange();
+void GraphicsDevice::execute(std::function<void(void)> const& fn) noexcept
+{
+    fn();
+}
 
-		Stats::clear();
-	}
+void GraphicsDevice::swapContext()
+{
 
-	void GraphicsDevice::beginRender() {
-		mainSemWait();
-		mLastRenderTime = Clock::now();
-	}
+    SyncContext::swapContext();
 
-	void GraphicsDevice::endRender() {
+    FrameChangeListener::callFrameChange();
 
-		for (auto it = postCall_.begin(); it != postCall_.end();) {
-			auto& timer = std::get<1>(*it);
-			if (--timer == 0) {
-				auto& fn = std::get<0>(*it);
-				fn();
-				it = postCall_.erase(it);
-			}
-			else {
-				++it;
-			}
-		}
+    Stats::clear();
+}
 
-		Stats::renderTime() = std::chrono::duration<double, std::milli>(Clock::now() - mLastRenderTime).count();
-		renderSemPost();
-	}
+void GraphicsDevice::beginRender()
+{
+    mainSemWait();
+    mLastRenderTime = Clock::now();
+}
 
-	void GraphicsDevice::post(const std::function<void()>& fn, int delay)
-	{
-		postCall_.push_back(std::make_tuple(fn, delay));
-	}
+void GraphicsDevice::endRender()
+{
 
-	void GraphicsDevice::executeAll()
-	{
-		for (auto& t : postCall_) {
-			auto& fn = std::get<0>(t);
-			fn();
-		}
+    for (auto it = postCall_.begin(); it != postCall_.end();) {
+        auto& timer = std::get<1>(*it);
+        if (--timer == 0) {
+            auto& fn = std::get<0>(*it);
+            fn();
+            it = postCall_.erase(it);
+        } else {
+            ++it;
+        }
+    }
 
-		postCall_.clear();
-	}
+    Stats::renderTime() = std::chrono::duration<double, std::milli>(Clock::now() - mLastRenderTime).count();
+    renderSemPost();
+}
 
-	std::vector<RenderCommand>& RenderQueue::getWriteCommands() {
-		return mRenderables[gInstance->workContext()];
-	}
+void GraphicsDevice::post(const std::function<void()>& fn, int delay)
+{
+    postCall_.push_back(std::make_tuple(fn, delay));
+}
 
-	const std::vector<RenderCommand>& RenderQueue::getReadCommands() const {
-		return mRenderables[gInstance->renderFrame()];
-	}
+void GraphicsDevice::executeAll()
+{
+    for (auto& t : postCall_) {
+        auto& fn = std::get<0>(t);
+        fn();
+    }
 
-	void RenderQueue::clear() {
-		mRenderables[gInstance->workContext()].clear();
-	}
-	
-	uint32_t Stats::getDrawCall() {
-		return sDrawCall[gInstance->workContext()];
-	}
-	
-	uint32_t Stats::getTriCount() {		
-		return sTriCount[gInstance->workContext()];
-	}
+    postCall_.clear();
+}
 
-	double Stats::getRenderTime() {
-		return sRenderTime[gInstance->workContext()];
-	}
+std::vector<RenderCommand>& RenderQueue::getWriteCommands()
+{
+    return mRenderables[gInstance->workContext()];
+}
 
+const std::vector<RenderCommand>& RenderQueue::getReadCommands() const
+{
+    return mRenderables[gInstance->renderFrame()];
+}
 
-	void Stats::clear() {
-		drawCall() = 0;
-		triCount() = 0;
-		renderTime() = 0;
-	}
+void RenderQueue::clear()
+{
+    mRenderables[gInstance->workContext()].clear();
+}
+
+uint32_t Stats::getDrawCall()
+{
+    return sDrawCall[gInstance->workContext()];
+}
+
+uint32_t Stats::getTriCount()
+{
+    return sTriCount[gInstance->workContext()];
+}
+
+double Stats::getRenderTime()
+{
+    return sRenderTime[gInstance->workContext()];
+}
+
+void Stats::clear()
+{
+    drawCall() = 0;
+    triCount() = 0;
+    renderTime() = 0;
+}
 }

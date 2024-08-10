@@ -1,68 +1,70 @@
 #pragma once
 #include "DescriptorSet.h"
 #include <map>
-#include <unordered_map>
 #include <mutex>
+#include <unordered_map>
 
 namespace mygfx {
 
-    class VulkanTextureView;
-    
-    class DescriptorSetLayout;
-    
-	class IResourceSet : public RefCounted {
-	public:
-		virtual DescriptorSet* getDescriptorSet(DescriptorSetLayout* layout) = 0;
-	};
+class VulkanTextureView;
 
-    class ResourceSet : public IResourceSet {
-    public:
-        ResourceSet();
-        ResourceSet(const Span<DescriptorSetLayoutBinding>& bindings);
-        DescriptorSet* getDescriptorSet(DescriptorSetLayout* layout) override;
+class DescriptorSetLayout;
 
-        DescriptorSet* addDescriptorSet(const Span<DescriptorSetLayoutBinding>& bindings);
-        DescriptorSet* addDescriptorSet(DescriptorSetLayout* layout);
+class IResourceSet : public RefCounted {
+public:
+    virtual DescriptorSet* getDescriptorSet(DescriptorSetLayout* layout) = 0;
+};
 
-        template<class T>
-        void setDynamicBuffer(uint32_t binding) {
-            setDynamicBuffer(binding, sizeof(T));
-        }
+class ResourceSet : public IResourceSet {
+public:
+    ResourceSet();
+    ResourceSet(const Span<DescriptorSetLayoutBinding>& bindings);
+    DescriptorSet* getDescriptorSet(DescriptorSetLayout* layout) override;
 
-        void setDynamicBuffer(uint32_t binding, uint32_t size);
-    protected:
-        VkDescriptorSet defaultSet();
-        void setBuffer(uint32_t binding, const VkDescriptorBufferInfo& bufferInfo);
-        std::map<uint32_t, DescriptorInfo> descriptorInfos_;
-        Ref<DescriptorSet> defaultSet_;
-        std::mutex mutex_;
-        std::unordered_map<size_t, Ref<DescriptorSet>> descriptorSets_; 
-    };
-    
-    class UniformSet : public ResourceSet {
-    };
+    DescriptorSet* addDescriptorSet(const Span<DescriptorSetLayoutBinding>& bindings);
+    DescriptorSet* addDescriptorSet(DescriptorSetLayout* layout);
 
-    class DescriptorTable : public ResourceSet {
-    public:
-        DescriptorTable(DescriptorType descriptorType);
-        DescriptorTable(const DescriptorTable&) = delete;
-        DescriptorTable(DescriptorTable&&) = delete;
-        ~DescriptorTable();
+    template <class T>
+    void setDynamicBuffer(uint32_t binding)
+    {
+        setDynamicBuffer(binding, sizeof(T));
+    }
 
-        void init();
-        
-        void add(VulkanTextureView& tex, bool update = true);
-        void update(VulkanTextureView& tex);
-        void free(int tex);
+    void setDynamicBuffer(uint32_t binding, uint32_t size);
 
-        DescriptorSet* fragmentSet();
-        VkDescriptorSet defaultSet();
-    private:
-        void clear();
-        DescriptorType mDescriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER;
-        std::vector<int> freeIndics_;
-        Ref<DescriptorSet> fragmentSet_;
-    };
-    
+protected:
+    VkDescriptorSet defaultSet();
+    void setBuffer(uint32_t binding, const VkDescriptorBufferInfo& bufferInfo);
+    std::map<uint32_t, DescriptorInfo> descriptorInfos_;
+    Ref<DescriptorSet> defaultSet_;
+    std::mutex mutex_;
+    std::unordered_map<size_t, Ref<DescriptorSet>> descriptorSets_;
+};
+
+class UniformSet : public ResourceSet {
+};
+
+class DescriptorTable : public ResourceSet {
+public:
+    DescriptorTable(DescriptorType descriptorType);
+    DescriptorTable(const DescriptorTable&) = delete;
+    DescriptorTable(DescriptorTable&&) = delete;
+    ~DescriptorTable();
+
+    void init();
+
+    void add(VulkanTextureView& tex, bool update = true);
+    void update(VulkanTextureView& tex);
+    void free(int tex);
+
+    DescriptorSet* fragmentSet();
+    VkDescriptorSet defaultSet();
+
+private:
+    void clear();
+    DescriptorType mDescriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER;
+    std::vector<int> freeIndics_;
+    Ref<DescriptorSet> fragmentSet_;
+};
 
 }

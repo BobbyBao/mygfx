@@ -17,69 +17,71 @@
 #ifndef TNT_FILAMENT_DRIVER_COMMANDSTREAM_DISPATCHER_H
 #define TNT_FILAMENT_DRIVER_COMMANDSTREAM_DISPATCHER_H
 
-#include "GraphicsDevice.h"
 #include "CommandStream.h"
+#include "GraphicsDevice.h"
 
-#include <utils/compiler.h>
 #include <utils/Systrace.h>
+#include <utils/compiler.h>
 
 #include <utility>
 
 #include <stddef.h>
 #include <stdint.h>
 
-#define DEBUG_LEVEL_NONE       0
-#define DEBUG_LEVEL_SYSTRACE   1
+#define DEBUG_LEVEL_NONE 0
+#define DEBUG_LEVEL_SYSTRACE 1
 
 // set to the desired debug level
-#define DEBUG_LEVEL             DEBUG_LEVEL_NONE
-
+#define DEBUG_LEVEL DEBUG_LEVEL_NONE
 
 #if DEBUG_LEVEL == DEBUG_LEVEL_NONE
-#   define SYSTRACE()
+#define SYSTRACE()
 #elif DEBUG_LEVEL == DEBUG_LEVEL_SYSTRACE
-#   define SYSTRACE() SYSTRACE_CALL();
+#define SYSTRACE() SYSTRACE_CALL();
 #else
-#   error "invalid debug level"
+#error "invalid debug level"
 #endif
 
 namespace mygfx {
 
-template<typename ConcreteDriver>
+template <typename ConcreteDriver>
 class ConcreteDispatcher {
 public:
-
     static Dispatcher make() noexcept;
 
 private:
 #define DECL_DRIVER_API_SYNCHRONOUS(RetType, methodName, paramsDecl, params)
-#define DECL_DRIVER_API(methodName, paramsDecl, params)                                         \
-    static void methodName(Driver& driver, CommandBase* base, intptr_t* next) {                 \
-        SYSTRACE()                                                                              \
-        using Cmd = COMMAND_TYPE(methodName);                                                   \
-        ConcreteDriver& concreteDriver = static_cast<ConcreteDriver&>(driver);                  \
-        Cmd::execute(&ConcreteDriver::methodName, concreteDriver, base, next);                  \
-     }
-#define DECL_DRIVER_API_RETURN(RetType, methodName, paramsDecl, params)                         \
-    static void methodName(Driver& driver, CommandBase* base, intptr_t* next) {                 \
-        SYSTRACE()                                                                              \
-        using Cmd = COMMAND_TYPE(methodName##R);                                                \
-        ConcreteDriver& concreteDriver = static_cast<ConcreteDriver&>(driver);                  \
-        Cmd::execute(&ConcreteDriver::methodName##R, concreteDriver, base, next);               \
-     }
+#define DECL_DRIVER_API(methodName, paramsDecl, params)                        \
+    static void methodName(Driver& driver, CommandBase* base, intptr_t* next)  \
+    {                                                                          \
+        SYSTRACE()                                                             \
+        using Cmd = COMMAND_TYPE(methodName);                                  \
+        ConcreteDriver& concreteDriver = static_cast<ConcreteDriver&>(driver); \
+        Cmd::execute(&ConcreteDriver::methodName, concreteDriver, base, next); \
+    }
+#define DECL_DRIVER_API_RETURN(RetType, methodName, paramsDecl, params)           \
+    static void methodName(Driver& driver, CommandBase* base, intptr_t* next)     \
+    {                                                                             \
+        SYSTRACE()                                                                \
+        using Cmd = COMMAND_TYPE(methodName##R);                                  \
+        ConcreteDriver& concreteDriver = static_cast<ConcreteDriver&>(driver);    \
+        Cmd::execute(&ConcreteDriver::methodName##R, concreteDriver, base, next); \
+    }
 #include "GraphicsAPI.inc"
 };
 
-template<typename ConcreteDriver>
+template <typename ConcreteDriver>
 UTILS_NOINLINE
-Dispatcher ConcreteDispatcher<ConcreteDriver>::make() noexcept {
+    Dispatcher
+    ConcreteDispatcher<ConcreteDriver>::make() noexcept
+{
     Dispatcher dispatcher;
 
 #define DECL_DRIVER_API_SYNCHRONOUS(RetType, methodName, paramsDecl, params)
-#define DECL_DRIVER_API(methodName, paramsDecl, params)                 \
-                dispatcher.methodName##_ = &ConcreteDispatcher::methodName;
+#define DECL_DRIVER_API(methodName, paramsDecl, params) \
+    dispatcher.methodName##_ = &ConcreteDispatcher::methodName;
 #define DECL_DRIVER_API_RETURN(RetType, methodName, paramsDecl, params) \
-                dispatcher.methodName##_ = &ConcreteDispatcher::methodName;
+    dispatcher.methodName##_ = &ConcreteDispatcher::methodName;
 
 #include "GraphicsAPI.inc"
 

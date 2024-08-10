@@ -14,7 +14,7 @@ enum class TransformSpace {
     WORLD
 };
 
-class Node : public Object {
+class Node : public NamedObject {
 public:
     Node();
     Node(const String& name, const vec3& pos = vec3 { 0 }, const quat& rot = identity<quat>(), const vec3& s = one<vec3>());
@@ -61,7 +61,6 @@ public:
     template <typename T, typename... Args>
     T* createChild(Args... args)
     {
-
         T* so = new T(std::forward<Args>(args)...);
         addChild(so);
         return so;
@@ -80,9 +79,6 @@ public:
     void removeChild(Node* child);
     void remove();
     void setParent(Node* parent);
-
-    inline const String& getName() const { return mName; }
-    virtual void setName(const char* name);
 
     Node* getParent() const { return mParent; }
     Scene* getScene() const { return mScene; }
@@ -125,7 +121,6 @@ protected:
     virtual void onHierarchyChanged();
     virtual void onTransformChanged();
 
-    String mName;
     Vector<Ref<Component>> mComponents;
     Vector<Ref<Node>> mChildren;
     Node* mParent = nullptr;

@@ -30,49 +30,52 @@
 namespace utils {
 namespace details {
 
-class SpinLock {
-    std::atomic_flag mLock = ATOMIC_FLAG_INIT;
+    class SpinLock {
+        std::atomic_flag mLock = ATOMIC_FLAG_INIT;
 
-public:
-    void lock() noexcept {
-        UTILS_PREFETCHW(&mLock);
+    public:
+        void lock() noexcept
+        {
+            UTILS_PREFETCHW(&mLock);
 #ifdef __ARM_ACLE
-        // we signal an event on this CPU, so that the first yield() will be a no-op,
-        // and falls through the test_and_set(). This is more efficient than a while { }
-        // construct.
-        UTILS_SIGNAL_EVENT();
-        do {
-            yield();
-        } while (mLock.test_and_set(std::memory_order_acquire));
+            // we signal an event on this CPU, so that the first yield() will be a no-op,
+            // and falls through the test_and_set(). This is more efficient than a while { }
+            // construct.
+            UTILS_SIGNAL_EVENT();
+            do {
+                yield();
+            } while (mLock.test_and_set(std::memory_order_acquire));
 #else
-        goto start;
-        do {
-            yield();
-start: ;
-        } while (mLock.test_and_set(std::memory_order_acquire));
+            goto start;
+            do {
+                yield();
+            start:;
+            } while (mLock.test_and_set(std::memory_order_acquire));
 #endif
-    }
+        }
 
-    void unlock() noexcept {
-        mLock.clear(std::memory_order_release);
+        void unlock() noexcept
+        {
+            mLock.clear(std::memory_order_release);
 #ifdef __ARM_ARCH_7A__
-        // on ARMv7a SEL is needed
-        UTILS_SIGNAL_EVENT();
-        // as well as a memory barrier is needed
-        __dsb(0xA);     // ISHST = 0xA (b1010)
+            // on ARMv7a SEL is needed
+            UTILS_SIGNAL_EVENT();
+            // as well as a memory barrier is needed
+            __dsb(0xA); // ISHST = 0xA (b1010)
 #else
-        // on ARMv8 we could avoid the call to SE, but we'd need to write the
-        // test_and_set() above by hand, so the WFE only happens without a STRX first.
-        UTILS_BROADCAST_EVENT();
+            // on ARMv8 we could avoid the call to SE, but we'd need to write the
+            // test_and_set() above by hand, so the WFE only happens without a STRX first.
+            UTILS_BROADCAST_EVENT();
 #endif
-    }
+        }
 
-private:
-    inline void yield() noexcept {
-        // on x86 call pause instruction, on ARM call WFE
-        UTILS_WAIT_FOR_EVENT();
-    }
-};
+    private:
+        inline void yield() noexcept
+        {
+            // on x86 call pause instruction, on ARM call WFE
+            UTILS_WAIT_FOR_EVENT();
+        }
+    };
 } // namespace details
 
 #if UTILS_HAS_SANITIZE_THREAD
@@ -85,22 +88,22 @@ using SpinLock = Mutex;
 using SpinLock = details::SpinLock;
 #endif
 
-	class ScopedSpinLock {
-	public:
-		ScopedSpinLock(utils::SpinLock& spinLock)
-			: mSpinLock(spinLock)
-		{
-			spinLock.lock();
-		}
+class ScopedSpinLock {
+public:
+    ScopedSpinLock(utils::SpinLock& spinLock)
+        : mSpinLock(spinLock)
+    {
+        spinLock.lock();
+    }
 
-		~ScopedSpinLock()
-		{
-			mSpinLock.unlock();
-		}
+    ~ScopedSpinLock()
+    {
+        mSpinLock.unlock();
+    }
 
-	private:
-		SpinLock& mSpinLock;
-	};
+private:
+    SpinLock& mSpinLock;
+};
 } // namespace utils
 
 #endif // TNT_UTILS_SPINLOCK_H

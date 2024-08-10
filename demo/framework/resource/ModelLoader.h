@@ -52,9 +52,9 @@ protected:
     cgltf_data* mGltfModel = nullptr;
     Ref<Node> mRootNode;
     Vector<bool> mSrgb;
-    std::vector<Ref<Texture>> mTextures;
-    std::vector<Ref<Material>> mMaterials;
-    std::vector<Node*> mNodes;
+    Vector<Ref<Texture>> mTextures;
+    Vector<Ref<Material>> mMaterials;
+    Vector<Node*> mNodes;
     Aabb mBoundingBox;
 };
 

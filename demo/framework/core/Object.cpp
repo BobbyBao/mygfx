@@ -21,4 +21,10 @@ Object* Object::createObject()
 void Object::cloneProcess(Object* destNode)
 {
 }
+
+void NamedObject::setName(const char* name)
+{
+    mName = name;
+}
+
 }

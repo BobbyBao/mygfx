@@ -17,21 +17,21 @@
 #include "CircularBuffer.h"
 
 #if !defined(WIN32) && !defined(__EMSCRIPTEN__) && !defined(IOS)
-#    include <sys/mman.h>
-#    include <unistd.h>
-#    define HAS_MMAP 1
+#include <sys/mman.h>
+#include <unistd.h>
+#define HAS_MMAP 1
 #else
-#    define HAS_MMAP 0
+#define HAS_MMAP 0
 #endif
 
 #include <stdio.h>
 
 #include "../utils/architecture.h"
 #include <assert.h>
-//#include <utils/ashmem.h>
-//#include <utils/debug.h>
-//#include <utils/Log.h>
-//#include <utils/Panic.h>
+// #include <utils/ashmem.h>
+// #include <utils/debug.h>
+// #include <utils/Log.h>
+// #include <utils/Panic.h>
 #include <memory>
 
 using namespace utils;
@@ -40,14 +40,16 @@ namespace mygfx {
 
 size_t CircularBuffer::sPageSize = arch::getPageSize();
 
-CircularBuffer::CircularBuffer(size_t size) {
+CircularBuffer::CircularBuffer(size_t size)
+{
     mData = alloc(size);
     mSize = size;
     mTail = mData;
     mHead = mData;
 }
 
-CircularBuffer::~CircularBuffer() noexcept {
+CircularBuffer::~CircularBuffer() noexcept
+{
     dealloc();
 }
 
@@ -60,8 +62,8 @@ CircularBuffer::~CircularBuffer() noexcept {
 // If the system does not support mmap, emulate soft circular buffer with two buffers next
 // to each others and a special case in circularize()
 
-
-void* CircularBuffer::alloc(size_t size) noexcept {
+void* CircularBuffer::alloc(size_t size) noexcept
+{
 #if HAS_MMAP
     void* data = nullptr;
     void* vaddr = MAP_FAILED;
@@ -72,7 +74,7 @@ void* CircularBuffer::alloc(size_t size) noexcept {
     if (fd >= 0) {
         // reserve/find enough address space
         void* reserve_vaddr = mmap(nullptr, size * 2 + BLOCK_SIZE,
-                PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+            PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         if (reserve_vaddr != MAP_FAILED) {
             munmap(reserve_vaddr, size * 2 + BLOCK_SIZE);
             // map the circular buffer once...
@@ -80,11 +82,11 @@ void* CircularBuffer::alloc(size_t size) noexcept {
             if (vaddr != MAP_FAILED) {
                 // and map the circular buffer again, behind the previous copy...
                 vaddr_shadow = mmap((char*)vaddr + size, size,
-                        PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+                    PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
                 if (vaddr_shadow != MAP_FAILED && (vaddr_shadow == (char*)vaddr + size)) {
                     // finally map the guard page, to make sure we never corrupt memory
                     vaddr_guard = mmap((char*)vaddr_shadow + size, BLOCK_SIZE, PROT_NONE,
-                            MAP_PRIVATE, fd, (off_t)size);
+                        MAP_PRIVATE, fd, (off_t)size);
                     if (vaddr_guard != MAP_FAILED && (vaddr_guard == (char*)vaddr_shadow + size)) {
                         // woo-hoo success!
                         mUsesAshmem = fd;
@@ -114,14 +116,14 @@ void* CircularBuffer::alloc(size_t size) noexcept {
         }
 
         data = mmap(nullptr, size * 2 + BLOCK_SIZE,
-                PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+            PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 
-        //ASSERT_POSTCONDITION(data,
-        //        "couldn't allocate %u KiB of virtual address space for the command buffer",
-        //        (size * 2 / 1024));
+        // ASSERT_POSTCONDITION(data,
+        //         "couldn't allocate %u KiB of virtual address space for the command buffer",
+        //         (size * 2 / 1024));
 
-        //slog.d << "WARNING: Using soft CircularBuffer (" << (size * 2 / 1024) << " KiB)"
-         //      << io::endl;
+        // slog.d << "WARNING: Using soft CircularBuffer (" << (size * 2 / 1024) << " KiB)"
+        //       << io::endl;
 
         // guard page at the end
         void* guard = (void*)(uintptr_t(data) + size * 2);
@@ -133,8 +135,8 @@ void* CircularBuffer::alloc(size_t size) noexcept {
 #endif
 }
 
-
-void CircularBuffer::dealloc() noexcept {
+void CircularBuffer::dealloc() noexcept
+{
 #if HAS_MMAP
     if (mData) {
         size_t const BLOCK_SIZE = getBlockSize();
@@ -150,16 +152,16 @@ void CircularBuffer::dealloc() noexcept {
     mData = nullptr;
 }
 
-
-void CircularBuffer::circularize() noexcept {
+void CircularBuffer::circularize() noexcept
+{
     if (mUsesAshmem > 0) {
         intptr_t const overflow = intptr_t(mHead) - (intptr_t(mData) + int64_t(mSize));
         if (overflow >= 0) {
             assert(size_t(overflow) <= mSize);
-            mHead = (void *) (intptr_t(mData) + overflow);
-            #ifndef NDEBUG
+            mHead = (void*)(intptr_t(mData) + overflow);
+#ifndef NDEBUG
             memset(mData, 0xA5, size_t(overflow));
-            #endif
+#endif
         }
     } else {
         // Only circularize if mHead if in the second buffer.

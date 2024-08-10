@@ -1,177 +1,173 @@
 #include "VulkanBuffer.h"
 #include "VulkanDevice.h"
 
-namespace mygfx
-{	
-	VulkanBuffer::VulkanBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t size, uint16_t stride, const void* data)
-	{
-		this->usage = usage;
-		this->size = size;
-		this->stride = stride;
-		this->memoryUsage = memoryUsage;
+namespace mygfx {
 
-		VkBufferUsageFlags flags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-		if ((usage & BufferUsage::VERTEX) != BufferUsage::NONE) {
-			flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-		} 
-		
-		if((usage & BufferUsage::INDEX) != BufferUsage::NONE){
-			flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-		} 
-		
-		if((usage & BufferUsage::UNIFORM) != BufferUsage::NONE){
-			flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-		} 
-		
-		if((usage & BufferUsage::STORAGE) != BufferUsage::NONE){
-			flags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
-		} 
-		
-		if((usage & BufferUsage::UNIFORM_TEXEL) != BufferUsage::NONE){
-			flags |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
-		} 
-		
-		if((usage & BufferUsage::STORAGE_TEXEL) != BufferUsage::NONE){
-			flags |= VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
-		}
-		
-		if((usage & BufferUsage::SHADER_DEVICE_ADDRESS) != BufferUsage::NONE){
-			flags |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
-		}
+VulkanBuffer::VulkanBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t size, uint16_t stride, const void* data)
+{
+    this->usage = usage;
+    this->size = size;
+    this->stride = stride;
+    this->memoryUsage = memoryUsage;
 
-        VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
-        bufferInfo.size = size;
-        bufferInfo.usage = flags;
+    VkBufferUsageFlags flags = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+    if ((usage & BufferUsage::VERTEX) != BufferUsage::NONE) {
+        flags |= VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    }
 
-        VmaAllocationCreateInfo allocInfo = {};
-        allocInfo.usage = (VmaMemoryUsage)memoryUsage;
-        allocInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
-        allocInfo.pUserData = nullptr;//(void*)name;
+    if ((usage & BufferUsage::INDEX) != BufferUsage::NONE) {
+        flags |= VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+    }
 
-		VmaAllocationInfo info;
-        auto res = vmaCreateBuffer(gfx().vmaAllocator(), &bufferInfo, &allocInfo, &buffer, &bufferAlloc, &info);
-        assert(res == VK_SUCCESS);
+    if ((usage & BufferUsage::UNIFORM) != BufferUsage::NONE) {
+        flags |= VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+    }
 
-		persistent = cpuVisible();
+    if ((usage & BufferUsage::STORAGE) != BufferUsage::NONE) {
+        flags |= VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+    }
+
+    if ((usage & BufferUsage::UNIFORM_TEXEL) != BufferUsage::NONE) {
+        flags |= VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
+    }
+
+    if ((usage & BufferUsage::STORAGE_TEXEL) != BufferUsage::NONE) {
+        flags |= VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
+    }
+
+    if ((usage & BufferUsage::SHADER_DEVICE_ADDRESS) != BufferUsage::NONE) {
+        flags |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+    }
+
+    VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
+    bufferInfo.size = size;
+    bufferInfo.usage = flags;
+
+    VmaAllocationCreateInfo allocInfo = {};
+    allocInfo.usage = (VmaMemoryUsage)memoryUsage;
+    allocInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
+    allocInfo.pUserData = nullptr; //(void*)name;
+
+    VmaAllocationInfo info;
+    auto res = vmaCreateBuffer(gfx().vmaAllocator(), &bufferInfo, &allocInfo, &buffer, &bufferAlloc, &info);
+    assert(res == VK_SUCCESS);
+
+    persistent = cpuVisible();
 
 #ifdef VK_USE_PLATFORM_MACOS_MVK
-		persistent = false;
+    persistent = false;
 #endif
-		if (persistent) {
-			res = vmaMapMemory(gfx().vmaAllocator(), bufferAlloc, (void **)&mapped);
-			assert(res == VK_SUCCESS);
-		}
+    if (persistent) {
+        res = vmaMapMemory(gfx().vmaAllocator(), bufferAlloc, (void**)&mapped);
+        assert(res == VK_SUCCESS);
+    }
 
-		if (data) {
-			if (cpuVisible()) {
-				initState(ResourceState::GENERICREAD);
-			} else {
-				initState(ResourceState::COPY_DEST);
-			}
-			setData(data, size, 0);
-		}
-		
+    if (data) {
+        if (cpuVisible()) {
+            initState(ResourceState::GENERICREAD);
+        } else {
+            initState(ResourceState::COPY_DEST);
+        }
+        setData(data, size, 0);
+    }
 
-		descriptor.buffer = buffer;
-		descriptor.range = VK_WHOLE_SIZE;
-		descriptor.offset = 0;
+    descriptor.buffer = buffer;
+    descriptor.range = VK_WHOLE_SIZE;
+    descriptor.offset = 0;
 
-		if(flags & VkBufferUsageFlagBits::VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
-		
-			VkBufferDeviceAddressInfo info{};
-			info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
-			info.pNext = nullptr;
-			info.buffer = buffer;
-			deviceAddress = vkGetBufferDeviceAddress(gfx().device, &info);
-		}
+    if (flags & VkBufferUsageFlagBits::VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
 
-	}
-	
-	VulkanBuffer::~VulkanBuffer()
-	{
-		destroy();
-	}
-	
-	bool VulkanBuffer::cpuVisible() const
-	{
-		return memoryUsage != MemoryUsage::GPU_ONLY && memoryUsage != MemoryUsage::GPU_LAZILY_ALLOCATED;
-	}
+        VkBufferDeviceAddressInfo info {};
+        info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
+        info.pNext = nullptr;
+        info.buffer = buffer;
+        deviceAddress = vkGetBufferDeviceAddress(gfx().device, &info);
+    }
+}
 
-	void VulkanBuffer::setData(const void* data, VkDeviceSize size, VkDeviceSize offset) {
+VulkanBuffer::~VulkanBuffer()
+{
+    destroy();
+}
 
-		if (cpuVisible()) {
-			void* addr = map(offset);
-			memcpy(addr, data, (size_t)size);
+bool VulkanBuffer::cpuVisible() const
+{
+    return memoryUsage != MemoryUsage::GPU_ONLY && memoryUsage != MemoryUsage::GPU_LAZILY_ALLOCATED;
+}
 
-			if (!persistent) {
-				unmap();
-			}
+void VulkanBuffer::setData(const void* data, VkDeviceSize size, VkDeviceSize offset)
+{
 
-			flush(size, offset);
-		}
-		else {
-			
-			auto stage = gfx().getStagePool().acquireStage(data, size);
+    if (cpuVisible()) {
+        void* addr = map(offset);
+        memcpy(addr, data, (size_t)size);
 
-			VkBufferCopy copyRegion = {};	
-			copyRegion.size = size;
-			
-			gfx().executeCommand(CommandQueueType::Copy, [=](auto& c) {
-				vkCmdCopyBuffer(c.cmd, stage->buffer, buffer, 1, &copyRegion);
-			});
+        if (!persistent) {
+            unmap();
+        }
 
-		}
-	}
+        flush(size, offset);
+    } else {
 
-	void* VulkanBuffer::map(VkDeviceSize offset)
-	{
-		if (!mapped) {
-			VK_CHECK_RESULT(vmaMapMemory(gfx().vmaAllocator(), bufferAlloc, &mapped));
-		}
+        auto stage = gfx().getStagePool().acquireStage(data, size);
 
-		return (uint8_t*)mapped + offset;
-	}
+        VkBufferCopy copyRegion = {};
+        copyRegion.size = size;
 
-	void VulkanBuffer::unmap()
-	{
-		if (mapped)
-		{
-			vmaUnmapMemory(gfx().vmaAllocator(), bufferAlloc);
-			mapped = nullptr;
-		}
-	}
-	
-	void VulkanBuffer::flush(VkDeviceSize size, VkDeviceSize offset)
-	{
-		vmaFlushAllocation(gfx().vmaAllocator(), bufferAlloc, offset, size);
-	}
+        gfx().executeCommand(CommandQueueType::Copy, [=](auto& c) {
+            vkCmdCopyBuffer(c.cmd, stage->buffer, buffer, 1, &copyRegion);
+        });
+    }
+}
 
-	void VulkanBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset)
-	{
-		vmaInvalidateAllocation(gfx().vmaAllocator(), bufferAlloc, offset, size);
-	}
+void* VulkanBuffer::map(VkDeviceSize offset)
+{
+    if (!mapped) {
+        VK_CHECK_RESULT(vmaMapMemory(gfx().vmaAllocator(), bufferAlloc, &mapped));
+    }
 
-	void VulkanBuffer::setupDescriptor(VkDeviceSize size, VkDeviceSize offset)
-	{
-		descriptor.offset = offset;
-		descriptor.buffer = buffer;
-		descriptor.range = size;
-	}
+    return (uint8_t*)mapped + offset;
+}
 
-	void VulkanBuffer::copyTo(void* data, VkDeviceSize size)
-	{
-		assert(mapped);
-		memcpy(mapped, data, size);
-	}
+void VulkanBuffer::unmap()
+{
+    if (mapped) {
+        vmaUnmapMemory(gfx().vmaAllocator(), bufferAlloc);
+        mapped = nullptr;
+    }
+}
 
-	void VulkanBuffer::destroy()
-	{
-		if (buffer) {
-			if (mapped) {
-				vmaUnmapMemory(gfx().vmaAllocator(), bufferAlloc);
-			}
+void VulkanBuffer::flush(VkDeviceSize size, VkDeviceSize offset)
+{
+    vmaFlushAllocation(gfx().vmaAllocator(), bufferAlloc, offset, size);
+}
 
-			vmaDestroyBuffer(gfx().vmaAllocator(), buffer, bufferAlloc);		
-		}
-	}
+void VulkanBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset)
+{
+    vmaInvalidateAllocation(gfx().vmaAllocator(), bufferAlloc, offset, size);
+}
+
+void VulkanBuffer::setupDescriptor(VkDeviceSize size, VkDeviceSize offset)
+{
+    descriptor.offset = offset;
+    descriptor.buffer = buffer;
+    descriptor.range = size;
+}
+
+void VulkanBuffer::copyTo(void* data, VkDeviceSize size)
+{
+    assert(mapped);
+    memcpy(mapped, data, size);
+}
+
+void VulkanBuffer::destroy()
+{
+    if (buffer) {
+        if (mapped) {
+            vmaUnmapMemory(gfx().vmaAllocator(), bufferAlloc);
+        }
+
+        vmaDestroyBuffer(gfx().vmaAllocator(), buffer, bufferAlloc);
+    }
+}
 };

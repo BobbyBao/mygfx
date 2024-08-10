@@ -16,7 +16,7 @@
 #include <iostream>
 #endif
 
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #include <Windows.h>
 #endif
 

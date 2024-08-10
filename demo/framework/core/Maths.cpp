@@ -69,7 +69,6 @@ const mat4 perspective(float fovyRadians, float aspect, float zNear, float zFar,
 
 const mat4 orthographic(float left, float right, float bottom, float top, float zNear, float zFar, bool invertedDepth)
 {
-    // orthographic method maps the depth between -1 and 1, so we have to change the near/far plane to map between 0 and 1
     if (invertedDepth)
         return Matrix4_orthographic(left, right, bottom, top, 2.0f * zFar - zNear, zNear);
     else

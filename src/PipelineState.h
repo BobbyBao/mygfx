@@ -1,110 +1,109 @@
 #pragma once
-#include <stdint.h>
 #include "GraphicsDefs.h"
+#include <stdint.h>
 
 namespace mygfx {
 
-	struct PrimitiveState {
-		PrimitiveTopology primitiveTopology : 4 = PrimitiveTopology::TRIANGLE_LIST;
-		bool restartEnable : 1 = false;
-		
-		auto operator<=>(PrimitiveState const&) const = default;
-	};
+struct PrimitiveState {
+    PrimitiveTopology primitiveTopology : 4 = PrimitiveTopology::TRIANGLE_LIST;
+    bool restartEnable : 1 = false;
 
-	//static_assert(sizeof(PrimitiveState) == 1);
+    auto operator<=>(PrimitiveState const&) const = default;
+};
 
-	struct RasterState {
-		PolygonMode polygonMode : 2 = PolygonMode::FILL;
-		CullMode cullMode : 2 = CullMode::BACK;
-		FrontFace frontFace : 1 = FrontFace::COUNTER_CLOCKWISE;
-		bool depthBiasEnable : 1 = false;
+// static_assert(sizeof(PrimitiveState) == 1);
 
-		bool alphaToCoverageEnable : 1 = false;
-		bool alphaToOneEnable : 1 = false;
-		bool rasterizerDiscardEnable : 1 = false;
-		SampleCount rasterizationSamples : 6 = SampleCount::SAMPLE_1;
-		
-		auto operator<=>(RasterState const&) const = default;
-	};
+struct RasterState {
+    PolygonMode polygonMode : 2 = PolygonMode::FILL;
+    CullMode cullMode : 2 = CullMode::BACK;
+    FrontFace frontFace : 1 = FrontFace::COUNTER_CLOCKWISE;
+    bool depthBiasEnable : 1 = false;
 
-	static_assert(sizeof(RasterState) == 2);
-	
-	enum class BlendMode : uint8_t
-	{
-		NONE = 0,
-		MASK,
-		ADD,
-		MULTIPLY,
-		ALPHA,
-		ADD_ALPHA,
-		CONSTANT_COLOR,
-		PREMUL_ALPHA,
-		INV_DEST_ALPHA,
-		SUBTRACT,
-		SUBTRACT_ALPHA,
-	};
+    bool alphaToCoverageEnable : 1 = false;
+    bool alphaToOneEnable : 1 = false;
+    bool rasterizerDiscardEnable : 1 = false;
+    SampleCount rasterizationSamples : 6 = SampleCount::SAMPLE_1;
 
-	struct ColorBlendState {
+    auto operator<=>(RasterState const&) const = default;
+};
 
-		uint32_t colorBlendEnable : 1 = false;
+static_assert(sizeof(RasterState) == 2);
 
-		BlendFactor srcColorBlendFactor : 5 = BlendFactor::ONE;
-		BlendFactor dstColorBlendFactor : 5 = BlendFactor::ONE;
-		BlendOp colorBlendOp : 3 = BlendOp::ADD;
+enum class BlendMode : uint8_t {
+    NONE = 0,
+    MASK,
+    ADD,
+    MULTIPLY,
+    ALPHA,
+    ADD_ALPHA,
+    CONSTANT_COLOR,
+    PREMUL_ALPHA,
+    INV_DEST_ALPHA,
+    SUBTRACT,
+    SUBTRACT_ALPHA,
+};
 
-		BlendFactor srcAlphaBlendFactor : 5 = BlendFactor::ONE;
-		BlendFactor dstAlphaBlendFactor : 5 = BlendFactor::ONE;
-		BlendOp alphaBlendOp : 3 = BlendOp::ADD;
+struct ColorBlendState {
 
-		ColorComponent colorWrite : 4 = ColorComponent::RGBA;
+    uint32_t colorBlendEnable : 1 = false;
 
-		static ColorBlendState get(BlendMode blendMode);
+    BlendFactor srcColorBlendFactor : 5 = BlendFactor::ONE;
+    BlendFactor dstColorBlendFactor : 5 = BlendFactor::ONE;
+    BlendOp colorBlendOp : 3 = BlendOp::ADD;
 
-		auto operator<=>(ColorBlendState const&) const = default;
-	};
+    BlendFactor srcAlphaBlendFactor : 5 = BlendFactor::ONE;
+    BlendFactor dstAlphaBlendFactor : 5 = BlendFactor::ONE;
+    BlendOp alphaBlendOp : 3 = BlendOp::ADD;
 
-	static_assert(sizeof(ColorBlendState) == 4);
+    ColorComponent colorWrite : 4 = ColorComponent::RGBA;
 
-	struct DepthState {
-		bool    depthTestEnable : 1 = true;
-		bool    depthWriteEnable : 1 = true;
-		CompareOp depthCompareOp : 4 = CompareOp::LESS_OR_EQUAL;
-		bool depthBoundsTestEnable : 1 = false;
+    static ColorBlendState get(BlendMode blendMode);
 
-		auto operator<=>(DepthState const&) const = default;
-	};
+    auto operator<=>(ColorBlendState const&) const = default;
+};
 
-	struct StencilOpState {
-		StencilOp    failOp : 3;
-		StencilOp    passOp : 3;
-		StencilOp    depthFailOp : 3;
-		CompareOp    compareOp : 4;
-		uint8_t       compareMask;
-		uint8_t       writeMask;
-		uint8_t       reference;
+static_assert(sizeof(ColorBlendState) == 4);
 
-		auto operator<=>(StencilOpState const&) const = default;
-	};
+struct DepthState {
+    bool depthTestEnable : 1 = true;
+    bool depthWriteEnable : 1 = true;
+    CompareOp depthCompareOp : 4 = CompareOp::LESS_OR_EQUAL;
+    bool depthBoundsTestEnable : 1 = false;
 
-	struct StencilState {
-		bool stencilTestEnable : 1 = false;
-		StencilOpState            front;
-		StencilOpState            back;
+    auto operator<=>(DepthState const&) const = default;
+};
 
-		auto operator<=>(StencilState const&) const = default;
-	};
+struct StencilOpState {
+    StencilOp failOp : 3;
+    StencilOp passOp : 3;
+    StencilOp depthFailOp : 3;
+    CompareOp compareOp : 4;
+    uint8_t compareMask;
+    uint8_t writeMask;
+    uint8_t reference;
 
-	class HwVertexInput;
-	class HwProgram;
+    auto operator<=>(StencilOpState const&) const = default;
+};
 
-	struct PipelineState {
-		HwProgram* program;
-		VertexAttribute vertexSemantic = VertexAttribute::ALL;
-		PrimitiveState primitiveState {};
-		ColorBlendState colorBlendState {};		
-		RasterState rasterState {};
-		DepthState depthState {};
-		StencilState* stencilState {};
-	};
+struct StencilState {
+    bool stencilTestEnable : 1 = false;
+    StencilOpState front;
+    StencilOpState back;
+
+    auto operator<=>(StencilState const&) const = default;
+};
+
+class HwVertexInput;
+class HwProgram;
+
+struct PipelineState {
+    HwProgram* program;
+    VertexAttribute vertexSemantic = VertexAttribute::ALL;
+    PrimitiveState primitiveState {};
+    ColorBlendState colorBlendState {};
+    RasterState rasterState {};
+    DepthState depthState {};
+    StencilState* stencilState {};
+};
 
 }

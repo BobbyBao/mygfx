@@ -21,6 +21,16 @@ protected:
     virtual void cloneProcess(Object* destNode);
 };
 
+class NamedObject : public Object {
+public:
+    NamedObject() = default;
+
+    inline const String& getName() const { return mName; }
+    virtual void setName(const char* name);
+protected:
+    String mName;
+};
+
 #define PROPERTY_GET_SET(type, prop)           \
     type get##prop() const { return m##prop; } \
     void set##prop(type v) { m##prop = v; }

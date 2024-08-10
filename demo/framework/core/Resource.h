@@ -1,10 +1,10 @@
 #pragma once
 
-#include "utils/RefCounted.h"
+#include "Object.h"
 
 namespace mygfx {
 
-class Resource : public utils::RefCounted {
+class Resource : public NamedObject {
 public:
     Resource();
 

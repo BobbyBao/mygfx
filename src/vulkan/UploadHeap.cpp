@@ -1,214 +1,207 @@
-#include "VulkanDevice.h"
 #include "UploadHeap.h"
+#include "VulkanDevice.h"
 #include "utils/algorithm.h"
 
-namespace mygfx
+namespace mygfx {
+
+void UploadHeap::create(uint64_t uSize)
 {
-	void UploadHeap::create(uint64_t uSize)
-	{
-		VkResult res;
+    VkResult res;
 
-		// Create buffer to suballocate
-		{
-			VkBufferCreateInfo buffer_info = {};
-			buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-			buffer_info.size = uSize;
-			buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-			buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-			res = vkCreateBuffer(gfx().device, &buffer_info, NULL, &m_buffer);
-			assert(res == VK_SUCCESS);
+    // Create buffer to suballocate
+    {
+        VkBufferCreateInfo buffer_info = {};
+        buffer_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_info.size = uSize;
+        buffer_info.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        buffer_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        res = vkCreateBuffer(gfx().device, &buffer_info, NULL, &m_buffer);
+        assert(res == VK_SUCCESS);
 
-			VkMemoryRequirements mem_reqs;
-			vkGetBufferMemoryRequirements(gfx().device, m_buffer, &mem_reqs);
+        VkMemoryRequirements mem_reqs;
+        vkGetBufferMemoryRequirements(gfx().device, m_buffer, &mem_reqs);
 
-			VkMemoryAllocateInfo alloc_info = {};
-			alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-			alloc_info.allocationSize = mem_reqs.size;
-			alloc_info.memoryTypeIndex = gfx().getMemoryType(mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+        VkMemoryAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        alloc_info.allocationSize = mem_reqs.size;
+        alloc_info.memoryTypeIndex = gfx().getMemoryType(mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
 
-			res = vkAllocateMemory(gfx().device, &alloc_info, NULL, &m_deviceMemory);
-			assert(res == VK_SUCCESS);
+        res = vkAllocateMemory(gfx().device, &alloc_info, NULL, &m_deviceMemory);
+        assert(res == VK_SUCCESS);
 
-			res = vkBindBufferMemory(gfx().device, m_buffer, m_deviceMemory, 0);
-			assert(res == VK_SUCCESS);
+        res = vkBindBufferMemory(gfx().device, m_buffer, m_deviceMemory, 0);
+        assert(res == VK_SUCCESS);
 
-			res = vkMapMemory(gfx().device, m_deviceMemory, 0, mem_reqs.size, 0, (void**)&m_pDataBegin);
-			assert(res == VK_SUCCESS);
+        res = vkMapMemory(gfx().device, m_deviceMemory, 0, mem_reqs.size, 0, (void**)&m_pDataBegin);
+        assert(res == VK_SUCCESS);
 
-			m_pDataCur = m_pDataBegin;
-			m_pDataEnd = m_pDataBegin + mem_reqs.size;
-		}
+        m_pDataCur = m_pDataBegin;
+        m_pDataEnd = m_pDataBegin + mem_reqs.size;
+    }
+}
 
-	}
+//--------------------------------------------------------------------------------------
+//
+// OnDestroy
+//
+//--------------------------------------------------------------------------------------
+void UploadHeap::destroy()
+{
+    vkDestroyBuffer(gfx().device, m_buffer, NULL);
+    vkUnmapMemory(gfx().device, m_deviceMemory);
+    vkFreeMemory(gfx().device, m_deviceMemory, NULL);
+}
 
-	//--------------------------------------------------------------------------------------
-	//
-	// OnDestroy
-	//
-	//--------------------------------------------------------------------------------------
-	void UploadHeap::destroy()
-	{
-		vkDestroyBuffer(gfx().device, m_buffer, NULL);
-		vkUnmapMemory(gfx().device, m_deviceMemory);
-		vkFreeMemory(gfx().device, m_deviceMemory, NULL);
+void UploadHeap::beginBatch()
+{
+    batchUpdate = true;
+}
 
-	}
+void UploadHeap::endBatch()
+{
+    FlushAndFinish();
 
-	void UploadHeap::beginBatch()
-	{
-		batchUpdate = true;
-	}
+    batchUpdate = false;
+}
 
-	void UploadHeap::endBatch()
-	{
-		FlushAndFinish();
+void UploadHeap::finish()
+{
+    if (!batchUpdate) {
+        FlushAndFinish();
+    }
+}
+//--------------------------------------------------------------------------------------
+//
+// SuballocateFromUploadHeap
+//
+//--------------------------------------------------------------------------------------
+uint8_t* UploadHeap::Suballocate(uint64_t uSize, uint64_t uAlign)
+{
+    // wait until we are done flusing the heap
+    flushing.Wait();
 
-		batchUpdate = false;
-	}
+    uint8_t* pRet = NULL;
 
-	void UploadHeap::finish()
-	{
-		if (!batchUpdate) {
-			FlushAndFinish();
-		}
-	}
-	//--------------------------------------------------------------------------------------
-	//
-	// SuballocateFromUploadHeap
-	//
-	//--------------------------------------------------------------------------------------
-	uint8_t* UploadHeap::Suballocate(uint64_t uSize, uint64_t uAlign)
-	{
-		// wait until we are done flusing the heap
-		flushing.Wait();
+    {
+        std::unique_lock<std::mutex> lock(m_mutex);
 
-        uint8_t* pRet = NULL;
+        // make sure resource (and its mips) would fit the upload heap, if not please make the upload heap bigger
+        assert(uSize < (uint64_t)(m_pDataEnd - m_pDataBegin));
 
-		{
-			std::unique_lock<std::mutex> lock(m_mutex);
+        m_pDataCur = reinterpret_cast<uint8_t*>(utils::alignUp(reinterpret_cast<uint64_t>(m_pDataCur), uAlign));
+        uSize = utils::alignUp(uSize, uAlign);
 
-			// make sure resource (and its mips) would fit the upload heap, if not please make the upload heap bigger
-			assert(uSize < (uint64_t)(m_pDataEnd - m_pDataBegin));
+        // return NULL if we ran out of space in the heap
+        if ((m_pDataCur >= m_pDataEnd) || (m_pDataCur + uSize >= m_pDataEnd)) {
+            return NULL;
+        }
 
-			m_pDataCur = reinterpret_cast<uint8_t*>(utils::alignUp(reinterpret_cast<uint64_t>(m_pDataCur), uAlign));
-			uSize = utils::alignUp(uSize, uAlign);
+        pRet = m_pDataCur;
+        m_pDataCur += uSize;
+    }
 
-			// return NULL if we ran out of space in the heap
-			if ((m_pDataCur >= m_pDataEnd) || (m_pDataCur + uSize >= m_pDataEnd))
-			{
-				return NULL;
-			}
+    return pRet;
+}
 
-			pRet = m_pDataCur;
-			m_pDataCur += uSize;
-		}
+uint8_t* UploadHeap::BeginSuballocate(uint64_t uSize, uint64_t uAlign)
+{
+    uint8_t* pRes = NULL;
 
-		return pRet;
-	}
+    for (;;) {
+        pRes = Suballocate(uSize, uAlign);
+        if (pRes != NULL) {
+            break;
+        }
 
-    uint8_t* UploadHeap::BeginSuballocate(uint64_t uSize, uint64_t uAlign)
-	{
-        uint8_t* pRes = NULL;
+        FlushAndFinish();
+    }
 
-		for (;;) {
-			pRes = Suballocate(uSize, uAlign);
-			if (pRes != NULL)
-			{
-				break;
-			}
+    allocating.Inc();
 
-			FlushAndFinish();
-		}
+    return pRes;
+}
 
-		allocating.Inc();
+void UploadHeap::EndSuballocate()
+{
+    allocating.Dec();
+}
 
-		return pRes;
-	}
+void UploadHeap::AddCopy(VkImage image, VkBufferImageCopy bufferImageCopy)
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    m_copies.push_back({ image, bufferImageCopy });
+}
 
-	void UploadHeap::EndSuballocate()
-	{
-		allocating.Dec();
-	}
+void UploadHeap::AddPreBarrier(VkImageMemoryBarrier imageMemoryBarrier)
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
 
-	void UploadHeap::AddCopy(VkImage image, VkBufferImageCopy bufferImageCopy)
-	{
-		std::unique_lock<std::mutex> lock(m_mutex);
-		m_copies.push_back({ image, bufferImageCopy });
-	}
+    m_toPreBarrier.push_back(imageMemoryBarrier);
+}
 
-	void UploadHeap::AddPreBarrier(VkImageMemoryBarrier imageMemoryBarrier)
-	{
-		std::unique_lock<std::mutex> lock(m_mutex);
+void UploadHeap::AddPostBarrier(VkImageMemoryBarrier imageMemoryBarrier)
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
 
-		m_toPreBarrier.push_back(imageMemoryBarrier);
-	}
+    m_toPostBarrier.push_back(imageMemoryBarrier);
+}
 
+void UploadHeap::Flush()
+{
+    VkResult res;
 
-	void UploadHeap::AddPostBarrier(VkImageMemoryBarrier imageMemoryBarrier)
-	{
-		std::unique_lock<std::mutex> lock(m_mutex);
+    VkMappedMemoryRange range[1] = {};
+    range[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+    range[0].memory = m_deviceMemory;
+    range[0].size = m_pDataCur - m_pDataBegin;
+    res = vkFlushMappedMemoryRanges(gfx().device, 1, range);
+    assert(res == VK_SUCCESS);
+}
 
-		m_toPostBarrier.push_back(imageMemoryBarrier);
-	}
+//--------------------------------------------------------------------------------------
+//
+// FlushAndFinish
+//
+//--------------------------------------------------------------------------------------
+void UploadHeap::FlushAndFinish()
+{
+    // make sure another thread is not already flushing
+    flushing.Wait();
 
-	void UploadHeap::Flush()
-	{
-		VkResult res;
+    // begins a critical section, and make sure no allocations happen while a thread is inside it
+    flushing.Inc();
 
-		VkMappedMemoryRange range[1] = {};
-		range[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-		range[0].memory = m_deviceMemory;
-		range[0].size = m_pDataCur - m_pDataBegin;
-		res = vkFlushMappedMemoryRanges(gfx().device, 1, range);
-		assert(res == VK_SUCCESS);
-	}
+    // wait for pending allocations to finish
+    allocating.Wait();
 
-	//--------------------------------------------------------------------------------------
-	//
-	// FlushAndFinish
-	//
-	//--------------------------------------------------------------------------------------
-	void UploadHeap::FlushAndFinish()
-	{
-		// make sure another thread is not already flushing
-		flushing.Wait();
+    std::unique_lock<std::mutex> lock(m_mutex);
 
-		// begins a critical section, and make sure no allocations happen while a thread is inside it
-		flushing.Inc();
+    Flush();
 
-		// wait for pending allocations to finish
-		allocating.Wait();
+    // LOG_INFO("flushing {}", m_copies.size());
 
-		std::unique_lock<std::mutex> lock(m_mutex);
+    gfx().executeCommand(CommandQueueType::Copy, [this](const CommandBuffer& cmd) {
+        // apply pre barriers in one go
+        if (m_toPreBarrier.size() > 0) {
+            vkCmdPipelineBarrier(cmd.cmd, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, (uint32_t)m_toPreBarrier.size(), m_toPreBarrier.data());
+            m_toPreBarrier.clear();
+        }
 
-		Flush();
+        for (COPY c : m_copies) {
+            vkCmdCopyBufferToImage(cmd.cmd, GetResource(), c.m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &c.m_bufferImageCopy);
+        }
 
-		//LOG_INFO("flushing {}", m_copies.size());
+        m_copies.clear();
 
-		gfx().executeCommand(CommandQueueType::Copy, [this](const CommandBuffer& cmd) {
-			//apply pre barriers in one go
-			if (m_toPreBarrier.size() > 0) {
-				vkCmdPipelineBarrier(cmd.cmd, VK_PIPELINE_STAGE_HOST_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, (uint32_t)m_toPreBarrier.size(), m_toPreBarrier.data());
-				m_toPreBarrier.clear();
-			}
+        // apply post barriers in one go
+        if (m_toPostBarrier.size() > 0) {
+            vkCmdPipelineBarrier(cmd.cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, (uint32_t)m_toPostBarrier.size(), m_toPostBarrier.data());
+            m_toPostBarrier.clear();
+        }
+    });
 
-			for (COPY c : m_copies) {
-				vkCmdCopyBufferToImage(cmd.cmd, GetResource(), c.m_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &c.m_bufferImageCopy);
-			}
+    m_pDataCur = m_pDataBegin;
 
-			m_copies.clear();
-
-			//apply post barriers in one go
-			if (m_toPostBarrier.size() > 0) {
-				vkCmdPipelineBarrier(cmd.cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, (uint32_t)m_toPostBarrier.size(), m_toPostBarrier.data());
-				m_toPostBarrier.clear();
-			}
-
-		});
-
-		m_pDataCur = m_pDataBegin;
-
-		flushing.Dec();
-
-	}
+    flushing.Dec();
+}
 }

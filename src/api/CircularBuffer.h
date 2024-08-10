@@ -17,8 +17,6 @@
 #ifndef TNT_FILAMENT_BACKEND_PRIVATE_CIRCULARBUFFER_H
 #define TNT_FILAMENT_BACKEND_PRIVATE_CIRCULARBUFFER_H
 
-//#include <utils/compiler.h>
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -42,7 +40,8 @@ public:
 
     // allocates 'size' bytes in the circular buffer and returns a pointer to the memory
     // return the current head and moves it forward by size bytes
-    inline void* allocate(size_t size) noexcept {
+    inline void* allocate(size_t size) noexcept
+    {
         char* const cur = static_cast<char*>(mHead);
         mHead = cur + size;
         return cur;
