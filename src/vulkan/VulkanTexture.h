@@ -24,9 +24,9 @@ public:
 
     VkSampleCountFlagBits samples() const { return mSamples; }
 
-    const VulkanTextureView* srv() const { return (VulkanTextureView*)mSRV.get(); }
-    const VulkanTextureView* rtv() const { return (VulkanTextureView*)mRTV.get(); }
-    const VulkanTextureView* dsv() const { return (VulkanTextureView*)mDSV.get(); }
+    VulkanTextureView* srv() const { return (VulkanTextureView*)mSRV.get(); }
+    VulkanTextureView* rtv() const { return (VulkanTextureView*)mRTV.get(); }
+    VulkanTextureView* dsv() const { return (VulkanTextureView*)mDSV.get(); }
 
     int index() const;
     bool create(const TextureData& textureData);
@@ -56,7 +56,6 @@ public:
     bool isSwapchain = false;
     VkFormat vkFormat;
     VkImageUsageFlags usage;
-
 private:
     bool initFromData(const TextureData& textureData);
     void initRenderTarget(const char* name = nullptr, VkImageCreateFlags flags = (VkImageCreateFlags)0);
@@ -66,7 +65,6 @@ private:
 
     VmaAllocation mImageAlloc = VK_NULL_HANDLE;
     VkImage mImage = VK_NULL_HANDLE;
-
     SamplerHandle mSampler;
     VkImageLayout mImageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     VkSampleCountFlagBits mSamples = VK_SAMPLE_COUNT_1_BIT;

@@ -134,8 +134,8 @@ public:
 struct RenderTargetDesc {
     uint32_t width, height;
 
-    std::vector<Ref<HwTexture>> colorAttachments;
-    Ref<HwTexture> depthAttachment = nullptr;
+    std::vector<Ref<HwTextureView>> colorAttachments;
+    Ref<HwTextureView> depthAttachment = nullptr;
 };
 
 class HwRenderTarget : public HwObject {

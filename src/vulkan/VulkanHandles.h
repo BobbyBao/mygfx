@@ -13,7 +13,6 @@ public:
     std::vector<VkBuffer> vertexBuffers;
     std::unique_ptr<uint64_t[]> bufferOffsets = nullptr;
     std::unique_ptr<VertexAttribute[]> vertexSemantics = nullptr;
-    ;
     VkBuffer indexBuffer = nullptr;
     VkIndexType indexType;
 };
@@ -33,7 +32,7 @@ public:
 private:
 };
 
-class VulkanTexture;
+class VulkanTextureView;
 
 class VulkanRenderTarget : public HwRenderTarget {
 public:
@@ -42,8 +41,8 @@ public:
 
     uint32_t numAttachments() const { return isSwapchain ? 1 : (uint32_t)colorAttachments.size(); }
 
-    std::vector<Ref<VulkanTexture>> colorAttachments;
-    Ref<VulkanTexture> depthAttachment = nullptr;
+    Vector<Ref<VulkanTextureView>> colorAttachments;
+    Ref<VulkanTextureView> depthAttachment = nullptr;
 };
 
 }

@@ -372,7 +372,8 @@ void VulkanSwapChain::create(uint32_t* width, uint32_t* height, bool vsync, bool
     rt->colorAttachments.clear();
 
     for (uint32_t i = 0; i < imageCount; i++) {
-        rt->colorAttachments.emplace_back(new VulkanTexture(images[i], colorFormat));
+        auto& t = colorTextures.emplace_back(new VulkanTexture(images[i], colorFormat));
+        rt->colorAttachments.emplace_back(t->rtv());
     }
 }
 
@@ -397,7 +398,8 @@ void VulkanSwapChain::setupDepthStencil()
 
         TextureData textureData = TextureData::Texture2D(desc.width, desc.height, depthFormat);
         textureData.usage = TextureUsage::DEPTH_STENCIL_ATTACHMENT;
-        rt->depthAttachment = new VulkanTexture(textureData, SamplerInfo::create(Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE));
+        depthTexture = new VulkanTexture(textureData, SamplerInfo::create(Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE));
+        rt->depthAttachment = depthTexture->dsv();
     }
 }
 

@@ -5,12 +5,12 @@
 namespace mygfx {
 VulkanTextureView::VulkanTextureView(const VkImageViewCreateInfo& view_info, const char* resName)
 {
-    viewInfo_ = view_info;
+    mViewInfo = view_info;
     vkCreateImageView(gfx().device, &view_info, nullptr, &handle_);
 
-    descriptor_.imageView = handle_;
-    descriptor_.sampler = VK_NULL_HANDLE;
-    descriptor_.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    mDescriptor.imageView = handle_;
+    mDescriptor.sampler = VK_NULL_HANDLE;
+    mDescriptor.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
 
     if (resName) {
         gfx().setResourceName(VK_OBJECT_TYPE_IMAGE_VIEW, (uint64_t)handle_, resName);
@@ -19,7 +19,7 @@ VulkanTextureView::VulkanTextureView(const VkImageViewCreateInfo& view_info, con
 
 VulkanTextureView::VulkanTextureView(const VkImageViewCreateInfo& view_info, SamplerHandle sampler, VkImageLayout imageLayout, const char* resName)
 {
-    viewInfo_ = view_info;
+    mViewInfo = view_info;
     vkCreateImageView(gfx().device, &view_info, nullptr, &handle_);
     updateDescriptor(sampler, imageLayout);
 
@@ -49,9 +49,9 @@ void VulkanTextureView::destroy()
 
 void VulkanTextureView::updateDescriptor(SamplerHandle sampler, VkImageLayout imageLayout)
 {
-    descriptor_.imageView = handle_;
-    descriptor_.sampler = gfx().getVkSampler(sampler);
-    descriptor_.imageLayout = imageLayout;
+    mDescriptor.imageView = handle_;
+    mDescriptor.sampler = gfx().getVkSampler(sampler);
+    mDescriptor.imageLayout = imageLayout;
 
     auto textureSet = gfx().getTextureSet();
     if (textureSet) {
@@ -65,9 +65,9 @@ void VulkanTextureView::updateDescriptor(SamplerHandle sampler, VkImageLayout im
 
 void VulkanTextureView::updateDescriptor(VkSampler sampler, VkImageLayout imageLayout)
 {
-    descriptor_.imageView = handle_;
-    descriptor_.sampler = sampler;
-    descriptor_.imageLayout = imageLayout;
+    mDescriptor.imageView = handle_;
+    mDescriptor.sampler = sampler;
+    mDescriptor.imageLayout = imageLayout;
 
     auto textureSet = gfx().getTextureSet();
     if (textureSet) {

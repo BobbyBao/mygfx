@@ -29,7 +29,6 @@ void GraphicsDevice::execute(std::function<void(void)> const& fn) noexcept
 
 void GraphicsDevice::swapContext()
 {
-
     SyncContext::swapContext();
 
     FrameChangeListener::callFrameChange();
@@ -45,7 +44,6 @@ void GraphicsDevice::beginRender()
 
 void GraphicsDevice::endRender()
 {
-
     for (auto it = postCall_.begin(); it != postCall_.end();) {
         auto& timer = std::get<1>(*it);
         if (--timer == 0) {

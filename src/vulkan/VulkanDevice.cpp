@@ -503,11 +503,11 @@ void VulkanDevice::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& ren
     mRenderTarget = (VulkanRenderTarget*)pRT;
     colorAttachmentCount = mRenderTarget->numAttachments();
     for (uint32_t i = 0; i < colorAttachmentCount; i++) {
-        colorAttachmentFormats[i] = mRenderTarget->colorAttachments[i]->vkFormat;
+        colorAttachmentFormats[i] = mRenderTarget->colorAttachments[i]->format();
     }
 
     if (mRenderTarget->depthAttachment) {
-        depthAttachmentFormat = mRenderTarget->depthAttachment->vkFormat;
+        depthAttachmentFormat = mRenderTarget->depthAttachment->format();
         if (isDepthStencilFormat(depthAttachmentFormat)) {
             stencilAttachmentFormat = depthAttachmentFormat;
         } else {
@@ -701,7 +701,7 @@ void VulkanDevice::drawPrimitive(HwRenderPrimitive* primitive)
     Stats::drawCall()++;
 }
 
-static void drawBatch1(const CommandBuffer& cmd, const RenderCommand* start, uint32_t count)
+static void drawBatch1(const CommandBuffer& cmd, const RenderCommand* start, uint32_t count) VULKAN_NOEXCEPT
 {
     for (uint32_t i = 0; i < count; i++) {
         auto& primitive = start[i];
@@ -756,7 +756,7 @@ void drawWork(VulkanDevice* device, const RenderCommand* start, uint32_t count, 
 void VulkanDevice::drawMultiThreaded(const std::vector<RenderCommand>& items, const CommandBuffer& cmd)
 {
     uint32_t itemsPerThread = 200;
-    uint32_t threadNum = std::thread::hardware_concurrency(); // 16;
+    uint32_t threadNum = std::thread::hardware_concurrency();
     itemsPerThread = (uint32_t)(items.size() + threadNum - 1) / threadNum;
     itemsPerThread = std::max(40u, itemsPerThread);
 
@@ -816,7 +816,7 @@ void VulkanDevice::commit(HwSwapchain* sc)
     // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
     if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR)) {
 
-        // LOG_ERROR("VK_ERROR_OUT_OF_DATE_KHR");
+        LOG_ERROR("VK_ERROR_OUT_OF_DATE_KHR");
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
             return;

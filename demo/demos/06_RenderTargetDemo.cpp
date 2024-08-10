@@ -18,10 +18,14 @@ namespace mygfx::demo {
 			mMesh = Mesh::createCube();
 
 			mRenderTexture = Texture::createRenderTarget(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
-			mRenderTarget = gfxApi().createRenderTarget(
-				{ .width = 1024,
-				.height = 1024, 
-				.colorAttachments = {mRenderTexture->getHwTexture()} });
+			
+			RenderTargetDesc desc {
+				.width = 1024,
+				.height = 1024
+			};
+			
+			desc.colorAttachments.emplace_back(mRenderTexture->getRTV());
+			mRenderTarget = gfxApi().createRenderTarget(desc);
 
 			co_return;
 		}

@@ -7,9 +7,7 @@
 namespace mygfx {
 VulkanTexture::VulkanTexture(const TextureData& textureData, SamplerInfo samplerInfo)
 {
-
     setSampler(samplerInfo);
-
     create(textureData);
 }
 
@@ -46,7 +44,6 @@ void VulkanTexture::destroy()
 
 bool VulkanTexture::create(const TextureData& textureData)
 {
-
     width = std::max((uint16_t)1, textureData.width);
     height = std::max((uint16_t)1, textureData.height);
     depth = std::max((uint16_t)1, textureData.depth);
@@ -298,8 +295,6 @@ void VulkanTexture::initDepthStencil(const char* name)
 
     createImage(&image_info, name);
 
-    // setImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-    //mDSV = createDSV();
     mDSV = createRTV();
 
     if (usage & VK_IMAGE_USAGE_SAMPLED_BIT) {
@@ -327,9 +322,8 @@ Ref<VulkanTextureView> VulkanTexture::createSRV(int mipLevel, const char* name)
     VkImageViewCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     info.image = mImage;
-    info.viewType = imgutil::getViewType(samplerType); // isCubemap() ? VK_IMAGE_VIEW_TYPE_CUBE : VK_IMAGE_VIEW_TYPE_2D;
+    info.viewType = imgutil::getViewType(samplerType);
     if (faceCount > 1) {
-        // info.viewType = isCubemap() ? VK_IMAGE_VIEW_TYPE_CUBE :  VK_IMAGE_VIEW_TYPE_2D_ARRAY;
         info.subresourceRange.layerCount = layerCount * faceCount;
     } else {
         info.subresourceRange.layerCount = layerCount;

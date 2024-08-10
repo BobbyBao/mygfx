@@ -65,7 +65,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
 
     bool hasStencil = true;
     if (pVkRT->depthAttachment) {
-        auto& fmtInfo = getFormatInfo(pVkRT->depthAttachment->format);
+        auto& fmtInfo = getFormatInfo(imgutil::fromVk(pVkRT->depthAttachment->format()));
         auto dstLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         if (fmtInfo.depth && !fmtInfo.stencil) {
             dstLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
@@ -99,7 +99,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
     VkRenderingAttachmentInfoKHR colorAttachment[8] {};
     if (pVkRT->isSwapchain) {
         colorAttachment[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
-        colorAttachment[0].imageView = pVkRT->colorAttachments[pVkRT->currentIndex]->rtv()->handle();
+        colorAttachment[0].imageView = pVkRT->colorAttachments[pVkRT->currentIndex]->handle();
         colorAttachment[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         colorAttachment[0].loadOp = any(renderInfo.clearFlags & TargetBufferFlags::COLOR_0) ? VK_ATTACHMENT_LOAD_OP_CLEAR
             : any(renderInfo.loadFlags & TargetBufferFlags::COLOR_0)                        ? VK_ATTACHMENT_LOAD_OP_LOAD
@@ -110,7 +110,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
         // todo:
         for (size_t i = 0; i < pVkRT->colorAttachments.size(); i++) {
             colorAttachment[i].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
-            colorAttachment[i].imageView = pVkRT->colorAttachments[i]->rtv()->handle();
+            colorAttachment[i].imageView = pVkRT->colorAttachments[i]->handle();
             colorAttachment[i].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             colorAttachment[i].loadOp = any(renderInfo.clearFlags & TargetBufferFlags(1 << i)) ? VK_ATTACHMENT_LOAD_OP_CLEAR
                 : any(renderInfo.loadFlags & TargetBufferFlags(1 << i))                        ? VK_ATTACHMENT_LOAD_OP_LOAD
@@ -124,7 +124,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
     VkRenderingAttachmentInfoKHR depthStencilAttachment {};
 
     if (pVkRT->depthAttachment) {
-        auto& fmtInfo = getFormatInfo(pVkRT->depthAttachment->format);
+        auto& fmtInfo = getFormatInfo(imgutil::fromVk(pVkRT->depthAttachment->format()));
         auto dstLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         if (fmtInfo.depth && !fmtInfo.stencil) {
             dstLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
@@ -133,7 +133,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
             dstLayout = VK_IMAGE_LAYOUT_STENCIL_ATTACHMENT_OPTIMAL;
         }
         depthStencilAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
-        depthStencilAttachment.imageView = pVkRT->depthAttachment->dsv()->handle();
+        depthStencilAttachment.imageView = pVkRT->depthAttachment->handle();
         depthStencilAttachment.imageLayout = dstLayout;
         depthStencilAttachment.loadOp = any(renderInfo.clearFlags & TargetBufferFlags::DEPTH) ? VK_ATTACHMENT_LOAD_OP_CLEAR
             : any(renderInfo.loadFlags & TargetBufferFlags::DEPTH)                            ? VK_ATTACHMENT_LOAD_OP_LOAD

@@ -86,10 +86,10 @@ VulkanRenderTarget::VulkanRenderTarget(const RenderTargetDesc& desc)
     height = desc.height;
 
     for (auto& rt : desc.colorAttachments) {
-        colorAttachments.emplace_back((VulkanTexture*)rt.get());
+        colorAttachments.emplace_back((VulkanTextureView*)rt.get());
     }
 
-    depthAttachment = (VulkanTexture*)desc.depthAttachment.get();
+    depthAttachment = (VulkanTextureView*)desc.depthAttachment.get();
 }
 
 VulkanRenderTarget::VulkanRenderTarget(uint32_t w, uint32_t h, bool isSwapchain)

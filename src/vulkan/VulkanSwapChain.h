@@ -62,10 +62,11 @@ public:
 	VkSwapchainKHR swapChain = VK_NULL_HANDLE;	
 	uint32_t imageCount;
 	std::vector<VkImage> images;
-	uint32_t queueNodeIndex = UINT32_MAX;
-	
+	uint32_t queueNodeIndex = UINT32_MAX;	
 	bool requiresStencil{ false };
 	Format depthFormat;
+    Vector<Ref<VulkanTexture>> colorTextures;
+	Ref<VulkanTexture> depthTexture;
 private: 	
 	void setupDepthStencil();
 

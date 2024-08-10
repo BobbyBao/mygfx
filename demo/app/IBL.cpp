@@ -18,10 +18,14 @@ void IBL::filter()
 
     mLUT = Texture::createRenderTarget(1024, 1024, Format::R16G16B16A16_SFLOAT,
         TextureUsage::SAMPLED);
+        
+    RenderTargetDesc desc {.width = 1024,
+        .height = 1024
+    };
 
-    auto renderTarget = gfxApi().createRenderTarget({ .width = 1024,
-        .height = 1024,
-        .colorAttachments = { mLUT->getHwTexture() } });
+    desc.colorAttachments.emplace_back(mLUT->getSRV());
+
+    auto renderTarget = gfxApi().createRenderTarget(desc);
 
     auto shader = Shader::fromFile("shaders/fullscreen.vert", "shaders/tools/filter.frag");
 }
