@@ -4,14 +4,16 @@
 precision highp float;
 
 
-in vec2 texCoord;
-out vec4 fragmentColor;
+layout(location = 0) in vec2 texCoord;
+layout(location = 0) out vec4 fragmentColor;
 
+//uniform sampler2D u_inputTexture;
 
-uniform int u_currentFace;
+layout(binding = 0) uniform {
+	int u_currentFace;
+	int u_panorama;
+};
 
-uniform sampler2D u_inputTexture;
-uniform sampler2D u_panorama;
 
 vec3 uvToXYZ(int face, vec2 uv)
 {
@@ -48,7 +50,7 @@ vec3 panoramaToCubeMap(int face, vec2 texCoord)
 	vec3 direction = normalize(scan);
 	vec2 src = dirToUV(direction);
 
-	return  texture(u_panorama, src).rgb;
+	return  tex2D(u_panorama, src).rgb;
 }
 
 

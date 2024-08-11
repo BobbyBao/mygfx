@@ -492,3 +492,7 @@ void filterCubeMap()
 	}
 }
 
+void main()
+{
+    filterCubeMap();
+}

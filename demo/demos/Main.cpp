@@ -26,7 +26,6 @@ int SDL_AppIterate(void* appstate)
 
 int SDL_AppEvent(void* appstate, const SDL_Event* event)
 {
-
     auto app = (DemoApp*)appstate;
 
     if (event->type == SDL_EVENT_QUIT) {
