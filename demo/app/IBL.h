@@ -7,8 +7,7 @@ class Texture;
 
 class IBL {
 public:
-    void init(Texture* cubeMap);
-    void filter();
+    void filter(Texture* hdr);
 
 protected:
     Ref<Texture> mHdr;
