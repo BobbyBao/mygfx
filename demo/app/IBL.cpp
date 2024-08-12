@@ -8,27 +8,8 @@ void IBL::filter(Texture* hdr)
 {
     mHdr = hdr;
 
+    const uint32_t IMAGE_SIZE = 1024;
 
-
-    auto textureData = TextureData::TextureCube(1024, 1024, 1, Format::R16G16B16A16_SFLOAT);
-		textureData.usage = TextureUsage::COLOR_ATTACHMENT | TextureUsage::SAMPLED;
-    
-    mCubeMap = Texture::createFromData(textureData);
-    mLUT = Texture::createRenderTarget(1024, 1024, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED);
-        
-    RenderTargetDesc desc {.width = 1024, .height = 1024};
-
-    for (int i = 0; i < 6; i++) {
-        auto rtv = gfxApi().createRTV(mCubeMap->getHwTexture(), i, "");
-        desc.colorAttachments.push_back(rtv);
-    }
-
-    desc.colorAttachments.emplace_back(mLUT->getSRV());
-
-    auto renderTarget = gfxApi().createRenderTarget(desc);
-
-    auto shader = Shader::fromFile("shaders/fullscreen.vert", "shaders/tools/filter.frag");
-    
     GraphicsApi& cmd = gfxApi();
 
     RenderPassInfo renderInfo {
@@ -36,17 +17,80 @@ void IBL::filter(Texture* hdr)
         .clearColor = { 0.0f, 0.0f, 0.0f, 1.0f }
     };
 
-    renderInfo.viewport = { .left = 0, .top = 0, .width = 1024, .height = 1024 };
+    renderInfo.viewport = { .left = 0, .top = 0, .width = IMAGE_SIZE, .height = IMAGE_SIZE };
 
-    cmd.beginRendering(renderTarget, renderInfo);
+    {
 
-    cmd.bindPipelineState(shader->pipelineState);
+        auto textureData = TextureData::TextureCube(IMAGE_SIZE, IMAGE_SIZE, 1, Format::R16G16B16A16_SFLOAT);
+        textureData.usage = TextureUsage::TRANSFER_DST | TextureUsage::SAMPLED;
+        textureData.mipMapCount = Texture::maxLevelCount(IMAGE_SIZE);
 
-    //cmd.pushConstant(0);
+        mCubeMap = Texture::createFromData(textureData);
 
-    cmd.draw(3, 1, 0, 0);
+        auto panorama_to_cubemap = Shader::fromFile("shaders/fullscreen.vert", "shaders/tools/panorama_to_cubemap.frag");
 
-    cmd.endRendering(renderTarget);
+
+        auto renderTexture = Texture::createRenderTarget(IMAGE_SIZE, IMAGE_SIZE, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED | TextureUsage::TRANSFER_SRC);
+
+        struct {
+            int u_currentFace;
+            int u_panorama;
+        } pushConst;
+
+        pushConst.u_panorama = mHdr->index();
+
+        RenderTargetDesc desc { .width = IMAGE_SIZE, .height = IMAGE_SIZE };
+
+        desc.colorAttachments.emplace_back(renderTexture->getSRV());
+        auto renderTarget = gfxApi().createRenderTarget(desc);
+
+        for (int i = 0; i < 6; i++) {
+            cmd.beginRendering(renderTarget, renderInfo);
+
+            cmd.bindPipelineState(panorama_to_cubemap->pipelineState);
+
+            pushConst.u_currentFace = i;
+            cmd.pushConstant(0, &pushConst, sizeof(pushConst));
+
+            cmd.draw(3, 1, 0, 0);
+
+            cmd.endRendering(renderTarget);
+            
+            //todo: copy image
+        }
+
+    }
+
+    {
+        auto textureData = TextureData::TextureCube(64, 64, 1, Format::R16G16B16A16_SFLOAT);
+        textureData.usage = TextureUsage::COLOR_ATTACHMENT | TextureUsage::SAMPLED;
+        mIrrMap = Texture::createFromData(textureData);
+        mLUT = Texture::createRenderTarget(IMAGE_SIZE, IMAGE_SIZE, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED);
+        
+        RenderTargetDesc desc { .width = IMAGE_SIZE, .height = IMAGE_SIZE };
+
+        for (int i = 0; i < 6; i++) {
+            auto rtv = gfxApi().createRTV(mIrrMap->getHwTexture(), i, "");
+            desc.colorAttachments.push_back(rtv);
+        }
+
+        desc.colorAttachments.emplace_back(mLUT->getSRV());
+
+        auto renderTarget = gfxApi().createRenderTarget(desc);
+
+        auto shader = Shader::fromFile("shaders/fullscreen.vert", "shaders/tools/filter.frag");
+    
+        cmd.beginRendering(renderTarget, renderInfo);
+
+        cmd.bindPipelineState(shader->pipelineState);
+
+        //cmd.pushConstant(0);
+
+        cmd.draw(3, 1, 0, 0);
+
+        cmd.endRendering(renderTarget);
+    }
+
 
 }
 

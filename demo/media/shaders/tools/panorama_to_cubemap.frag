@@ -5,11 +5,13 @@ precision highp float;
 
 
 layout(location = 0) in vec2 texCoord;
+//layout(location = 1) flat in int in_TexIndex;
+
 layout(location = 0) out vec4 fragmentColor;
 
 //uniform sampler2D u_inputTexture;
 
-layout(binding = 0) uniform {
+layout(push_constant) uniform {
 	int u_currentFace;
 	int u_panorama;
 };

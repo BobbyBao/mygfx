@@ -353,13 +353,6 @@ Ref<VulkanTextureView> VulkanTexture::createRTV(int mipLevel, const char* name)
     info.image = mImage;
     info.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-    if (layerCount * faceCount > 1) {
-        info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
-        info.subresourceRange.layerCount = layerCount * faceCount;
-    } else {
-        info.subresourceRange.layerCount = 1;
-    }
-
     info.format = vkFormat;
     info.components = {
         VK_COMPONENT_SWIZZLE_R,
@@ -372,16 +365,25 @@ Ref<VulkanTextureView> VulkanTexture::createRTV(int mipLevel, const char* name)
 
     std::string ResourceName = name ? name : "";
 
+    info.subresourceRange.baseArrayLayer = 0;
+    if (layerCount > 1 && faceCount > 1) {
+        info.viewType = VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+    } else if (layerCount > 1) {
+        info.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+    } else if (faceCount > 1) {
+        info.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
+    }
+
     if (mipLevel == -1) {
         info.subresourceRange.baseMipLevel = 0;
         info.subresourceRange.levelCount = mipLevels;
+        info.subresourceRange.layerCount = layerCount * faceCount;
     } else {
         info.subresourceRange.baseMipLevel = mipLevel;
         info.subresourceRange.levelCount = 1;
+        info.subresourceRange.layerCount = 1;
         ResourceName += std::to_string(mipLevel);
     }
-
-    info.subresourceRange.baseArrayLayer = 0;
 
     auto rtv = makeShared<VulkanTextureView>(info, ResourceName.c_str());
     mRTVs.push_back(rtv);

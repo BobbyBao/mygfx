@@ -47,6 +47,7 @@ void Material::setShader(Shader* shader, const String& materialUniformName)
 
     if (mShaderResourceInfo) {
         mMaterialData.resize(mShaderResourceInfo->getMemberSize());
+        std::ranges::fill(mMaterialData, 0);
     }
 }
 

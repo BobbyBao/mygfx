@@ -370,7 +370,6 @@ bool VulkanDevice::copyData(HwTexture* tex, TextureDataProvider* dataProvider)
 
 VkSampler createVkSampler(const SamplerInfo& info)
 {
-
     VkSamplerCreateInfo samplerCI = {};
     samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerCI.magFilter = (VkFilter)info.magFilter;
