@@ -20,7 +20,6 @@ void IBL::filter(Texture* hdr)
     renderInfo.viewport = { .left = 0, .top = 0, .width = IMAGE_SIZE, .height = IMAGE_SIZE };
 
     {
-
         auto textureData = TextureData::TextureCube(IMAGE_SIZE, IMAGE_SIZE, 1, Format::R16G16B16A16_SFLOAT);
         textureData.usage = TextureUsage::TRANSFER_DST | TextureUsage::SAMPLED;
         textureData.mipMapCount = Texture::maxLevelCount(IMAGE_SIZE);
@@ -28,8 +27,6 @@ void IBL::filter(Texture* hdr)
         mCubeMap = Texture::createFromData(textureData);
 
         auto panorama_to_cubemap = Shader::fromFile("shaders/fullscreen.vert", "shaders/tools/panorama_to_cubemap.frag");
-
-
         auto renderTexture = Texture::createRenderTarget(IMAGE_SIZE, IMAGE_SIZE, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED | TextureUsage::TRANSFER_SRC);
 
         struct {
@@ -50,6 +47,7 @@ void IBL::filter(Texture* hdr)
             cmd.bindPipelineState(panorama_to_cubemap->pipelineState);
 
             pushConst.u_currentFace = i;
+
             cmd.pushConstant(0, &pushConst, sizeof(pushConst));
 
             cmd.draw(3, 1, 0, 0);
@@ -61,7 +59,24 @@ void IBL::filter(Texture* hdr)
 
     }
 
-    {
+    {		
+        enum class Distribution : unsigned int 
+	    {
+		    Lambertian = 0,
+		    GGX = 1,
+		    Charlie = 2
+	    };
+
+        struct PushConstant
+	    {
+		    float roughness = 0.f;
+		    uint32_t sampleCount = 1u;
+		    uint32_t mipLevel = 1u;
+		    uint32_t width = 1024u;
+		    float lodBias = 0.f;
+		    Distribution distribution = Distribution::Lambertian;
+	    }pushConst;
+
         auto textureData = TextureData::TextureCube(64, 64, 1, Format::R16G16B16A16_SFLOAT);
         textureData.usage = TextureUsage::COLOR_ATTACHMENT | TextureUsage::SAMPLED;
         mIrrMap = Texture::createFromData(textureData);
@@ -84,7 +99,7 @@ void IBL::filter(Texture* hdr)
 
         cmd.bindPipelineState(shader->pipelineState);
 
-        //cmd.pushConstant(0);
+        cmd.pushConstant(0, &pushConst, sizeof(pushConst));
 
         cmd.draw(3, 1, 0, 0);
 

@@ -547,6 +547,10 @@ bool VulkanTexture::copyData(TextureDataProvider* dataProvider)
     return true;
 }
 
+void VulkanTexture::copyTo(VulkanTexture* destTex) {
+
+}
+
 void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const std::span<uint8_t>& data)
 {
     auto pixels = gfx().uploadHeap().Suballocate(data.size(), 64);

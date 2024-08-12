@@ -34,6 +34,7 @@ class VulkanVertexInput;
 class VulkanProgram;
 class CommandList;
 class CommandQueue;
+class VulkanTexture;
 
 enum class CommandQueueType {
     Graphics,
@@ -87,7 +88,7 @@ public:
     void drawIndexedIndirect(HwBuffer* buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) const VULKAN_NOEXCEPT;
     void dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) const VULKAN_NOEXCEPT;
     void dispatchIndirect(HwBuffer* buffer, VkDeviceSize offset) const VULKAN_NOEXCEPT;
-
+    void copyImage(VulkanTexture* srcTex, VulkanTexture* destTex, const VkImageCopy* pRegions, uint32_t regionCount);
     void resourceBarrier(uint32_t barrierCount, const Barrier* pBarriers) const VULKAN_NOEXCEPT;
 
     void setImageLayout(VkImage image, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, const VkImageSubresourceRange& subresourceRange) const VULKAN_NOEXCEPT;

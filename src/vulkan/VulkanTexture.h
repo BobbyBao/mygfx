@@ -41,6 +41,7 @@ public:
     void setImageLayout(VkImageLayout oldImageLayout, VkImageLayout newImageLayout);
     void setImageLayout(VkImageLayout oldImageLayout, VkImageLayout newImageLayout, VkImageSubresourceRange subresourceRange);
     bool copyData(TextureDataProvider* dataProvider);
+    void copyTo(VulkanTexture* destTex);
 
     template <typename T>
     void setData(uint32_t level, const std::span<T>& data)
