@@ -94,12 +94,10 @@ IF (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
 ENDIF()
 
-include_directories(third_party)
-include_directories(third_party/tiny_imageformat/include)
-
 ucm_add_dirs("" TO _SRC RECURSIVE FILTER_POP 1)
 ucm_remove_directories("tiny_imageformat" FROM _SRC)
 
 add_library(${TARGET} STATIC ${_SRC})
 
 target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${TARGET} PUBLIC tiny_imageformat/include)

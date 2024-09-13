@@ -7,4 +7,4 @@ add_library (${TARGET} STATIC ${_SRC})
 
 target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-target_link_libraries(${TARGET} mygfx framework ImGUI SDL3-static)
+target_link_libraries(${TARGET} mygfx framework ImGUI SDL3-shared)
