@@ -91,7 +91,7 @@ void CommandQueue::ReleaseCommandPool(CommandList* commandPool)
     m_AvailableCommandPools.enqueue(commandPool);
 }
 
-uint64_t CommandQueue::Submit(const std::vector<CommandBuffer>& cmdLists, const VkSemaphore signalSemaphore, const VkSemaphore waitSemaphore, bool useEndOfFrameSemaphore)
+uint64_t CommandQueue::submit(const std::vector<CommandBuffer>& cmdLists, const VkSemaphore signalSemaphore, const VkSemaphore waitSemaphore, int useEndOfFrameSemaphore)
 {
     std::lock_guard<std::mutex> lock(m_SubmitMutex);
 
@@ -102,10 +102,10 @@ uint64_t CommandQueue::Submit(const std::vector<CommandBuffer>& cmdLists, const 
         commandBuffers.push_back(list.cmd);
     }
 
-    return Submit(commandBuffers.data(), (uint32_t)commandBuffers.size(), signalSemaphore, waitSemaphore, useEndOfFrameSemaphore);
+    return submit(commandBuffers.data(), (uint32_t)commandBuffers.size(), signalSemaphore, waitSemaphore, useEndOfFrameSemaphore);
 }
 
-uint64_t CommandQueue::Submit(const VkCommandBuffer* commandBuffers, uint32_t count, const VkSemaphore signalSemaphore, const VkSemaphore waitSemaphore, bool useEndOfFrameSemaphore)
+uint64_t CommandQueue::submit(const VkCommandBuffer* commandBuffers, uint32_t count, const VkSemaphore signalSemaphore, const VkSemaphore waitSemaphore, int useEndOfFrameSemaphore)
 {
     VkPipelineStageFlags waitStageFlags[] = { VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT };
     VkSemaphore waitSemaphores[] = { m_Semaphore, waitSemaphore };
@@ -115,8 +115,8 @@ uint64_t CommandQueue::Submit(const VkCommandBuffer* commandBuffers, uint32_t co
     signalSemaphores[signalSemaphoreCount++] = m_Semaphore;
     if (signalSemaphore != VK_NULL_HANDLE)
         signalSemaphores[signalSemaphoreCount++] = signalSemaphore;
-    // if (useEndOfFrameSemaphore)
-    //     signalSemaphores[signalSemaphoreCount++] = m_FrameSemaphores[GetSwapChain()->GetBackBufferIndex()];
+    if (useEndOfFrameSemaphore >= 0)
+        signalSemaphores[signalSemaphoreCount++] = m_FrameSemaphores[useEndOfFrameSemaphore];
 
     VkSubmitInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -150,7 +150,7 @@ uint64_t CommandQueue::Submit(const VkCommandBuffer* commandBuffers, uint32_t co
     return m_LatestSemaphoreValue;
 }
 
-uint64_t CommandQueue::Present(VkSwapchainKHR swapchain, uint32_t imageIndex) // only valid on the present queue
+uint64_t CommandQueue::present(VkSwapchainKHR swapchain, uint32_t imageIndex) // only valid on the present queue
 {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;

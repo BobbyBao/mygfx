@@ -20,6 +20,7 @@
 #include <future>
 
 namespace mygfx {
+
 class VulkanBuffer;
 class VulkanRenderTarget;
 class VulkanStagePool;
@@ -34,7 +35,7 @@ public:
     const char* getDeviceName() const override;
     Dispatcher getDispatcher() const noexcept override;
 
-    VmaAllocator vmaAllocator() { return vmaAllocator_; }
+    VmaAllocator getVmaAllocator() { return mVmaAllocator; }
     DynamicBufferPool& getConstbufferRing() { return mConstantBufferRing; }
 
     bool allocVertexBuffer(uint32_t sizeInBytes, void** pData, BufferInfo* pOut);
@@ -54,18 +55,18 @@ public:
 
     void destroy();
 
-    DescriptorPoolManager& descriptorPools()
+    DescriptorPoolManager& getDescriptorPools()
     {
         return mDescriptorPoolManager;
     }
 
     VulkanStagePool& getStagePool() { return *mStagePool; }
-    UploadHeap& uploadHeap() { return mUploadHeap; }
+    UploadHeap& getUploadHeap() { return mUploadHeap; }
     DescriptorTable* getTextureSet() { return mTextureSet; }
     DescriptorTable* getImageSet() { return mImageSet; }
     DescriptorTable* getBufferSet() { return mBufferSet; }
 
-    VkBuffer constBuffer()
+    VkBuffer getGlobalUniformBuffer()
     {
         VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(mConstantBufferRing.getBuffer());
         return vkBuffer->buffer;
@@ -83,37 +84,9 @@ public:
     }
 
 protected:
-    void createCommandPool();
-    void createSynchronizationPrimitives();
-    void createCommandBuffers();
-    void destroyCommandBuffers();
-
-    const CommandBuffer* getFree()
-    {
-        auto ret = freeCmdBuffers.front();
-        freeCmdBuffers.pop_front();
-        return ret;
-    }
-
     void drawMultiThreaded(const std::vector<RenderCommand>& items, const CommandBuffer& cmd);
 
-    // Command buffer pool
-    VkCommandPool cmdPool { VK_NULL_HANDLE };
-    /** @brief Pipeline stages used to wait at for graphics queue submissions */
-    VkPipelineStageFlags submitPipelineStages = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    // Contains command buffers and semaphores to be presented to the queue
-    VkSubmitInfo submitInfo;
-
-    // Synchronization semaphores
-    struct {
-        // Swap chain image presentation
-        VkSemaphore presentComplete;
-        // Command buffer submission and execution
-        VkSemaphore renderComplete;
-    } semaphores;
-    std::vector<VkFence> waitFences;
-
-    VmaAllocator vmaAllocator_ = NULL;
+    VmaAllocator mVmaAllocator = NULL;
 
     DynamicBufferPool mConstantBufferRing;
     DynamicBufferPool mVertexBufferRing;
@@ -128,26 +101,24 @@ protected:
 
     CommandQueue mCommandQueues[(int)CommandQueueType::Count];
 
-    std::vector<VkCommandBuffer> cmdBuffers;
-    std::vector<CommandBuffer> drawCmdBuffers;
-
-    std::vector<const CommandBuffer*> submitCmdBuffers[4];
-    std::deque<const CommandBuffer*> freeCmdBuffers;
+    VulkanStagePool* mStagePool = nullptr;
+    // Swap chain image presentation
+    VkSemaphore mPresentComplete;
+    
     // Active frame buffer index
-    uint32_t currentBuffer = 0;
-    const CommandBuffer* currentCmd = nullptr;
+    uint32_t mCurrentImage = 0;
+    const CommandBuffer* mCurrentCmd = nullptr;
 
     std::vector<std::future<void>> mFutures {};
     std::vector<VkCommandBuffer> mSecondCmdBuffers;
+    std::vector<CommandBuffer*> mCmdList;
 
     RenderPassInfo mRenderPassInfo {};
     VulkanRenderTarget* mRenderTarget = nullptr;
-    std::vector<CommandBuffer*> mCmdList;
     uint32_t colorAttachmentCount;
     VkFormat colorAttachmentFormats[8];
     VkFormat depthAttachmentFormat;
     VkFormat stencilAttachmentFormat;
-    VulkanStagePool* mStagePool = nullptr;
 
     friend class CommandBuffer;
 

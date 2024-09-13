@@ -1,12 +1,15 @@
 #include "GraphicsHandles.h"
 #include "GraphicsDevice.h"
 #include <deque>
+#include <mutex>
+#ifdef _MSVC_
 #include <memory_resource>
-
+#endif
 namespace mygfx {
 
 static std::recursive_mutex mLock;
 static std::deque<std::pair<HwObject*, int>> mDisposables;
+#ifdef _MSVC_
 static size_t max_blocks_per_chunk = 1024;
 static size_t largest_required_pool_block = 1024;
 static std::pmr::synchronized_pool_resource sPool { std::pmr::pool_options { max_blocks_per_chunk, largest_required_pool_block } };
@@ -25,7 +28,7 @@ void HwObject::operator delete(void* ptr, std::size_t size)
 {
     sPool.deallocate(ptr, size);
 }
-
+#endif
 void HwObject::deleteThis()
 {
     std::lock_guard<std::recursive_mutex> locker(mLock);

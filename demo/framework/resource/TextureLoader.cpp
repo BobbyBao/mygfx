@@ -445,7 +445,7 @@ static inline Format getFormatFromOpenGLInternalFormat(const GLenum internalForm
 Ref<Texture> TextureLoader::load(const String& fileName, SamplerInfo samplerInfo)
 {
     auto content = FileUtils::readAll(fileName);
-    return onLoad(Span { content }, samplerInfo);
+    return onLoad(Span<uint8_t> { content }, samplerInfo);
 }
 
 KtxTextureLoader::~KtxTextureLoader()
@@ -484,7 +484,6 @@ Ref<Texture> KtxTextureLoader::onLoad(const Span<uint8_t>& content, SamplerInfo 
 
 void KtxTextureLoader::copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level)
 {
-
     ktx_size_t offset;
     KTX_error_code result = ktxTexture_GetImageOffset((ktxTexture*)mKtxTexture, level, layer, face, &offset);
     assert(result == KTX_SUCCESS);

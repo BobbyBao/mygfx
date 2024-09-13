@@ -18,13 +18,10 @@ public:
     Ref<RenderQueue> mRenderQueue = nullptr;
     Vector<Ref<Texture>> mTextures;
 
-    Result<void> start() override
+    void start() override
     {
-
         mShader = ShaderLibs::getSimpleLightShader();
-
         mMesh = Mesh::createCube(1.0f);
-
         mTextures = Texture::createRandomColorTextures(10);
 
         int GRID_SIZE_X = 100;
@@ -46,13 +43,10 @@ public:
         }
 
         mRenderQueue = new RenderQueue();
-
-        co_return;
     }
 
     void draw(GraphicsApi& cmd) override
     {
-
         float w = (float)mApp->getWidth();
         float h = (float)mApp->getHeight();
         float aspect = w / h;

@@ -36,9 +36,8 @@ public:
         uint32_t particleCount = PARTICLE_COUNT;
     } uniformData;
 
-    Result<void> start() override
+    void start() override
     {
-
         std::default_random_engine rndEngine((unsigned)time(nullptr));
         std::uniform_real_distribution<float> rndDist(-1.0f, 1.0f);
 
@@ -67,8 +66,6 @@ public:
 
         mShader->updateDescriptorSet(0, 0, mParticleTexture);
         mShader->updateDescriptorSet(0, 1, mGradientTexture);
-
-        co_return;
     }
 
     void gui() override
@@ -83,7 +80,6 @@ public:
 
     void preDraw(GraphicsApi& cmd) override
     {
-
         if (pause) {
             return;
         }

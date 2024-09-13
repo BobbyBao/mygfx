@@ -100,7 +100,6 @@ Ref<Texture> Texture::createByColor(const char* name, const float4& color)
 {
     auto c = toUInt(color);
     MemoryBlock memoryBlock((uint8_t*)&c, 4);
-    ;
     auto textureData = TextureData::Texture2D(1, 1, Format::R8G8B8A8_UNORM, memoryBlock);
     textureData.usage = TextureUsage::SAMPLED | TextureUsage::TRANSFER_DST;
     textureData.name = name;
@@ -150,7 +149,6 @@ Ref<Texture> Texture::createFromFile(const String& fileName, SamplerInfo sampler
 
 Ref<Texture> Texture::createFromData(const Span<uint8_t>& content, const String& type, SamplerInfo samplerInfo)
 {
-
     if (type.ends_with(".ktx")) {
         KtxTextureLoader dataProvider;
         return dataProvider.onLoad(content, samplerInfo);
@@ -236,7 +234,6 @@ Ref<Texture> StbTextureLoader::onLoad(const Span<uint8_t>& content, SamplerInfo 
 
 void StbTextureLoader::copyPixels(void* pDest, uint32_t imageSize, uint32_t width, uint32_t height, uint32_t layer, uint32_t face, uint32_t level)
 {
-
     memcpy((char*)pDest, mData, imageSize);
     mipImage(width, height);
 }

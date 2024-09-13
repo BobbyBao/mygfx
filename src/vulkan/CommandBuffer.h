@@ -88,7 +88,7 @@ public:
     void drawIndexedIndirect(HwBuffer* buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) const VULKAN_NOEXCEPT;
     void dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) const VULKAN_NOEXCEPT;
     void dispatchIndirect(HwBuffer* buffer, VkDeviceSize offset) const VULKAN_NOEXCEPT;
-    void copyImage(VulkanTexture* srcTex, VulkanTexture* destTex, const VkImageCopy* pRegions, uint32_t regionCount);
+    void copyImage(VulkanTexture* srcTex, uint32_t srcLevel, uint32_t srcBaseLayer, VulkanTexture* destTex, uint32_t destLevel, uint32_t destBaseLayer) const VULKAN_NOEXCEPT;
     void resourceBarrier(uint32_t barrierCount, const Barrier* pBarriers) const VULKAN_NOEXCEPT;
 
     void setImageLayout(VkImage image, VkImageLayout oldImageLayout, VkImageLayout newImageLayout, const VkImageSubresourceRange& subresourceRange) const VULKAN_NOEXCEPT;
@@ -128,7 +128,6 @@ private:
     mutable StencilState mStencilState {};
     mutable HwRenderPrimitive* mPrimitive = nullptr;
 };
-
 
 inline void CommandBuffer::setVertexInput(HwVertexInput* vertexInput) const VULKAN_NOEXCEPT
 {
@@ -211,8 +210,9 @@ inline void CommandBuffer::drawPrimitive(HwRenderPrimitive* primitive) const
         }
 
         drawIndexed(rp->drawArgs.indexCount, 1, rp->drawArgs.firstIndex, 0, 0);
+
     } else {
-        if (mPrimitive != primitive) {
+        if (mPrimitive != primitive && rp->vertexBuffers.size() > 0) {
             vkCmdBindVertexBuffers(cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
         }
 

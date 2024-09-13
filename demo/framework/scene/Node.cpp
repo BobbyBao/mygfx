@@ -16,6 +16,16 @@ Node::Node(const String& n, const vec3& pos, const quat& rot, const vec3& s)
     mScale = s;
 }
 
+Component* Node::getComponent(const std::type_info& typeInfo) const
+{
+    for (auto& c : mComponents) {
+        if (typeInfo == typeid(*c)) {
+            return c.get();
+        }
+    }
+    return nullptr;
+}
+
 void Node::addComponent(Component* component)
 {
     mComponents.emplace_back(component);
@@ -200,7 +210,6 @@ void Node::hierarchyChanged()
 
 void Node::transformChanged()
 {
-
     mWorldTransformDirty = true;
 
     onTransformChanged();
@@ -339,7 +348,6 @@ const mat4& Node::getWorldTransform() const
 
 void Node::updateTransform() const
 {
-
     mat4 localTransform = glm::scale(glm::mat4_cast(mRotation), mScale);
     localTransform[3] = { mPosition, 1.0f };
 

@@ -9,19 +9,14 @@ public:
     Ref<Mesh> mMesh;
     Ref<Shader> mShader;
 
-    Result<void> start() override
+    void start() override
     {
-
         mShader = ShaderLibs::getSimpleLightShader();
-
         mMesh = Mesh::createCube();
-
-        co_return;
     }
 
     void draw(GraphicsApi& cmd) override
     {
-
         float w = (float)mApp->getWidth();
         float h = (float)mApp->getHeight();
         float aspect = w / h;

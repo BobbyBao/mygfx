@@ -18,7 +18,7 @@ Object* Object::createObject()
     return nullptr;
 }
 
-void Object::cloneProcess(Object* destNode)
+void Object::cloneProcess(Object* destObj)
 {
 }
 

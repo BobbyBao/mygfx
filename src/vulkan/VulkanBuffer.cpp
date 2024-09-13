@@ -49,7 +49,7 @@ VulkanBuffer::VulkanBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t 
     allocInfo.pUserData = nullptr; //(void*)name;
 
     VmaAllocationInfo info;
-    auto res = vmaCreateBuffer(gfx().vmaAllocator(), &bufferInfo, &allocInfo, &buffer, &bufferAlloc, &info);
+    auto res = vmaCreateBuffer(gfx().getVmaAllocator(), &bufferInfo, &allocInfo, &buffer, &bufferAlloc, &info);
     assert(res == VK_SUCCESS);
 
     persistent = cpuVisible();
@@ -58,7 +58,7 @@ VulkanBuffer::VulkanBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t 
     persistent = false;
 #endif
     if (persistent) {
-        res = vmaMapMemory(gfx().vmaAllocator(), bufferAlloc, (void**)&mapped);
+        res = vmaMapMemory(gfx().getVmaAllocator(), bufferAlloc, (void**)&mapped);
         assert(res == VK_SUCCESS);
     }
 
@@ -97,7 +97,6 @@ bool VulkanBuffer::cpuVisible() const
 
 void VulkanBuffer::setData(const void* data, VkDeviceSize size, VkDeviceSize offset)
 {
-
     if (cpuVisible()) {
         void* addr = map(offset);
         memcpy(addr, data, (size_t)size);
@@ -123,7 +122,7 @@ void VulkanBuffer::setData(const void* data, VkDeviceSize size, VkDeviceSize off
 void* VulkanBuffer::map(VkDeviceSize offset)
 {
     if (!mapped) {
-        VK_CHECK_RESULT(vmaMapMemory(gfx().vmaAllocator(), bufferAlloc, &mapped));
+        VK_CHECK_RESULT(vmaMapMemory(gfx().getVmaAllocator(), bufferAlloc, &mapped));
     }
 
     return (uint8_t*)mapped + offset;
@@ -132,19 +131,19 @@ void* VulkanBuffer::map(VkDeviceSize offset)
 void VulkanBuffer::unmap()
 {
     if (mapped) {
-        vmaUnmapMemory(gfx().vmaAllocator(), bufferAlloc);
+        vmaUnmapMemory(gfx().getVmaAllocator(), bufferAlloc);
         mapped = nullptr;
     }
 }
 
 void VulkanBuffer::flush(VkDeviceSize size, VkDeviceSize offset)
 {
-    vmaFlushAllocation(gfx().vmaAllocator(), bufferAlloc, offset, size);
+    vmaFlushAllocation(gfx().getVmaAllocator(), bufferAlloc, offset, size);
 }
 
 void VulkanBuffer::invalidate(VkDeviceSize size, VkDeviceSize offset)
 {
-    vmaInvalidateAllocation(gfx().vmaAllocator(), bufferAlloc, offset, size);
+    vmaInvalidateAllocation(gfx().getVmaAllocator(), bufferAlloc, offset, size);
 }
 
 void VulkanBuffer::setupDescriptor(VkDeviceSize size, VkDeviceSize offset)
@@ -164,10 +163,10 @@ void VulkanBuffer::destroy()
 {
     if (buffer) {
         if (mapped) {
-            vmaUnmapMemory(gfx().vmaAllocator(), bufferAlloc);
+            vmaUnmapMemory(gfx().getVmaAllocator(), bufferAlloc);
         }
 
-        vmaDestroyBuffer(gfx().vmaAllocator(), buffer, bufferAlloc);
+        vmaDestroyBuffer(gfx().getVmaAllocator(), buffer, bufferAlloc);
     }
 }
 };

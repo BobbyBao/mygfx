@@ -40,7 +40,7 @@ void DescriptorSet::init(DescriptorSetLayout* layout)
 void DescriptorSet::create()
 {
     descriptorResourceCounts_ = resourceLayout_->sizeCounts();
-    descriptorPool_ = gfx().descriptorPools().getPool(descriptorResourceCounts_);
+    descriptorPool_ = gfx().getDescriptorPools().getPool(descriptorResourceCounts_);
 
     VkDescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocInfo {};
 

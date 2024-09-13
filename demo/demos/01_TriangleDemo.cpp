@@ -12,7 +12,7 @@ public:
         uint32_t color;
     };
 
-    Result<void> start() override
+    void start() override
     {
         mShader = ShaderLibs::getColorShader();
 
@@ -23,13 +23,10 @@ public:
         };
 
         mVB = gfxApi().createBuffer1(BufferUsage::VERTEX, MemoryUsage::GPU_ONLY, 3, pos);
-
-        co_return;
     }
 
     void draw(GraphicsApi& cmd) override
     {
-
         auto mvp = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
 
         uint32_t perView = gfxApi().allocConstant(mvp);

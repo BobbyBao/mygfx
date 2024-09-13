@@ -47,7 +47,6 @@ PFN_vkCmdSetVertexInputEXT g_vkCmdSetVertexInputEXT { VK_NULL_HANDLE };
 
 VulkanHelper::VulkanHelper()
 {
-
     enabledDeviceExtensions.push_back(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
 
     enabledDeviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
@@ -447,9 +446,6 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
         return result;
     }
 
-    // Create a default command pool for graphics command buffers
-    commandPool = createCommandPool(queueFamilyIndices.graphics);
-
     GET_DEVICE_PROC_ADDR(vkSetDebugUtilsObjectNameEXT);
 
     g_vkCreateShadersEXT = reinterpret_cast<PFN_vkCreateShadersEXT>(vkGetDeviceProcAddr(device, "vkCreateShadersEXT"));
@@ -497,110 +493,6 @@ void VulkanHelper::setResourceName(VkObjectType objectType, uint64_t handle, con
         nameInfo.pObjectName = name;
         g_vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
     }
-}
-
-VkResult VulkanHelper::createVkBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, VkDeviceSize size, VkBuffer* buffer, VkDeviceMemory* memory, const void* data)
-{
-    // Create the buffer handle
-    VkBufferCreateInfo bufferCreateInfo = initializers::bufferCreateInfo(usageFlags, size);
-    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    VK_CHECK_RESULT(vkCreateBuffer(device, &bufferCreateInfo, nullptr, buffer));
-
-    // Create the memory backing up the buffer handle
-    VkMemoryRequirements memReqs;
-    VkMemoryAllocateInfo memAlloc = initializers::memoryAllocateInfo();
-    vkGetBufferMemoryRequirements(device, *buffer, &memReqs);
-    memAlloc.allocationSize = memReqs.size;
-    // Find a memory type index that fits the properties of the buffer
-    memAlloc.memoryTypeIndex = getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
-    // If the buffer has VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT set we also need to enable the appropriate flag during allocation
-    VkMemoryAllocateFlagsInfoKHR allocFlagsInfo {};
-    if (usageFlags & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
-        allocFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO_KHR;
-        allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
-        memAlloc.pNext = &allocFlagsInfo;
-    }
-    VK_CHECK_RESULT(vkAllocateMemory(device, &memAlloc, nullptr, memory));
-
-    // If a pointer to the buffer data has been passed, map the buffer and copy over the data
-    if (data != nullptr) {
-        void* mapped;
-        VK_CHECK_RESULT(vkMapMemory(device, *memory, 0, size, 0, &mapped));
-        memcpy(mapped, data, size);
-        // If host coherency hasn't been requested, do a manual flush to make writes visible
-        if ((memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) {
-            VkMappedMemoryRange mappedRange = initializers::mappedMemoryRange();
-            mappedRange.memory = *memory;
-            mappedRange.offset = 0;
-            mappedRange.size = size;
-            vkFlushMappedMemoryRanges(device, 1, &mappedRange);
-        }
-        vkUnmapMemory(device, *memory);
-    }
-
-    // Attach the memory to the buffer object
-    VK_CHECK_RESULT(vkBindBufferMemory(device, *buffer, *memory, 0));
-
-    return VK_SUCCESS;
-}
-
-VkCommandPool VulkanHelper::createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags)
-{
-    VkCommandPoolCreateInfo cmdPoolInfo = {};
-    cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    cmdPoolInfo.queueFamilyIndex = queueFamilyIndex;
-    cmdPoolInfo.flags = createFlags;
-    VkCommandPool cmdPool;
-    VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
-    return cmdPool;
-}
-
-VkCommandBuffer VulkanHelper::createCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin)
-{
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo = initializers::commandBufferAllocateInfo(pool, level, 1);
-    VkCommandBuffer cmdBuffer;
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, &cmdBuffer));
-    // If requested, also start recording for the new command buffer
-    if (begin) {
-        VkCommandBufferBeginInfo cmdBufInfo = initializers::commandBufferBeginInfo();
-        VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
-    }
-    return cmdBuffer;
-}
-
-VkCommandBuffer VulkanHelper::createCommandBuffer(VkCommandBufferLevel level, bool begin)
-{
-    return createCommandBuffer(level, commandPool, begin);
-}
-
-void VulkanHelper::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free)
-{
-    if (commandBuffer == VK_NULL_HANDLE) {
-        return;
-    }
-
-    VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
-
-    VkSubmitInfo submitInfo = initializers::submitInfo();
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &commandBuffer;
-    // Create fence to ensure that the command buffer has finished executing
-    VkFenceCreateInfo fenceInfo = initializers::fenceCreateInfo(VK_FLAGS_NONE);
-    VkFence fence;
-    VK_CHECK_RESULT(vkCreateFence(device, &fenceInfo, nullptr, &fence));
-    // Submit to the queue
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
-    // Wait for the fence to signal that command buffer has finished executing
-    VK_CHECK_RESULT(vkWaitForFences(device, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
-    vkDestroyFence(device, fence, nullptr);
-    if (free) {
-        vkFreeCommandBuffers(device, pool, 1, &commandBuffer);
-    }
-}
-
-void VulkanHelper::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
-{
-    return flushCommandBuffer(commandBuffer, queue, commandPool, free);
 }
 
 bool VulkanHelper::tryAddExtension(const char* pExtensionName)

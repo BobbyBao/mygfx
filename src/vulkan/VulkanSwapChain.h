@@ -8,10 +8,6 @@
 #include "VulkanDefs.h"
 #include "VulkanTools.h"
 
-#ifdef __ANDROID__
-#include "VulkanAndroid.h"
-#endif
-
 #ifdef __APPLE__
 #include <sys/utsname.h>
 #endif
@@ -29,7 +25,7 @@ public:
 	~VulkanSwapChain();
 
 	void initSurface();
-	void recreate(const SwapChainDesc& desc);
+	void recreate(const SwapChainDesc* pDesc = nullptr);
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
 	void initSurface(void* platformHandle, void* platformWindow);
@@ -53,7 +49,7 @@ public:
 #endif
 	void create(uint32_t* width, uint32_t* height, bool vsync = false, bool fullscreen = false);
 
-	VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex);
+	VkResult acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex, VkFence fence);
 	VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
 	void cleanup();
 	

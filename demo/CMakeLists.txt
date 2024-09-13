@@ -11,12 +11,20 @@ add_subdirectory(external/ktx)
 add_subdirectory(external/SDL3)
 include_directories(external/SDL3/include)
 
-set_target_properties(SDL3-shared PROPERTIES FOLDER external)
-set_target_properties(SDL3_test PROPERTIES FOLDER external)
+#set_target_properties(SDL3-shared PROPERTIES FOLDER external)
+#set_target_properties(SDL3_test PROPERTIES FOLDER external)
+
+#if(MSVC)
 
 add_subdirectory(external/concurrencpp)
+
+#ucm_add_dirs("external/concurrencpp/source" TO CONCURRENTCPP_SRC RECURSIVE FILTER_POP 1)
+#add_library (concurrencpp STATIC ${CONCURRENTCPP_SRC})
+
 include_directories(external/concurrencpp/include)
 set_target_properties(concurrencpp PROPERTIES FOLDER external)
+
+#endif()
 
 include_directories(external/cgltf)
 

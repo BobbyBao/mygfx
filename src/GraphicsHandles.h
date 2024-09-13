@@ -7,12 +7,13 @@ namespace mygfx {
 
 class HwObject : public RefCounted {
 public:
+#ifdef _MSVC_
     void* operator new(std::size_t size);
     void* operator new(std::size_t size, void* p);
     void operator delete(void* ptr, std::size_t size);
     void* operator new[](std::size_t size, int num) = delete;
     void operator delete[](void* ptr, int num) = delete;
-
+#endif
     static void gc(bool force = false);
 
 protected:

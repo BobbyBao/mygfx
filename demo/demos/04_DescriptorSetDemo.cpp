@@ -9,9 +9,8 @@ public:
     Ref<Mesh> mMesh;
     Ref<Shader> mShader;
 
-    Result<void> start() override
+    void start() override
     {
-
         mMesh = Mesh::createCube();
 
         mShader = new Shader(vsCode, fsCode);
@@ -20,13 +19,10 @@ public:
             Format::R32G32B32_SFLOAT });
 
         mShader->updateDescriptorSet(0, 2, Texture::Green);
-
-        co_return;
     }
 
     void draw(GraphicsApi& cmd) override
     {
-
         auto w = mApp->getWidth();
         auto h = mApp->getHeight();
         float aspect = w / (float)h;

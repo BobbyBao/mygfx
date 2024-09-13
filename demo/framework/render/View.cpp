@@ -67,7 +67,6 @@ void View::update(double delta)
 
 void View::render(GraphicsApi& cmd)
 {
-
     uint32_t perView = gfxApi().allocConstant(mFrameUniforms);
 
     for (auto renderable : mScene->getRenderables()) {

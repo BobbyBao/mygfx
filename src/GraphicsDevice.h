@@ -116,7 +116,7 @@ protected:
 
     Ref<HwSwapchain> mSwapChain;
     TimePoint mLastRenderTime;
-    std::vector<std::tuple<std::function<void()>, int>> postCall_;
+    std::vector<std::tuple<std::function<void()>, int>> mPostCall;
 };
 
 struct RenderCommand {
@@ -157,7 +157,6 @@ extern GraphicsDevice* gInstance;
 
 inline GraphicsDevice& device()
 {
-
     return *gInstance;
 }
 

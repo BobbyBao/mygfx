@@ -3,7 +3,7 @@
 namespace math {
 
 Aabb Aabb::Empty;
-Aabb Aabb::Infinity(std::numeric_limits<float>::max(), std::numeric_limits<float>::min());
+Aabb Aabb::Infinity{vec3{std::numeric_limits<float>::max()}, vec3 {std::numeric_limits<float>::min()}};
 
 inline const mat4 Matrix4_perspective(float fovyRadians, float aspect, float zNear, float zFar)
 {

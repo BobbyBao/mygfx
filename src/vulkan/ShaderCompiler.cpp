@@ -125,7 +125,14 @@ bool compileShaderC(ShaderSourceType sourceType, const VkShaderStageFlagBits sha
     shaderc::Compiler compiler;
 
     try {
-        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(shaderCode, kind, shaderName.c_str(), pShaderEntryPoint, options);
+        auto res = compiler.PreprocessGlsl(shaderCode, kind, shaderName.c_str(), options);
+        if (res.GetCompilationStatus() != shaderc_compilation_status_success) {
+            auto error = res.GetErrorMessage();
+            LOG_ERROR(error);
+            return false;
+        }
+
+        shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv(res.begin(), res.cend() - res.begin(), kind, shaderName.c_str(), pShaderEntryPoint, options);
         if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
             auto error = result.GetErrorMessage();
             LOG_ERROR(error);
@@ -195,7 +202,6 @@ String generateSource(ShaderSourceType sourceType, const VkShaderStageFlagBits s
 
 ShaderStage ToShaderStage(VkShaderStageFlagBits stage)
 {
-
     switch (stage) {
     case VK_SHADER_STAGE_VERTEX_BIT:
         return ShaderStage::VERTEX;

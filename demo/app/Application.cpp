@@ -18,14 +18,12 @@
 
 namespace mygfx {
 
-Application* Application::msInstance = nullptr;
-
 void* getNativeWindow(SDL_Window* sdlWindow)
 {
 #if defined(WIN32) && !defined(__WINRT__)
     return (HWND)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-#elif defined(__APPLE__) && defined(SDL_VIDEO_DRIVER_COCOA)
-    return (void*)SDL_GetProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
+#else// /*defined(__APPLE__) && */defined(SDL_VIDEO_DRIVER_COCOA)
+    return (void*)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
 #endif
     return nullptr;
 }
@@ -64,7 +62,6 @@ std::string readAllText(const Path& filePath)
 }
 
 Application::Application(int argc, char** argv)
-    : mTitle("mygfx")
 {
     for (int i = 0; i < argc; i++) {
         mArgs.push_back(argv[i]);
@@ -82,7 +79,6 @@ Application::Application(int argc, char** argv)
 #endif
     FileUtils::sIOStream = { &fileExist, &readAll, &readAllText };
     FileUtils::setBasePath("../../media");
-    mMainExecutor = make_manual_executor();
 }
 
 Application::~Application()
@@ -164,79 +160,40 @@ void getCPUDescription(std::string& cpuName)
 #endif // _WINDOWS
 }
 
-bool Application::init()
+bool Application::createWindow(void** window, void** windowInstance)
 {
-    mSettings.name = mTitle.c_str();
-
     getCPUDescription(mCPUName);
-
-    void* window = nullptr;
-    void* windowInstance = nullptr;
 
     mSdlWindow = SDL_CreateWindow(mTitle.c_str(), mWidth, mHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
     if (!mSdlWindow) {
         return false;
     }
 
-    window = getNativeWindow(mSdlWindow);
-
+    *window = getNativeWindow(mSdlWindow);
+    *windowInstance = nullptr;
 #if defined(WIN32)
-    windowInstance = SDL_GetProperty(SDL_GetWindowProperties(mSdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
+    *windowInstance = SDL_GetProperty(SDL_GetWindowProperties(mSdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
 #endif
-    auto mDevice = new VulkanDevice();
-    if (!mDevice->create(mSettings)) {
-        return false;
-    }
 
-    mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice);
-
-    SwapChainDesc desc {
-        .windowInstance = windowInstance,
-        .window = window,
-        .width = mWidth,
-        .height = mHeight,
-    };
-
-    mSwapchain = mGraphicsApi->createSwapchain(desc);
-
-    Texture::staticInit();
-
-    mUI = new UIOverlay(mSdlWindow);
-    mUI->init();
-
-    onStart();
-
-    mStartTime = Clock::now();
-    mLastTimestamp = mStartTime;
-    mTimePrevEnd = mLastTimestamp;
-    mPrepared = true;
     return true;
 }
 
-void Application::start()
+void Application::onStart()
 {
-    init();
-
-    mainLoop();
+    mUI = new UIOverlay(mSdlWindow);
+    mUI->init();
 }
 
-void Application::mainLoop()
+void Application::processEvent()
 {
-    while (!mQuit) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            handleEvent(event);
-        }
-
-        updateFrame();
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        handleEvent(event);
     }
-
-    destroy();
 }
 
 void Application::handleEvent(const SDL_Event& event)
 {
-
     mUI->handleEvent(event);
 
     switch (event.type) {
@@ -269,78 +226,7 @@ void Application::handleEvent(const SDL_Event& event)
     }
 }
 
-void Application::updateFrame()
-{
-    auto tStart = std::chrono::high_resolution_clock::now();
-    updateGUI();
-
-    mMainExecutor->loop_once();
-
-    onUpdate(mFrameTimer);
-
-    Material::updateAll();
-
-    auto& cmd = gfxApi();
-
-    cmd.beginFrame();
-
-    onPreDraw(cmd);
-
-    cmd.makeCurrent(mSwapchain);
-
-    RenderPassInfo renderInfo {
-        .clearFlags = TargetBufferFlags::ALL,
-        .clearColor = { 0.25f, 0.25f, 0.25f, 1.0f }
-    };
-
-    auto c = glm::convertSRGBToLinear(vec3 { 0.25f, 0.25f, 0.25f }, 2.2f);
-    renderInfo.clearColor[0] = c.r;
-    renderInfo.clearColor[1] = c.g;
-    renderInfo.clearColor[2] = c.b;
-
-    renderInfo.viewport = { .left = 0, .top = 0, .width = mWidth, .height = mHeight };
-
-    cmd.beginRendering(mSwapchain->renderTarget, renderInfo);
-
-    onDraw(cmd);
-
-    mUI->draw(cmd);
-
-    cmd.endRendering(mSwapchain->renderTarget);
-
-    cmd.commit(mSwapchain);
-    cmd.endFrame();
-
-    cmd.flush();
-
-    mFrameCounter++;
-
-    auto tEnd = Clock::now();
-    auto tDiff = std::chrono::duration<double, std::milli>(tEnd - tStart).count();
-
-    mFrameTimer = tDiff / 1000.0f;
-
-    float fpsTimer = (float)(std::chrono::duration<double, std::milli>(tEnd - mLastTimestamp).count());
-    if (fpsTimer > 1000.0f) {
-        mLastFPS = static_cast<uint32_t>((float)mFrameCounter * (1000.0f / fpsTimer));
-        mFrameCounter = 0;
-        mLastTimestamp = tEnd;
-    }
-
-    mTimePrevEnd = tEnd;
-}
-
-void Application::destroy()
-{
-
-    onDestroy();
-
-    Texture::staticDeinit();
-
-    mGraphicsApi.reset();
-}
-
-void Application::updateGUI()
+void Application::onPreUpdate(double delta)
 {
     mUI->update();
 
@@ -352,28 +238,12 @@ void Application::updateGUI()
     }
 }
 
-Result<void> Application::onStart()
+void Application::onPostDraw(GraphicsApi& cmd)
 {
-    co_return;
-}
-
-void Application::onDestroy()
-{
+    mUI->draw(cmd);
 }
 
 void Application::onGUI()
-{
-}
-
-void Application::onUpdate(double delta)
-{
-}
-
-void Application::onPreDraw(GraphicsApi& cmd)
-{
-}
-
-void Application::onDraw(GraphicsApi& cmd)
 {
 }
 
@@ -388,28 +258,9 @@ void Application::keyDown(uint32_t key)
     }
 }
 
-void Application::windowResize(int w, int h)
-{
-    if (!mPrepared) {
-        return;
-    }
-
-    mPrepared = false;
-
-    gfxApi().resize(mSwapchain, w, h);
-
-    mWidth = w;
-    mHeight = h;
-
-    mUI->resize(mWidth, mHeight);
-
-    onResized(w, h);
-
-    mPrepared = true;
-}
-
 void Application::onResized(int w, int h)
 {
+    mUI->resize(w, h);
 }
 
 void Application::keyUp(uint32_t key)

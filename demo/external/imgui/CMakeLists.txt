@@ -27,9 +27,9 @@ add_library (${PROJECT_NAME} STATIC ${imgui_src})
 target_include_directories (${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(WIN32)
-target_link_libraries(${PROJECT_NAME} SDL3-shared)
+target_link_libraries(${PROJECT_NAME} SDL3-static)
  else(WIN32)
-target_link_libraries(${PROJECT_NAME} SDL3-shared)
+target_link_libraries(${PROJECT_NAME} SDL3-static)
  
  endif(WIN32)
 

@@ -20,7 +20,7 @@ void CommandBuffer::begin(VkCommandBufferUsageFlags flags, const VkCommandBuffer
 void CommandBuffer::begin(const VkCommandBufferBeginInfo& beginInfo) const VULKAN_NOEXCEPT
 {
     VkResult result = vkBeginCommandBuffer(cmd, &beginInfo);
-    VK_CHECK_MSG(result, "CommandBuffer::begin"); 
+    VK_CHECK_MSG(result, "CommandBuffer::begin");
 }
 
 void CommandBuffer::end() const VULKAN_NOEXCEPT
@@ -392,70 +392,36 @@ void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const 
     bindStencilState(pipelineState->stencilState);
 }
 
-void CommandBuffer::copyImage(VulkanTexture* srcTex, VulkanTexture* destTex, const VkImageCopy* pRegions, uint32_t regionCount)
+void CommandBuffer::copyImage(VulkanTexture* srcTex, uint32_t srcLevel, uint32_t srcBaseLayer,
+    VulkanTexture* destTex, uint32_t destLevel, uint32_t destBaseLayer) const VULKAN_NOEXCEPT
 {
-    /*
-	VkImageSubresourceRange subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	subresourceRange.baseMipLevel = 0;
-	subresourceRange.levelCount = numMips;
-	subresourceRange.layerCount = 6;
+    VkImageCopy copyRegion {};
 
-	{
-		VkImageMemoryBarrier imageMemoryBarrier{};
-		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		imageMemoryBarrier.image = offscreen.image;
-		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-	}
+    copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyRegion.srcSubresource.baseArrayLayer = srcBaseLayer;
+    copyRegion.srcSubresource.mipLevel = srcLevel;
+    copyRegion.srcSubresource.layerCount = 1;
+    copyRegion.srcOffset = { 0, 0, 0 };
 
-	// Copy region for transfer from framebuffer to cube face
-	VkImageCopy copyRegion{};
+    copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    copyRegion.dstSubresource.baseArrayLayer = destBaseLayer;
+    copyRegion.dstSubresource.mipLevel = destLevel;
+    copyRegion.dstSubresource.layerCount = 1;
+    copyRegion.dstOffset = { 0, 0, 0 };
 
-	copyRegion.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	copyRegion.srcSubresource.baseArrayLayer = 0;
-	copyRegion.srcSubresource.mipLevel = 0;
-	copyRegion.srcSubresource.layerCount = 1;
-	copyRegion.srcOffset = { 0, 0, 0 };
+    copyRegion.extent.width = std::min(srcTex->width, destTex->width);
+    copyRegion.extent.height = std::min(srcTex->height, destTex->height);
+    copyRegion.extent.depth = std::min(srcTex->depth, destTex->depth);
 
-	copyRegion.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	copyRegion.dstSubresource.baseArrayLayer = f;
-	copyRegion.dstSubresource.mipLevel = m;
-	copyRegion.dstSubresource.layerCount = 1;
-	copyRegion.dstOffset = { 0, 0, 0 };
-
-	copyRegion.extent.width = static_cast<uint32_t>(viewport.width);
-	copyRegion.extent.height = static_cast<uint32_t>(viewport.height);
-	copyRegion.extent.depth = 1;
-
-	vkCmdCopyImage(
-		cmd,
+    vkCmdCopyImage(
+        cmd,
         srcTex->image(),
-		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+        VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
         destTex->image(),
-		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-		1,
-		&copyRegion);
-
-	{
-		VkImageMemoryBarrier imageMemoryBarrier{};
-		imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		imageMemoryBarrier.image = offscreen.image;
-		imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-		imageMemoryBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-		vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageMemoryBarrier);
-	}*/
-
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        1,
+        &copyRegion);
 }
-
-constexpr ResourceState g_UndefinedState = static_cast<ResourceState>(-1);
 
 VkImageLayout ConvertToLayout(ResourceState state)
 {
@@ -485,7 +451,7 @@ VkImageLayout ConvertToLayout(ResourceState state)
         return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
     case ResourceState::SHADING_RATE_SOURCE:
         return VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR;
-    case g_UndefinedState:
+    case ResourceState::UNDEFINED:
         return VK_IMAGE_LAYOUT_UNDEFINED;
     // Unsupported states
     case ResourceState::VERTEX_BUFFER_RESOURCE:
@@ -545,7 +511,7 @@ VkAccessFlags ConvertToAccessMask(ResourceState state)
         break;
     case ResourceState::PRESENT:
         return 0; // VK_ACCESS_NONE_KHR;
-    case g_UndefinedState:
+    case ResourceState::UNDEFINED:
         return 0; // VK_ACCESS_NONE_KHR;
     };
 
@@ -553,10 +519,8 @@ VkAccessFlags ConvertToAccessMask(ResourceState state)
     return 0; // VK_ACCESS_NONE_KHR;
 }
 
-void SetSubResourceRange(const HwResource* pResource, VkImageMemoryBarrier& imageBarrier, uint32_t subResource)
+void setSubResourceRange(const HwResource* pResource, VkImageMemoryBarrier& imageBarrier, uint32_t subResource)
 {
-    // CauldronAssert(ASSERT_CRITICAL, pResource->GetImpl()->GetResourceType() == ResourceType::Image, L"Only images support subresource.");
-
     const VulkanTexture* vkTexture = static_cast<const VulkanTexture*>(pResource);
     imageBarrier.subresourceRange.aspectMask = imgutil::getAspectFlags(vkTexture->vkFormat);
     if (subResource == 0xffffffff) {
@@ -585,10 +549,8 @@ void SetSubResourceRange(const HwResource* pResource, VkImageMemoryBarrier& imag
         imageBarrier.subresourceRange.baseArrayLayer = subResource / vkTexture->mipLevels;
         imageBarrier.subresourceRange.layerCount = 1;
 
-        // CauldronAssert(
-        //     ASSERT_CRITICAL, imageBarrier.subresourceRange.baseMipLevel < createInfo.mipLevels, L"Subresource range is outside of the image range.");
-        // CauldronAssert(
-        //     ASSERT_CRITICAL, imageBarrier.subresourceRange.baseArrayLayer < createInfo.arrayLayers, L"Subresource range is outside of the image range.");
+        assert(imageBarrier.subresourceRange.baseMipLevel < vkTexture->mipLevels && "Subresource range is outside of the image range.");
+        assert(imageBarrier.subresourceRange.baseArrayLayer < vkTexture->layerCount && "Subresource range is outside of the image range.");
     }
 }
 
@@ -618,7 +580,7 @@ void CommandBuffer::resourceBarrier(uint32_t barrierCount, const Barrier* pBarri
                 bufferBarriers.push_back(bufferBarrier);
             } else {
                 const VulkanTexture* vkTexture = static_cast<const VulkanTexture*>(barrier.pResource);
-                if ((barrier.sourceState == ResourceState::PRESENT || barrier.sourceState == g_UndefinedState)
+                if ((barrier.sourceState == ResourceState::PRESENT || barrier.sourceState == ResourceState::UNDEFINED)
                     && (barrier.destState == ResourceState::PIXEL_SHADER_RESOURCE
                         || barrier.destState == ResourceState::NONPIXEL_SHADER_RESOURCE
                         || barrier.destState == (ResourceState::PIXEL_SHADER_RESOURCE | ResourceState::NONPIXEL_SHADER_RESOURCE))) {
@@ -632,7 +594,7 @@ void CommandBuffer::resourceBarrier(uint32_t barrierCount, const Barrier* pBarri
                     imageBarrier.pNext = nullptr;
                     imageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                     imageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                    SetSubResourceRange(barrier.pResource, imageBarrier, barrier.subResource);
+                    setSubResourceRange(barrier.pResource, imageBarrier, barrier.subResource);
                     imageBarrier.image = vkTexture->image();
 
                     imageBarrier.srcAccessMask = 0;
@@ -675,7 +637,7 @@ void CommandBuffer::resourceBarrier(uint32_t barrierCount, const Barrier* pBarri
                     imageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                     imageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                     imageBarrier.subresourceRange.aspectMask = imgutil::getAspectFlags(vkTexture->vkFormat);
-                    SetSubResourceRange(barrier.pResource, imageBarrier, barrier.subResource);
+                    setSubResourceRange(barrier.pResource, imageBarrier, barrier.subResource);
                     imageBarrier.image = vkTexture->image();
 
                     imageBarriers.push_back(imageBarrier);
@@ -686,10 +648,9 @@ void CommandBuffer::resourceBarrier(uint32_t barrierCount, const Barrier* pBarri
             const_cast<HwResource*>(barrier.pResource)->setCurrentResourceState(barrier.destState, barrier.subResource);
         } else if (barrier.type == BarrierType::UAV) {
             // Resource is expected to be in UAV state
-            // CauldronAssert(ASSERT_CRITICAL,
-            //               ResourceState::UnorderedAccess == barrier.pResource->GetCurrentResourceState(barrier.SubResource) ||
+            // assert( ResourceState::UnorderedAccess == barrier.pResource->GetCurrentResourceState(barrier.SubResource) ||
             //                   ResourceState::RTAccelerationStruct == barrier.pResource->GetCurrentResourceState(barrier.SubResource),
-            //               L"ResourceBarrier::Error : ResourceState isn't UnorderedAccess or RTAccelerationStruct.");
+            //               "ResourceBarrier::Error : ResourceState isn't UnorderedAccess or RTAccelerationStruct.");
 
             if (barrier.pResource->type == ResourceType::IMAGE) {
                 const VulkanTexture* vkTexture = static_cast<const VulkanTexture*>(barrier.pResource);
@@ -705,7 +666,7 @@ void CommandBuffer::resourceBarrier(uint32_t barrierCount, const Barrier* pBarri
                 imageBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                 imageBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                 imageBarrier.subresourceRange.aspectMask = imgutil::getAspectFlags(imageFormat);
-                SetSubResourceRange(barrier.pResource, imageBarrier, barrier.subResource);
+                setSubResourceRange(barrier.pResource, imageBarrier, barrier.subResource);
                 imageBarrier.image = vkTexture->image();
 
                 imageBarriers.push_back(imageBarrier);

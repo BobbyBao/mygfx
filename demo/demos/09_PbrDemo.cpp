@@ -4,7 +4,7 @@ namespace mygfx::demo {
 
 class PbrDemo : public SceneDemo {
 public:
-    Result<void> start() override
+    void start() override
     {
         SceneDemo::start();
 
@@ -16,7 +16,6 @@ public:
         }
 
         mScene->addChild(model);
-        co_return;
     }
 
     void gui() override

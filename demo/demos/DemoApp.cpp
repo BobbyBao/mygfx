@@ -21,13 +21,13 @@ DemoApp::DemoApp(int argc, char** argv)
 {
 }
 
-Result<void> DemoApp::onStart()
+void DemoApp::onStart()
 {
+    Application::onStart();
+
     if (sDemos.size() > 0) {
         setDemo(0);
     }
-
-    co_return;
 }
 
 void DemoApp::setDemo(int index)
@@ -62,7 +62,6 @@ void DemoApp::setDemo(Demo* demo)
 
 void DemoApp::onGUI()
 {
-
     ImGui::SetNextWindowPos({ 10.0f, 10.0f });
     ImGui::SetNextWindowSize({ -1.0f, -1.0f });
     ImGui::SetNextWindowBgAlpha(0.75f);

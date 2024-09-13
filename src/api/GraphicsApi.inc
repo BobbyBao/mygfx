@@ -171,6 +171,10 @@ DECL_DRIVER_API_SYNCHRONOUS_N(void, updateTexture,
     uint32_t, height,
     uint32_t, depth,
     const void*, data, size_t, size)
+    
+DECL_DRIVER_API_SYNCHRONOUS_N(void, copyTexture,
+    HwTexture*, srcTex, uint32_t, srcLevel, uint32_t, srcLayer,
+    HwTexture*, destTex, uint32_t, destLevel, uint32_t, destLayer)
 
 /*
  * Rendering operations

@@ -40,12 +40,16 @@ void Skybox::onAddToScene(Scene* scene)
 
     if (mMesh == nullptr) {
         auto mesh = Mesh::createFullScreen();
-        DefineList macros;
-        macros.add("LINEAR_OUTPUT");
-        Ref<Shader> shader = Shader::fromFile("shaders/skybox.vert", "shaders/skybox.frag", &macros);
-        shader->setVertexInput({});
-        shader->setCullMode(CullMode::NONE);
-        Ref<Material> material = makeRef<Material>(shader.get(), "MaterialUniforms");
+
+        if (msDefaultShader == nullptr) {
+            DefineList macros;
+            macros.add("LINEAR_OUTPUT");
+            msDefaultShader = Shader::fromFile("shaders/skybox.vert", "shaders/skybox.frag", &macros);
+            msDefaultShader->setVertexInput({});
+            msDefaultShader->setCullMode(CullMode::NONE);
+        }
+
+        Ref<Material> material = makeRef<Material>(msDefaultShader.get(), "MaterialUniforms");
         material->setShaderParameter("u_MipLevel", 0);
         material->setShaderParameter("u_EnvBlurNormalized", 1.0f);
         mesh->setMaterial(material);

@@ -37,11 +37,13 @@ void VulkanSwapChain::initSurface()
 #endif
 }
 
-void VulkanSwapChain::recreate(const SwapChainDesc& desc)
+void VulkanSwapChain::recreate(const SwapChainDesc* pDesc)
 {
+    if (pDesc) {
+        this->desc = *pDesc;
+    }
 
-    this->desc = desc;
-    create(&this->desc.width, &this->desc.height, desc.vsync, desc.fullscreen);
+    create(&this->desc.width, &this->desc.height, this->desc.vsync, this->desc.fullscreen);
 
     setupDepthStencil();
 }
@@ -415,11 +417,11 @@ void VulkanSwapChain::setupDepthStencil()
  *
  * @return VkResult of the image acquisition
  */
-VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex)
+VkResult VulkanSwapChain::acquireNextImage(VkSemaphore presentCompleteSemaphore, uint32_t* imageIndex, VkFence fence)
 {
     // By setting timeout to UINT64_MAX we will always wait until the next image has been acquired or an actual error is thrown
     // With that we don't have to handle VK_NOT_READY
-    return vkAcquireNextImageKHR(gfx().device, swapChain, UINT64_MAX, presentCompleteSemaphore, (VkFence) nullptr, imageIndex);
+    return vkAcquireNextImageKHR(gfx().device, swapChain, UINT64_MAX, presentCompleteSemaphore, fence, imageIndex);
 }
 
 /**

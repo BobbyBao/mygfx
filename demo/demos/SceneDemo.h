@@ -12,7 +12,7 @@ public:
     Ref<Camera> mCamera;
     CameraController* mCameraController = nullptr;
 
-    Result<void> start() override
+    void start() override
     {
         mScene = new Scene();
 
@@ -37,8 +37,6 @@ public:
         skybox->setIrrMap(Texture::createFromFile("textures/papermill/diffuse.dds", sampler));
 
         mView->setEnvIntensity(0.75f);
-
-        co_return;
     }
 
     void update(double delta) override

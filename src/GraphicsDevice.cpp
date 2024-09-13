@@ -44,12 +44,12 @@ void GraphicsDevice::beginRender()
 
 void GraphicsDevice::endRender()
 {
-    for (auto it = postCall_.begin(); it != postCall_.end();) {
+    for (auto it = mPostCall.begin(); it != mPostCall.end();) {
         auto& timer = std::get<1>(*it);
         if (--timer == 0) {
             auto& fn = std::get<0>(*it);
             fn();
-            it = postCall_.erase(it);
+            it = mPostCall.erase(it);
         } else {
             ++it;
         }
@@ -61,17 +61,17 @@ void GraphicsDevice::endRender()
 
 void GraphicsDevice::post(const std::function<void()>& fn, int delay)
 {
-    postCall_.push_back(std::make_tuple(fn, delay));
+    mPostCall.push_back(std::make_tuple(fn, delay));
 }
 
 void GraphicsDevice::executeAll()
 {
-    for (auto& t : postCall_) {
+    for (auto& t : mPostCall) {
         auto& fn = std::get<0>(t);
         fn();
     }
 
-    postCall_.clear();
+    mPostCall.clear();
 }
 
 std::vector<RenderCommand>& RenderQueue::getWriteCommands()

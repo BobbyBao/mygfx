@@ -372,7 +372,7 @@ void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
 
                 subMesh.material = primitive.material ? getMaterial(primitive.material - mGltfModel->materials, hasSkinOrMorphing, &defineList) : getDefaultMaterial(&defineList);
                 subMesh.material->shader()->setVertexInput(formats);
-                subMesh.boundingBox = Aabb(posMin, posMax);
+                subMesh.boundingBox = Aabb{posMin, posMax};
                 boundingBox.merge(subMesh.boundingBox);
 
                 if (primitive.targets_count > 0) {
@@ -477,7 +477,7 @@ void ModelLoader::loadImages()
             uint8_t* sourceData = offset + (uint8_t*)*bufferViewData;
             const uint32_t totalSize = uint32_t(bv ? bv->size : 0);
 
-            auto tex = Texture::createFromData(Span { sourceData, (size_t)totalSize }, mime, {});
+            auto tex = Texture::createFromData(Span<uint8_t> { sourceData, (size_t)totalSize }, mime, {});
             if (tex == nullptr) {
                 LOG_ERROR("Load texture failed : {}", totalSize);
             }
@@ -486,7 +486,7 @@ void ModelLoader::loadImages()
 
         } else if (dataUriContent) {
 
-            auto tex = Texture::createFromData(Span { dataUriContent, dataUriSize }, mime, {});
+            auto tex = Texture::createFromData(Span<uint8_t> { dataUriContent, dataUriSize }, mime, {});
             if (tex == nullptr) {
                 LOG_ERROR("Load texture failed : {}", dataUriSize);
             }

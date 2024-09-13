@@ -70,10 +70,8 @@ public:
 protected:
     Ref<HwSwapchain> mSwapchain;
     Ref<HwRenderTarget> mRenderTarget;
-
     Ref<Scene> mScene;
     Ref<Camera> mCamera;
-
     FrameUniforms mFrameUniforms;
 };
 

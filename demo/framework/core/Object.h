@@ -8,6 +8,11 @@ class Object : public utils::RefCounted {
 public:
     Object();
 
+    inline const std::type_info& getTypeInfo() const
+    {
+        return typeid(*this);
+    }
+
     virtual Ref<Object> clone();
 
     template <typename T>
@@ -18,7 +23,7 @@ public:
 
 protected:
     virtual Object* createObject();
-    virtual void cloneProcess(Object* destNode);
+    virtual void cloneProcess(Object* destObj);
 };
 
 class NamedObject : public Object {

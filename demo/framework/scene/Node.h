@@ -26,13 +26,7 @@ public:
     template <typename T>
     T* getComponent() const
     {
-        for (auto& c : mComponents) {
-            if (typeid(T) == typeid(*c)) {
-                return (T*)c.get();
-            }
-        }
-
-        return nullptr;
+        return (T*)getComponent(typeid(T));
     }
 
     template <typename T>
@@ -46,6 +40,8 @@ public:
 
         return nullptr;
     }
+
+    Component* getComponent(const std::type_info& typeInfo) const;
 
     template <typename T, typename... Args>
     T* addComponent(Args... args)
@@ -69,7 +65,6 @@ public:
     template <typename T>
     T* createChild()
     {
-
         T* so = new T();
         addChild(so);
         return so;

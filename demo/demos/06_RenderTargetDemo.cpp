@@ -11,13 +11,10 @@ public:
     Ref<Texture> mRenderTexture;
     Ref<HwRenderTarget> mRenderTarget;
 
-    Result<void> start() override
+    void start() override
     {
-
         mShader = ShaderLibs::getSimpleLightShader();
-
         mMesh = Mesh::createCube();
-
         mRenderTexture = Texture::createRenderTarget(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
 
         RenderTargetDesc desc {
@@ -27,8 +24,6 @@ public:
 
         desc.colorAttachments.emplace_back(mRenderTexture->getRTV());
         mRenderTarget = gfxApi().createRenderTarget(desc);
-
-        co_return;
     }
 
     void gui() override
@@ -41,7 +36,6 @@ public:
 
     void preDraw(GraphicsApi& cmd) override
     {
-
         auto w = mApp->getWidth();
         auto h = mApp->getHeight();
         float aspect = w / (float)h;

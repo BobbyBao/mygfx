@@ -19,7 +19,7 @@
 #if !defined(WIN32) && !defined(__EMSCRIPTEN__) && !defined(IOS)
 #include <sys/mman.h>
 #include <unistd.h>
-#define HAS_MMAP 1
+#define HAS_MMAP 0
 #else
 #define HAS_MMAP 0
 #endif

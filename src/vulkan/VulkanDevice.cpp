@@ -24,6 +24,7 @@
 #include <vma/vk_mem_alloc.h>
 
 namespace mygfx {
+
 VulkanDevice& gfx()
 {
     return static_cast<VulkanDevice&>(device());
@@ -72,20 +73,7 @@ bool VulkanDevice::create(const Settings& settings)
     VkSemaphoreCreateInfo semaphoreCreateInfo = initializers::semaphoreCreateInfo();
     // Create a semaphore used to synchronize image presentation
     // Ensures that the image is displayed before we start submitting new commands to the queue
-    VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.presentComplete));
-    // Create a semaphore used to synchronize command submission
-    // Ensures that the image is not presented until all commands have been submitted and executed
-    VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &semaphores.renderComplete));
-
-    // Set up submit info structure
-    // Semaphores will stay the same during application lifetime
-    // Command buffer submission info is set by each example
-    submitInfo = initializers::submitInfo();
-    submitInfo.pWaitDstStageMask = &submitPipelineStages;
-    submitInfo.waitSemaphoreCount = 1;
-    submitInfo.pWaitSemaphores = &semaphores.presentComplete;
-    submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &semaphores.renderComplete;
+    VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &mPresentComplete));
 
     VmaVulkanFunctions vulkanFunctions = {};
     vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
@@ -97,11 +85,11 @@ bool VulkanDevice::create(const Settings& settings)
     allocatorInfo.instance = instance;
     allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
     allocatorInfo.pVulkanFunctions = &vulkanFunctions;
-    vmaCreateAllocator(&allocatorInfo, &vmaAllocator_);
+    vmaCreateAllocator(&allocatorInfo, &mVmaAllocator);
 
     mDescriptorPoolManager.init();
 
-    mStagePool = new VulkanStagePool(vmaAllocator_);
+    mStagePool = new VulkanStagePool(mVmaAllocator);
 
     mTextureSet = new DescriptorTable(DescriptorType::COMBINED_IMAGE_SAMPLER | DescriptorType::STORAGE_IMAGE);
     // mImageSet = new DescriptorTable(DescriptorType::StorageImage);
@@ -110,10 +98,6 @@ bool VulkanDevice::create(const Settings& settings)
     mCommandQueues[0].Init(CommandQueueType::Graphics, queueFamilyIndices.graphics, 0, 3, "");
     mCommandQueues[1].Init(CommandQueueType::Compute, queueFamilyIndices.compute, 0, 3, "");
     mCommandQueues[2].Init(CommandQueueType::Copy, queueFamilyIndices.transfer, 1, 3, "");
-
-    createCommandPool();
-    createCommandBuffers();
-    createSynchronizationPrimitives();
 
     SamplerHandle::init();
 
@@ -161,51 +145,6 @@ void VulkanDevice::updateDynamicDescriptorSet(int index, uint32_t size, VkDescri
     vkUpdateDescriptorSets(gfx().device, 1, &write, 0, NULL);
 }
 
-void VulkanDevice::createCommandPool()
-{
-    VkCommandPoolCreateInfo cmdPoolInfo = {};
-    cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-    cmdPoolInfo.queueFamilyIndex = queueFamilyIndices.graphics;
-    cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    VK_CHECK_RESULT(vkCreateCommandPool(device, &cmdPoolInfo, nullptr, &cmdPool));
-}
-
-void VulkanDevice::createCommandBuffers()
-{
-    cmdBuffers.resize(MAX_BACKBUFFER_COUNT + 1);
-
-    VkCommandBufferAllocateInfo cmdBufAllocateInfo = initializers::commandBufferAllocateInfo(
-        cmdPool,
-        VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        static_cast<uint32_t>(cmdBuffers.size()));
-
-    VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &cmdBufAllocateInfo, cmdBuffers.data()));
-
-    drawCmdBuffers.reserve(cmdBuffers.size());
-    drawCmdBuffers.clear();
-    freeCmdBuffers.clear();
-
-    for (int i = 0; i < cmdBuffers.size(); i++) {
-        drawCmdBuffers.emplace_back(cmdBuffers[i]);
-        freeCmdBuffers.push_back(&drawCmdBuffers.back());
-    }
-}
-
-void VulkanDevice::createSynchronizationPrimitives()
-{
-    // Wait fences to sync command buffer access
-    VkFenceCreateInfo fenceCreateInfo = initializers::fenceCreateInfo(VK_FENCE_CREATE_SIGNALED_BIT);
-    waitFences.resize(drawCmdBuffers.size());
-    for (auto& fence : waitFences) {
-        VK_CHECK_RESULT(vkCreateFence(device, &fenceCreateInfo, nullptr, &fence));
-    }
-}
-
-void VulkanDevice::destroyCommandBuffers()
-{
-    vkFreeCommandBuffers(device, cmdPool, static_cast<uint32_t>(drawCmdBuffers.size()), cmdBuffers.data());
-}
-
 CommandBuffer* VulkanDevice::getCommandBuffer(CommandQueueType queueType, uint32_t count)
 {
     return mCommandQueues[(int)queueType].getCommandBuffer(count);
@@ -222,14 +161,13 @@ void VulkanDevice::executeCommand(CommandQueueType queueType, const std::functio
     cmd->begin();
     fn(*cmd);
     cmd->end();
-    uint64_t waitValue = mCommandQueues[(int)queueType].Submit(&cmd->cmd, 1, VK_NULL_HANDLE, VK_NULL_HANDLE, false);
+    uint64_t waitValue = mCommandQueues[(int)queueType].submit(&cmd->cmd, 1, VK_NULL_HANDLE, VK_NULL_HANDLE);
     mCommandQueues[(int)queueType].Wait(device, waitValue);
     freeCommandBuffer(cmd);
 }
 
 void VulkanDevice::resize(HwSwapchain* sc, uint32_t destWidth, uint32_t destHeight)
 {
-
     // Ensure all operations on the device have been finished before destroying resources
     vkDeviceWaitIdle(device);
 
@@ -239,19 +177,7 @@ void VulkanDevice::resize(HwSwapchain* sc, uint32_t destWidth, uint32_t destHeig
     SwapChainDesc desc = sc->desc;
     desc.width = destWidth;
     desc.height = destHeight;
-    swapChain->recreate(desc);
-
-    // Command buffers need to be recreated as they may store
-    // references to the recreated frame buffer
-    destroyCommandBuffers();
-    createCommandBuffers();
-
-    // SRS - Recreate fences in case number of swapchain images has changed on resize
-    for (auto& fence : waitFences) {
-        vkDestroyFence(device, fence, nullptr);
-    }
-
-    createSynchronizationPrimitives();
+    swapChain->recreate(&desc);
 
     vkDeviceWaitIdle(device);
 }
@@ -268,19 +194,7 @@ void VulkanDevice::destroy()
     // Clean up Vulkan resources
     mSwapChain.reset();
 
-    if (commandPool) {
-        vkDestroyCommandPool(device, commandPool, nullptr);
-    }
-
-    destroyCommandBuffers();
-
-    vkDestroyCommandPool(device, cmdPool, nullptr);
-    vkDestroySemaphore(device, semaphores.presentComplete, nullptr);
-    vkDestroySemaphore(device, semaphores.renderComplete, nullptr);
-
-    for (auto& fence : waitFences) {
-        vkDestroyFence(device, fence, nullptr);
-    }
+    vkDestroySemaphore(device, mPresentComplete, nullptr);
 
     mTextureSet.reset();
 
@@ -299,8 +213,8 @@ void VulkanDevice::destroy()
     mStagePool->terminate();
     delete mStagePool;
 
-    vmaDestroyAllocator(vmaAllocator_);
-    vmaAllocator_ = NULL;
+    vmaDestroyAllocator(mVmaAllocator);
+    mVmaAllocator = NULL;
 
     mCommandQueues[0].Release(device);
     mCommandQueues[1].Release(device);
@@ -439,7 +353,7 @@ SharedPtr<HwRenderTarget> VulkanDevice::createRenderTarget(const RenderTargetDes
 SharedPtr<HwSwapchain> VulkanDevice::createSwapchain(const SwapChainDesc& desc)
 {
     auto sw = makeShared<VulkanSwapChain>(desc);
-    sw->recreate(desc);
+    sw->recreate(&desc);
     return sw;
 }
 
@@ -474,6 +388,14 @@ void VulkanDevice::updateBuffer(HwBuffer* buffer, const void* data, size_t size,
     vkBuffer->setData(data, size, offset);
 }
 
+void VulkanDevice::copyTexture(HwTexture* srcTex, uint32_t srcLevel, uint32_t srcLayer,
+    HwTexture* destTex, uint32_t destLevel, uint32_t destLayer)
+{
+    gfx().executeCommand(CommandQueueType::Copy, [=](auto& c) {
+        c.copyImage((VulkanTexture*)srcTex, srcLevel, srcLayer, (VulkanTexture*)destTex, destLevel, destLayer);
+    });
+}
+
 void VulkanDevice::updateDescriptorSet1(HwDescriptorSet* descriptorSet, uint32_t dstBinding, HwTextureView* texView)
 {
     static_cast<DescriptorSet*>(descriptorSet)->bind(dstBinding, texView);
@@ -491,13 +413,13 @@ void VulkanDevice::updateDescriptorSet3(HwDescriptorSet* descriptorSet, uint32_t
 
 void VulkanDevice::beginFrame(int)
 {
-    currentCmd = getFree();
-    currentCmd->begin();
+    mCurrentCmd = getCommandBuffer(CommandQueueType::Graphics);
+    mCurrentCmd->begin();
 }
 
 void VulkanDevice::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& renderInfo)
 {
-    currentCmd->beginRendering(pRT, renderInfo);
+    mCurrentCmd->beginRendering(pRT, renderInfo);
     mRenderPassInfo = renderInfo;
     mRenderTarget = (VulkanRenderTarget*)pRT;
     colorAttachmentCount = mRenderTarget->numAttachments();
@@ -521,7 +443,7 @@ void VulkanDevice::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& ren
 
 void VulkanDevice::endRendering(HwRenderTarget* pRT)
 {
-    currentCmd->endRendering(pRT);
+    mCurrentCmd->endRendering(pRT);
     mRenderTarget = nullptr;
 }
 
@@ -531,30 +453,25 @@ void VulkanDevice::makeCurrent(HwSwapchain* sc)
 
     VulkanSwapChain* swapChain = static_cast<VulkanSwapChain*>(sc);
     // Acquire the next image from the swap chain
-    VkResult result = swapChain->acquireNextImage(semaphores.presentComplete, &currentBuffer);
-    swapChain->renderTarget->currentIndex = currentBuffer;
-
-    for (auto c : submitCmdBuffers[currentBuffer]) {
-        freeCmdBuffers.push_back(c);
-    }
-    submitCmdBuffers[currentBuffer].clear();
+    VkResult result = swapChain->acquireNextImage(mPresentComplete, &mCurrentImage, nullptr);
+    swapChain->renderTarget->currentIndex = mCurrentImage;
 
     // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE)
     // SRS - If no longer optimal (VK_SUBOPTIMAL_KHR), wait until submitFrame() in case number of swapchain images will change on resize
     if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR)) {
         if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            LOG_ERROR("VK_ERROR_OUT_OF_DATE_KHR");
-            // windowResize();
+            swapChain->recreate();
         }
         return;
     } else {
         VK_CHECK_RESULT(result);
     }
+
 }
 
 void VulkanDevice::resetState(int)
 {
-    currentCmd->resetState();
+    mCurrentCmd->resetState();
 }
 
 void VulkanDevice::setViewport(float topX, float topY, float width, float height, float minDepth, float maxDepth)
@@ -568,7 +485,7 @@ void VulkanDevice::setViewport(float topX, float topY, float width, float height
         .maxDepth = maxDepth
     };
 
-    currentCmd->setViewport(1, &viewport);
+    mCurrentCmd->setViewport(1, &viewport);
 }
 
 void VulkanDevice::setScissor(uint32_t topX, uint32_t topY, uint32_t width, uint32_t height)
@@ -578,123 +495,123 @@ void VulkanDevice::setScissor(uint32_t topX, uint32_t topY, uint32_t width, uint
         .extent = { (uint32_t)(width), (uint32_t)(height) },
     };
 
-    currentCmd->setScissor(1, &scissor);
+    mCurrentCmd->setScissor(1, &scissor);
 }
 
 void VulkanDevice::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t width, uint32_t height)
 {
-    currentCmd->setViewportAndScissor(topX, topY, width, height);
+    mCurrentCmd->setViewportAndScissor(topX, topY, width, height);
 }
 
 void VulkanDevice::setVertexInput(HwVertexInput* vertexInput)
 {
-    currentCmd->setVertexInput((VulkanVertexInput*)vertexInput);
+    mCurrentCmd->setVertexInput((VulkanVertexInput*)vertexInput);
 }
 
 void VulkanDevice::setPrimitiveTopology(PrimitiveTopology primitiveTopology)
 {
-    currentCmd->setPrimitiveTopology(primitiveTopology);
+    mCurrentCmd->setPrimitiveTopology(primitiveTopology);
 }
 
 void VulkanDevice::setPrimitiveRestartEnable(bool restartEnable)
 {
-    currentCmd->setPrimitiveRestartEnable(restartEnable);
+    mCurrentCmd->setPrimitiveRestartEnable(restartEnable);
 }
 
 void VulkanDevice::bindShaderProgram(HwProgram* program)
 {
-    currentCmd->bindShaderProgram(program);
+    mCurrentCmd->bindShaderProgram(program);
 }
 
 void VulkanDevice::bindRasterState(RasterState* rasterState)
 {
-    currentCmd->bindRasterState(rasterState);
+    mCurrentCmd->bindRasterState(rasterState);
 }
 
 void VulkanDevice::bindColorBlendState(ColorBlendState* colorBlendState)
 {
-    currentCmd->bindColorBlendState(colorBlendState);
+    mCurrentCmd->bindColorBlendState(colorBlendState);
 }
 
 void VulkanDevice::bindDepthState(DepthState* depthState)
 {
-    currentCmd->bindDepthState(depthState);
+    mCurrentCmd->bindDepthState(depthState);
 }
 
 void VulkanDevice::bindStencilState(StencilState* stencilState)
 {
-    currentCmd->bindStencilState(stencilState);
+    mCurrentCmd->bindStencilState(stencilState);
 }
 
 void VulkanDevice::bindPipelineState(const PipelineState& pipelineState)
 {
-    currentCmd->bindPipelineState(&pipelineState);
+    mCurrentCmd->bindPipelineState(&pipelineState);
 }
 
 void VulkanDevice::pushConstant(uint32_t index, const void* data, uint32_t size)
 {
-    currentCmd->pushConstant(index, data, size);
+    mCurrentCmd->pushConstant(index, data, size);
 }
 
 void VulkanDevice::bindUniforms(const Uniforms& uniforms)
 {
-    currentCmd->bindUniformBuffer(uniforms.size(), uniforms.data());
+    mCurrentCmd->bindUniformBuffer(uniforms.size(), uniforms.data());
 }
 
 void VulkanDevice::bindIndexBuffer(HwBuffer* buffer, uint64_t offset, IndexType indexType)
 {
-    currentCmd->bindIndexBuffer(buffer, offset, indexType);
+    mCurrentCmd->bindIndexBuffer(buffer, offset, indexType);
 }
 
 void VulkanDevice::bindVertexBuffer(uint32_t firstBinding, HwBuffer* buffer, uint64_t offset)
 {
-    currentCmd->bindVertexBuffer(firstBinding, buffer, offset);
+    mCurrentCmd->bindVertexBuffer(firstBinding, buffer, offset);
 }
 
 void VulkanDevice::draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 {
-    currentCmd->draw(vertexCount, instanceCount, firstVertex, firstInstance);
+    mCurrentCmd->draw(vertexCount, instanceCount, firstVertex, firstInstance);
     Stats::drawCall()++;
 }
 
 void VulkanDevice::drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 {
-    currentCmd->drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+    mCurrentCmd->drawIndexed(indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     Stats::drawCall()++;
 }
 
 void VulkanDevice::drawIndirect(HwBuffer* buffer, uint64_t offset, uint32_t drawCount, uint32_t stride)
 {
-    currentCmd->drawIndirect(buffer, offset, drawCount, stride);
+    mCurrentCmd->drawIndirect(buffer, offset, drawCount, stride);
 }
 
 void VulkanDevice::drawIndexedIndirect(HwBuffer* buffer, uint64_t offset, uint32_t drawCount, uint32_t stride)
 {
-    currentCmd->drawIndexedIndirect(buffer, offset, drawCount, stride);
+    mCurrentCmd->drawIndexedIndirect(buffer, offset, drawCount, stride);
 }
 
 void VulkanDevice::dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 {
-    currentCmd->dispatch(groupCountX, groupCountY, groupCountZ);
+    mCurrentCmd->dispatch(groupCountX, groupCountY, groupCountZ);
 }
 
 void VulkanDevice::dispatchIndirect(HwBuffer* buffer, uint64_t offset)
 {
-    currentCmd->dispatchIndirect(buffer, offset);
+    mCurrentCmd->dispatchIndirect(buffer, offset);
 }
 
 void VulkanDevice::drawPrimitive(HwRenderPrimitive* primitive)
 {
     VulkanRenderPrimitive* rp = static_cast<VulkanRenderPrimitive*>(primitive);
     if (rp->vertexBuffers.size() > 0) {
-        vkCmdBindVertexBuffers(currentCmd->cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
+        vkCmdBindVertexBuffers(mCurrentCmd->cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
     }
 
     if (rp->indexBuffer != nullptr) {
-        vkCmdBindIndexBuffer(currentCmd->cmd, rp->indexBuffer, 0, rp->indexType);
-        currentCmd->drawIndexed(rp->drawArgs.indexCount, rp->drawArgs.instanceCount, rp->drawArgs.firstIndex, rp->drawArgs.vertexOffset, rp->drawArgs.firstInstance);
+        vkCmdBindIndexBuffer(mCurrentCmd->cmd, rp->indexBuffer, 0, rp->indexType);
+        mCurrentCmd->drawIndexed(rp->drawArgs.indexCount, rp->drawArgs.instanceCount, rp->drawArgs.firstIndex, rp->drawArgs.vertexOffset, rp->drawArgs.firstInstance);
     } else {
-        currentCmd->draw(rp->drawArgs.vertexCount, rp->drawArgs.instanceCount, rp->drawArgs.firstVertex, rp->drawArgs.firstInstance);
+        mCurrentCmd->draw(rp->drawArgs.vertexCount, rp->drawArgs.instanceCount, rp->drawArgs.firstVertex, rp->drawArgs.firstInstance);
     }
 
     Stats::drawCall()++;
@@ -714,9 +631,9 @@ void VulkanDevice::drawBatch(RenderQueue* renderQueue)
 {
     const auto& primitives = renderQueue->getReadCommands();
     if (primitives.size() > 200) {
-        drawMultiThreaded(primitives, *currentCmd);
+        drawMultiThreaded(primitives, *mCurrentCmd);
     } else {
-        drawBatch1(*currentCmd, primitives.data(), (uint32_t)primitives.size());
+        drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
     }
 
     Stats::drawCall() += (uint32_t)primitives.size();
@@ -796,37 +713,29 @@ void VulkanDevice::drawMultiThreaded(const std::vector<RenderCommand>& items, co
 
 void VulkanDevice::resourceBarrier(uint32_t barrierCount, const Barrier* pBarriers)
 {
-    currentCmd->resourceBarrier(barrierCount, pBarriers);
+    mCurrentCmd->resourceBarrier(barrierCount, pBarriers);
 }
 
 void VulkanDevice::commit(HwSwapchain* sc)
 {
-    currentCmd->end();
+    mCurrentCmd->end();
 
     assert(sc == mSwapChain);
-
-    submitInfo.commandBufferCount = 1;
-    submitInfo.pCommandBuffers = &currentCmd->cmd;
-    VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE));
-    submitCmdBuffers[currentBuffer].push_back(currentCmd);
-
     VulkanSwapChain* swapChain = static_cast<VulkanSwapChain*>(sc);
-    VkResult result = swapChain->queuePresent(queue, currentBuffer, semaphores.renderComplete);
-    // Recreate the swapchain if it's no longer compatible with the surface (OUT_OF_DATE) or no longer optimal for presentation (SUBOPTIMAL)
-    if ((result == VK_ERROR_OUT_OF_DATE_KHR) || (result == VK_SUBOPTIMAL_KHR)) {
-        if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-            return;
-        }
-    } else {
-        VK_CHECK_RESULT(result);
-    }
-    VK_CHECK_RESULT(vkQueueWaitIdle(queue));
+
+    auto semaphoreValue = mCommandQueues[0].submit(&mCurrentCmd->cmd, 1, nullptr, mPresentComplete, mCurrentImage);
+    mCommandQueues[0].present(swapChain->swapChain, mCurrentImage);
+    auto cmd = (CommandBuffer*)mCurrentCmd;
+    auto future = std::async(std::launch::async, [this, semaphoreValue, cmd]() {
+        mCommandQueues[0].Wait(device, semaphoreValue);
+        freeCommandBuffer(cmd);
+    });
+
+    mCurrentCmd = nullptr;
 }
 
 void VulkanDevice::endFrame(int)
 {
-    currentCmd = nullptr;
-
     HwObject::gc();
     mStagePool->gc();
 }

@@ -31,7 +31,7 @@ void VulkanTexture::destroy()
     if (!isSwapchain && mImage != VK_NULL_HANDLE) {
         auto img = mImage;
         auto mem = mImageAlloc;
-        vmaDestroyImage(gfx().vmaAllocator(), img, mem);
+        vmaDestroyImage(gfx().getVmaAllocator(), img, mem);
 
         mImage = VK_NULL_HANDLE;
         mImageAlloc = nullptr;
@@ -136,7 +136,7 @@ bool VulkanTexture::initFromData(const TextureData& textureData)
         copy_barrier.subresourceRange.levelCount = mipLevels;
         copy_barrier.subresourceRange.layerCount = layerCount;
 
-        gfx().uploadHeap().AddPreBarrier(copy_barrier);
+        gfx().getUploadHeap().AddPreBarrier(copy_barrier);
     }
 
     // compute pixel size
@@ -144,12 +144,12 @@ bool VulkanTexture::initFromData(const TextureData& textureData)
     uint32_t bytePP = getBitsPerPixel(format) / 8;
     uint8_t* pixels = NULL;
     uint64_t UplHeapSize = width * height * bytePP;
-    pixels = gfx().uploadHeap().Suballocate(UplHeapSize, 512);
+    pixels = gfx().getUploadHeap().Suballocate(UplHeapSize, 512);
     assert(pixels != NULL);
 
     std::memcpy(pixels, textureData.data(), width * height * bytePP);
 
-    uint32_t offset = uint32_t(pixels - gfx().uploadHeap().BasePtr());
+    uint32_t offset = uint32_t(pixels - gfx().getUploadHeap().BasePtr());
     VkBufferImageCopy region = {};
     region.bufferOffset = offset;
     region.imageSubresource.aspectMask = aspect;
@@ -160,7 +160,7 @@ bool VulkanTexture::initFromData(const TextureData& textureData)
     region.imageExtent.height = height;
     region.imageExtent.depth = 1;
 
-    gfx().uploadHeap().AddCopy(mImage, region);
+    gfx().getUploadHeap().AddCopy(mImage, region);
 
     // prepare to shader read
     //
@@ -178,10 +178,10 @@ bool VulkanTexture::initFromData(const TextureData& textureData)
         use_barrier.subresourceRange.levelCount = mipLevels;
         use_barrier.subresourceRange.layerCount = layerCount;
 
-        gfx().uploadHeap().AddPostBarrier(use_barrier);
+        gfx().getUploadHeap().AddPostBarrier(use_barrier);
     }
 
-    gfx().uploadHeap().FlushAndFinish();
+    gfx().getUploadHeap().FlushAndFinish();
 
     if (mSRV == nullptr) {
         createSRV();
@@ -311,7 +311,7 @@ void VulkanTexture::createImage(VkImageCreateInfo* pCreateInfo, const char* name
     imageAllocCreateInfo.flags = VMA_ALLOCATION_CREATE_USER_DATA_COPY_STRING_BIT;
     imageAllocCreateInfo.pUserData = (void*)name;
     VmaAllocationInfo gpuImageAllocInfo = {};
-    VkResult res = vmaCreateImage(gfx().vmaAllocator(), pCreateInfo, &imageAllocCreateInfo, &mImage, &mImageAlloc, &gpuImageAllocInfo);
+    VkResult res = vmaCreateImage(gfx().getVmaAllocator(), pCreateInfo, &imageAllocCreateInfo, &mImage, &mImageAlloc, &gpuImageAllocInfo);
     assert(res == VK_SUCCESS);
     if (name)
         gfx().setResourceName(VK_OBJECT_TYPE_IMAGE, (uint64_t)mImage, name);
@@ -473,7 +473,7 @@ bool VulkanTexture::copyData(TextureDataProvider* dataProvider)
         copy_barrier.subresourceRange.baseMipLevel = 0;
         copy_barrier.subresourceRange.levelCount = mipLevels;
         copy_barrier.subresourceRange.layerCount = layerCount * faceCount;
-        gfx().uploadHeap().AddPreBarrier(copy_barrier);
+        gfx().getUploadHeap().AddPreBarrier(copy_barrier);
     }
 
     // compute pixel size
@@ -491,20 +491,20 @@ bool VulkanTexture::copyData(TextureDataProvider* dataProvider)
                 uint32_t dwDepth = std::max<uint32_t>(depth >> mip, 1);
 
                 uint64_t UplHeapSize = (dwWidth * dwHeight * bitsPerPixel) / 8;
-                uint8_t* pixels = gfx().uploadHeap().BeginSuballocate(UplHeapSize, 512);
+                uint8_t* pixels = gfx().getUploadHeap().BeginSuballocate(UplHeapSize, 512);
 
                 if (pixels == NULL) {
                     // oh! We ran out of mem in the upload heap, flush it and try allocating mem from it again
-                    gfx().uploadHeap().FlushAndFinish();
-                    pixels = gfx().uploadHeap().Suballocate(UplHeapSize, 512);
+                    gfx().getUploadHeap().FlushAndFinish();
+                    pixels = gfx().getUploadHeap().Suballocate(UplHeapSize, 512);
                     assert(pixels != NULL);
                 }
 
                 dataProvider->copyPixels(pixels, (uint32_t)UplHeapSize, dwWidth, dwHeight, a, face, mip);
 
-                gfx().uploadHeap().EndSuballocate();
+                gfx().getUploadHeap().EndSuballocate();
 
-                uint32_t offset = uint32_t(pixels - gfx().uploadHeap().BasePtr());
+                uint32_t offset = uint32_t(pixels - gfx().getUploadHeap().BasePtr());
                 {
                     VkBufferImageCopy region = {};
                     region.bufferOffset = offset;
@@ -515,7 +515,7 @@ bool VulkanTexture::copyData(TextureDataProvider* dataProvider)
                     region.imageExtent.width = dwWidth;
                     region.imageExtent.height = dwHeight;
                     region.imageExtent.depth = 1;
-                    gfx().uploadHeap().AddCopy(mImage, region);
+                    gfx().getUploadHeap().AddCopy(mImage, region);
                 }
             }
         }
@@ -536,10 +536,10 @@ bool VulkanTexture::copyData(TextureDataProvider* dataProvider)
         use_barrier.subresourceRange.aspectMask = imgutil::getAspectFlags(vkFormat);
         use_barrier.subresourceRange.levelCount = mipLevels;
         use_barrier.subresourceRange.layerCount = layerCount * faceCount;
-        gfx().uploadHeap().AddPostBarrier(use_barrier);
+        gfx().getUploadHeap().AddPostBarrier(use_barrier);
     }
 
-    gfx().uploadHeap().finish();
+    gfx().getUploadHeap().finish();
 
     if (mSRV == nullptr) {
         createSRV();
@@ -553,10 +553,10 @@ void VulkanTexture::copyTo(VulkanTexture* destTex) {
 
 void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const std::span<uint8_t>& data)
 {
-    auto pixels = gfx().uploadHeap().Suballocate(data.size(), 64);
+    auto pixels = gfx().getUploadHeap().Suballocate(data.size(), 64);
     std::memcpy(pixels, data.data(), data.size());
 
-    uint32_t offset = uint32_t(pixels - gfx().uploadHeap().BasePtr());
+    uint32_t offset = uint32_t(pixels - gfx().getUploadHeap().BasePtr());
     VkBufferImageCopy bufferCopyRegion {
         .bufferOffset = offset,
         .bufferImageHeight = 0,
@@ -571,7 +571,7 @@ void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h
         .imageExtent = VkExtent3D { w, h, 1 },
     };
 
-    gfx().uploadHeap().AddCopy(mImage, bufferCopyRegion);
+    gfx().getUploadHeap().AddCopy(mImage, bufferCopyRegion);
 
     // The sub resource range describes the regions of the image we will be transition
     VkImageSubresourceRange subresourceRange {
@@ -591,7 +591,7 @@ void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h
         subresourceRange,
     };
 
-    gfx().uploadHeap().AddPreBarrier(copy_barrier);
+    gfx().getUploadHeap().AddPreBarrier(copy_barrier);
 
     VkImageMemoryBarrier use_barrier {
         VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -606,17 +606,17 @@ void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h
         subresourceRange,
     };
 
-    gfx().uploadHeap().AddPostBarrier(use_barrier);
-    gfx().uploadHeap().finish();
+    gfx().getUploadHeap().AddPostBarrier(use_barrier);
+    gfx().getUploadHeap().finish();
 }
 
 void VulkanTexture::setData(uint32_t level, int x, int y, int z, uint32_t w, uint32_t h, uint32_t depth, const void* data, size_t size)
 {
-    auto pixels = gfx().uploadHeap().Suballocate(size, 64);
+    auto pixels = gfx().getUploadHeap().Suballocate(size, 64);
 
     std::memcpy(pixels, data, size);
 
-    uint32_t offset = uint32_t(pixels - gfx().uploadHeap().BasePtr());
+    uint32_t offset = uint32_t(pixels - gfx().getUploadHeap().BasePtr());
     VkBufferImageCopy bufferCopyRegion {
         .bufferOffset = offset,
         .bufferImageHeight = 0,
@@ -645,7 +645,7 @@ void VulkanTexture::setData(uint32_t level, int x, int y, int z, uint32_t w, uin
         transitionRange.layerCount = depth;
     }
 
-    gfx().uploadHeap().AddCopy(mImage, bufferCopyRegion);
+    gfx().getUploadHeap().AddCopy(mImage, bufferCopyRegion);
 
     VkImageMemoryBarrier copy_barrier {
         VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -660,7 +660,7 @@ void VulkanTexture::setData(uint32_t level, int x, int y, int z, uint32_t w, uin
         transitionRange,
     };
 
-    gfx().uploadHeap().AddPreBarrier(copy_barrier);
+    gfx().getUploadHeap().AddPreBarrier(copy_barrier);
 
     VkImageMemoryBarrier use_barrier {
         VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -675,8 +675,8 @@ void VulkanTexture::setData(uint32_t level, int x, int y, int z, uint32_t w, uin
         transitionRange,
     };
 
-    gfx().uploadHeap().AddPostBarrier(use_barrier);
-    gfx().uploadHeap().finish();
+    gfx().getUploadHeap().AddPostBarrier(use_barrier);
+    gfx().getUploadHeap().finish();
 }
 
 void VulkanTexture::setData(uint32_t level, int x, int y, uint32_t w, uint32_t h, const void* data, uint32_t size)

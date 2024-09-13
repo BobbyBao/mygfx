@@ -12,10 +12,7 @@ class DemoApp;
 
 class Demo : public utils::RefCounted {
 public:
-    virtual Result<void> start()
-    {
-        co_return;
-    }
+    virtual void start() { }
     virtual void gui() { }
     virtual void update(double delta) { }
     virtual void preDraw(GraphicsApi& cmd) { }
@@ -47,7 +44,7 @@ public:
     void setDemo(Demo* demo);
 
 protected:
-    Result<void> onStart() override;
+    void onStart() override;
     void onDestroy() override;
     void onGUI() override;
     void onUpdate(double delta) override;

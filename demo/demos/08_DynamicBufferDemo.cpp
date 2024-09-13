@@ -26,7 +26,6 @@ public:
 
         void getVertex(Vertex2D* v)
         {
-
             Rect r = { position - extend, position + extend };
             v[0].pos = { r.min, depth };
             v[0].color = color;
@@ -56,15 +55,13 @@ public:
     Vector<Sprite2D> mSprites;
     Vector<Ref<Texture>> mTextures;
 
-    Result<void> start() override
+    void start() override
     {
-
         mShader = ShaderLibs::getUnlitShader();
 
         const int SPRITE_COUNT = 10000;
 
         mSprites.clear();
-
         mTextures = Texture::createRandomColorTextures(64);
 
         float width = (float)mApp->getWidth();
@@ -84,7 +81,6 @@ public:
             createQuad(spr);
         }
 
-        co_return;
     }
 
     void createQuad(Sprite2D& spr)
@@ -119,7 +115,6 @@ public:
 
     void update(double delta) override
     {
-
         float width = (float)mApp->getWidth();
         float height = (float)mApp->getHeight();
 
@@ -137,7 +132,6 @@ public:
 
     void draw(GraphicsApi& cmd) override
     {
-
         if (mIndices.size() > 0) {
             float width = (float)mApp->getWidth();
             float height = (float)mApp->getHeight();

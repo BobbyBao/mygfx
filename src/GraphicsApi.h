@@ -42,7 +42,6 @@ public:
     template <typename V>
     void drawUserPrimitives(const Span<V>& vertices, uint32_t firstInstance = 0)
     {
-
         void* pData;
         BufferInfo bufferInfo;
         if (!allocVertexBuffer(sizeof(V) * vertices.size(), &pData, &bufferInfo)) {
@@ -58,7 +57,6 @@ public:
     template <typename V>
     void drawUserPrimitives(const Span<V>& vertices, const Span<uint16_t>& indices, uint32_t firstInstance = 0)
     {
-
         void* pData;
         BufferInfo bufferInfo;
         if (!allocVertexBuffer((uint32_t)vertices.size(), sizeof(V), &pData, &bufferInfo)) {
@@ -82,7 +80,6 @@ public:
     template <typename V>
     void drawUserPrimitives(const Span<V>& vertices, const Span<uint32_t>& indices, uint32_t firstInstance = 0)
     {
-
         void* pData;
         BufferInfo bufferInfo;
         if (!allocVertexBuffer((uint32_t)vertices.size(), sizeof(V), &pData, &bufferInfo)) {

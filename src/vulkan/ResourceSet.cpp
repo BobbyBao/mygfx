@@ -22,7 +22,7 @@ VkDescriptorSet ResourceSet::defaultSet()
 void ResourceSet::setDynamicBuffer(uint32_t binding, uint32_t size)
 {
     VkDescriptorBufferInfo info = {};
-    info.buffer = gfx().constBuffer();
+    info.buffer = gfx().getGlobalUniformBuffer();
     info.offset = 0;
     info.range = size;
     setBuffer(binding, info);
