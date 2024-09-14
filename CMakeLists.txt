@@ -40,17 +40,6 @@ if (FORCE_VALIDATION)
 	add_definitions(-DFORCE_VALIDATION)
 endif()
 
-# Compiler specific stuff
-IF(MSVC)
-	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /EHsc")
-ELSEIF(APPLE)
-	#if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-	#	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fobjc-arc -ObjC++")
-	#ELSE()
-	#	SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fobjc-arc -xobjective-c++")
-	#ENDIF()
-ENDIF(MSVC)
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/")
 
 include_directories("$ENV{VULKAN_SDK}/Include")
@@ -58,9 +47,10 @@ link_directories("$ENV{VULKAN_SDK}/Lib")
 
 include(cmake/helper.cmake)
 
-include_directories(third_party)
-include_directories("third_party/tiny_imageformat/include")
-
 add_subdirectory(src/gfx)
+set_target_properties(gfx PROPERTIES FOLDER mygfx)
 
-add_subdirectory(demo)
+add_subdirectory(src)
+
+add_subdirectory(demo/demos)
+set_target_properties(demos PROPERTIES FOLDER demo)

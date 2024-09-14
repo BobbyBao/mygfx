@@ -12,4 +12,4 @@ ${GLSL_SOURCE}
 
 set_source_files_properties(${Source_src} PROPERTIES VS_TOOL_OVERRIDE "Text")
 
-set_property(TARGET shaders PROPERTY FOLDER "demo")
+set_property(TARGET shaders PROPERTY FOLDER "mygfx")

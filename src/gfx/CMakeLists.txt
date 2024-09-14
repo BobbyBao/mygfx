@@ -1,5 +1,5 @@
 
-set(TARGET         mygfx)
+set(TARGET gfx)
 
 project(${TARGET})
 
