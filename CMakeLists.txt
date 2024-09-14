@@ -61,7 +61,6 @@ include(cmake/helper.cmake)
 include_directories(third_party)
 include_directories("third_party/tiny_imageformat/include")
 
-add_subdirectory(src)
-include_directories(src)
+add_subdirectory(src/gfx)
 
 add_subdirectory(demo)
