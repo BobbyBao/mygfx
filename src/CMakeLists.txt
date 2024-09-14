@@ -16,10 +16,6 @@ add_subdirectory(external/imgui)
 #set_target_properties(SDL3_test PROPERTIES FOLDER external)
 
 add_subdirectory(external/concurrencpp)
-
-#ucm_add_dirs("external/concurrencpp/source" TO CONCURRENTCPP_SRC RECURSIVE FILTER_POP 1)
-#add_library (concurrencpp STATIC ${CONCURRENTCPP_SRC})
-
 include_directories(external/concurrencpp/include)
 set_target_properties(concurrencpp PROPERTIES FOLDER external)
 
@@ -27,7 +23,11 @@ set_target_properties(concurrencpp PROPERTIES FOLDER external)
 include_directories(external/cgltf)
 
 add_subdirectory(framework)
+target_include_directories(framework PUBLIC external/glm)
+
 set_target_properties(framework PROPERTIES FOLDER mygfx)
+
+
 
 add_subdirectory(media/shaders)
 
