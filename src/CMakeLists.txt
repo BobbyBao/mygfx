@@ -5,11 +5,12 @@ add_subdirectory(external/stb)
 add_subdirectory(external/glm)
 include_directories(external/glm)
 
-add_subdirectory(external/imgui)
 add_subdirectory(external/ktx)
 
 add_subdirectory(external/SDL3)
 include_directories(external/SDL3/include)
+
+add_subdirectory(external/imgui)
 
 #set_target_properties(SDL3-shared PROPERTIES FOLDER external)
 #set_target_properties(SDL3_test PROPERTIES FOLDER external)
