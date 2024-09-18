@@ -2,7 +2,6 @@
 #include "GraphicsDefs.h"
 #include "core/Fwd.h"
 #include "core/Maths.h"
-#include "utils/FileUtils.h"
 
 struct cgltf_data;
 struct cgltf_node;
@@ -48,7 +47,7 @@ protected:
     float mScale = 1.0f;
     bool mEnableSkin = true;
     Ref<Shader> mShader;
-    utils::Path mFilePath;
+    Path mFilePath;
     cgltf_data* mGltfModel = nullptr;
     Ref<Node> mRootNode;
     Vector<bool> mSrgb;

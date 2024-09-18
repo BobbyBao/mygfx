@@ -1,14 +1,18 @@
-#include "FileUtils.h"
 
-namespace utils {
+#include "FileSystem.h"
+
+
+namespace mygfx {
+
+	
 std::vector<Path> sPathStack;
 
-void FileUtils::setBasePath(const Path& path)
+void FileSystem::setBasePath(const Path& path)
 {
     sBasePath = path;
 }
 
-const Path& FileUtils::getCurrentPath()
+const Path& FileSystem::getCurrentPath()
 {
     if (sPathStack.empty()) {
         return sBasePath;
@@ -17,7 +21,7 @@ const Path& FileUtils::getCurrentPath()
     return sPathStack.back();
 }
 
-void FileUtils::pushPath(const Path& path)
+void FileSystem::pushPath(const Path& path)
 {
     Path filePath(path);
     if (!filePath.is_absolute()) {
@@ -27,14 +31,14 @@ void FileUtils::pushPath(const Path& path)
     sPathStack.push_back(filePath);
 }
 
-void FileUtils::popPath()
+void FileSystem::popPath()
 {
     if (!sPathStack.empty()) {
         sPathStack.pop_back();
     }
 }
 
-bool FileUtils::exist(const Path& path)
+bool FileSystem::exist(const Path& path)
 {
     if (sIOStream.exist) {
         return sIOStream.exist(path);
@@ -42,7 +46,7 @@ bool FileUtils::exist(const Path& path)
     return false;
 }
 
-Path FileUtils::convertPath(const Path& path)
+Path FileSystem::convertPath(const Path& path)
 {
     Path filePath(path);
     if (!filePath.is_absolute()) {
@@ -52,7 +56,7 @@ Path FileUtils::convertPath(const Path& path)
     return absolute(filePath);
 }
 
-std::vector<uint8_t> FileUtils::readAll(const Path& path) noexcept
+std::vector<uint8_t> FileSystem::readAll(const Path& path) noexcept
 {
     Path filePath(path);
     if (!filePath.is_absolute()) {
@@ -66,7 +70,7 @@ std::vector<uint8_t> FileUtils::readAll(const Path& path) noexcept
     return {};
 }
 
-std::string FileUtils::readAllText(const Path& path) noexcept
+std::string FileSystem::readAllText(const Path& path) noexcept
 {
     Path filePath(path);
     if (!filePath.is_absolute()) {
@@ -80,4 +84,4 @@ std::string FileUtils::readAllText(const Path& path) noexcept
     return "";
 }
 
-}
+} // namespace utils

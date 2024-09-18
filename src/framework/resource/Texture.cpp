@@ -1,7 +1,7 @@
 #include "Texture.h"
 #include "GraphicsApi.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "utils/FileUtils.h"
+#include "core/FileSystem.h"
 #include <stb/stb_image.h>
 
 #include "TextureLoader.h"

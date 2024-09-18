@@ -1,7 +1,7 @@
 #include "Shader.h"
 #include "GraphicsApi.h"
 #include "Texture.h"
-#include "utils/FileUtils.h"
+#include "core/FileSystem.h"
 #include "ShaderCompiler.h"
 
 namespace mygfx {
@@ -49,24 +49,24 @@ Shader::Shader(const String& csCode)
 void Shader::loadShader(const String& vs, const String& fs, const DefineList* macros)
 {
     Path vsPath(vs);
-    auto vsSource = FileUtils::readAllText(vsPath);
+    auto vsSource = FileSystem::readAllText(vsPath);
     if (vsSource.empty()) {
         return;
     }
 
-    FileUtils::pushPath(vsPath.parent_path());
+    FileSystem::pushPath(vsPath.parent_path());
     addShader(ShaderStage::VERTEX, vsPath.filename().string(), vsSource, ShaderSourceType::GLSL, "", "", macros);
-    FileUtils::popPath();
+    FileSystem::popPath();
 
     Path fsPath(fs);
-    auto psSource = FileUtils::readAllText(fsPath);
+    auto psSource = FileSystem::readAllText(fsPath);
     if (psSource.empty()) {
         return;
     }
 
-    FileUtils::pushPath(fsPath.parent_path());
+    FileSystem::pushPath(fsPath.parent_path());
     addShader(ShaderStage::FRAGMENT, fsPath.filename().string(), psSource, ShaderSourceType::GLSL, "", "", macros);
-    FileUtils::popPath();
+    FileSystem::popPath();
 
     init();
 }
@@ -74,14 +74,14 @@ void Shader::loadShader(const String& vs, const String& fs, const DefineList* ma
 void Shader::loadShader(const String& cs)
 {
     Path csPath(cs);
-    auto csSource = FileUtils::readAllText(csPath);
+    auto csSource = FileSystem::readAllText(csPath);
     if (csSource.empty()) {
         return;
     }
 
-    FileUtils::pushPath(csPath.parent_path());
+    FileSystem::pushPath(csPath.parent_path());
     addShader(ShaderStage::COMPUTE, csPath.filename().string(), csSource, ShaderSourceType::GLSL, "", "", nullptr);
-    FileUtils::popPath();
+    FileSystem::popPath();
 
     init();
 }

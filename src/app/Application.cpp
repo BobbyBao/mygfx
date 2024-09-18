@@ -1,7 +1,7 @@
 #include "Application.h"
 #include "resource/Material.h"
 #include "resource/Texture.h"
-#include "utils/FileUtils.h"
+#include "core/FileSystem.h"
 #include "vulkan/VulkanDevice.h"
 
 #ifdef _WIN32
@@ -77,8 +77,8 @@ Application::Application(int argc, char** argv)
     setupConsole(mTitle);
     setupDPIAwareness();
 #endif
-    FileUtils::sIOStream = { &fileExist, &readAll, &readAllText };
-    FileUtils::setBasePath("../../media");
+    FileSystem::sIOStream = { &fileExist, &readAll, &readAllText };
+    FileSystem::setBasePath("../../media");
 }
 
 Application::~Application()

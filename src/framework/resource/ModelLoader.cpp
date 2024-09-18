@@ -12,7 +12,7 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
 
-#include "utils/FileUtils.h"
+#include "core/FileSystem.h"
 #include "utils/Log.h"
 #include <filesystem>
 
@@ -31,7 +31,7 @@ Ref<Node> ModelLoader::load(const String& fileName)
 {
     cgltf_options options = {};
 
-    auto content = FileUtils::readAll(fileName);
+    auto content = FileSystem::readAll(fileName);
 
     cgltf_data* data = NULL;
     cgltf_result result = cgltf_parse(&options, content.data(), (uint32_t)content.size(), &data);
@@ -44,7 +44,7 @@ Ref<Node> ModelLoader::load(const String& fileName)
 
     std::filesystem::path filePath = fileName;
 
-    auto gltfPath = FileUtils::convertPath(filePath);
+    auto gltfPath = FileSystem::convertPath(filePath);
     mFilePath = gltfPath.parent_path();
 
     result = cgltf_load_buffers(&options, data, gltfPath.string().c_str());
@@ -453,7 +453,7 @@ static uint8_t* parseDataUri(const char* uri, std::string* mimeType, size_t* psi
 
 void ModelLoader::loadImages()
 {
-    FileUtils::pushPath(mFilePath);
+    FileSystem::pushPath(mFilePath);
 
     for (int i = 0; i < mGltfModel->textures_count; i++) {
         auto& srcTexture = mGltfModel->textures[i];
@@ -502,7 +502,7 @@ void ModelLoader::loadImages()
         }
     }
 
-    FileUtils::popPath();
+    FileSystem::popPath();
 }
 
 void ModelLoader::loadMaterials()

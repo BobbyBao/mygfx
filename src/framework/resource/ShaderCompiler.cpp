@@ -1,6 +1,6 @@
 #include "ShaderCompiler.h"
 #include "GraphicsDevice.h"
-#include "utils/FileUtils.h"
+#include "core/FileSystem.h"
 #include "utils/Log.h"
 #include <shaderc/shaderc.hpp>
 #include <mutex>
@@ -40,7 +40,7 @@ public:
             return ret;
         }
 
-        String content = FileUtils::readAllText(fileName);
+        String content = FileSystem::readAllText(fileName);
         ret->content = content.data();
         ret->content_length = content.length();
         sIncludeFiles.emplace(fileName, std::move(content));
@@ -224,7 +224,7 @@ Ref<HwShaderModule> ShaderCompiler::compileFromFile(const ShaderStage shader_typ
         assert(!"Can't tell shader type from its extension");
 
     std::string fullpath = pFilename;
-    pShaderCode = FileUtils::readAllText(fullpath);
+    pShaderCode = FileSystem::readAllText(fullpath);
     auto res = compileFromString(sourceType, shader_type, pFilename, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
     if (res) {
         // gfx().setResourceName(VK_OBJECT_TYPE_SHADER_MODULE, (uint64_t)pShader->module, pFilename);

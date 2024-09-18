@@ -3,7 +3,7 @@
 #include "core/Maths.h"
 #include "resource/Shader.h"
 #include "resource/Texture.h"
-#include "utils/FileUtils.h"
+#include "core/FileSystem.h"
 
 #include <SDL.h>
 #include <SDL3/SDL_iostream.h>

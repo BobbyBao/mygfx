@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicsFwd.h"
+#include <filesystem>
 
 #pragma warning(push)
 #pragma warning(disable:4819)
@@ -14,5 +15,7 @@ namespace mygfx {
 
 	template<typename T>
 	using HashSet = robin_hood::unordered_set<T>;
+
+    using Path = std::filesystem::path;
 
 }

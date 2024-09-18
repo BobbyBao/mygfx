@@ -1,7 +1,7 @@
 #include "TextureLoader.h"
 #include "GraphicsApi.h"
 #include "Texture.h"
-#include "utils/FileUtils.h"
+#include "core/FileSystem.h"
 #include <ktx.h>
 #include <gl_format.h>
 #include <tiny_imageformat/tinyimageformat_apis.h>
@@ -444,7 +444,7 @@ static inline Format getFormatFromOpenGLInternalFormat(const GLenum internalForm
 
 Ref<Texture> TextureLoader::load(const String& fileName, SamplerInfo samplerInfo)
 {
-    auto content = FileUtils::readAll(fileName);
+    auto content = FileSystem::readAll(fileName);
     return onLoad(Span<uint8_t> { content }, samplerInfo);
 }
 
