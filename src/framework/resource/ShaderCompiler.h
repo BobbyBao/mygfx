@@ -1,5 +1,5 @@
 #pragma once
-#include "../ShaderResourceInfo.h"
+#include "ShaderResourceInfo.h"
 
 class Sync;
 

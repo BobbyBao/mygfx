@@ -145,7 +145,6 @@ DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwTextureView>, createRTV, HwTexture*, tex, in
 DECL_DRIVER_API_SYNCHRONOUS_N(bool, copyData, HwTexture*, tex, TextureDataProvider*, dataProvider)
 DECL_DRIVER_API_SYNCHRONOUS_N(SamplerHandle, createSampler, const SamplerInfo&, info)
 DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwShaderModule>, createShaderModule, ShaderStage, stage, const ByteArray&, shaderCode, ShaderCodeType, shaderCodeType, const char*, pShaderEntryPoint)
-DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwShaderModule>, compileShaderModule, ShaderSourceType, sourceType, const ShaderStage, shader_type, const String&, shaderName, const String&, pShaderCode, const char*, pShaderEntryPoint, const char*, shaderCompilerParams, const DefineList*, pDefines)
 DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwProgram>, createProgram, Ref<HwShaderModule>*, shaderModules, uint32_t, count)
 DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwVertexInput>, createVertexInput, const FormatList&, fmts, const FormatList&, fmts1)
 DECL_DRIVER_API_SYNCHRONOUS_N(Ref<HwRenderPrimitive>, createRenderPrimitive, VertexData*, geo, const DrawPrimitiveCommand&, primitive)

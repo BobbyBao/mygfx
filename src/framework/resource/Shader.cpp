@@ -2,6 +2,7 @@
 #include "GraphicsApi.h"
 #include "Texture.h"
 #include "utils/FileUtils.h"
+#include "ShaderCompiler.h"
 
 namespace mygfx {
 
@@ -22,7 +23,7 @@ void Shader::init()
 
 bool Shader::addShader(ShaderStage shaderStage, const String& shaderName, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros)
 {
-    auto sm = gfxApi().compileShaderModule(sourceType, shaderStage, shaderName, source, entry.c_str(), extraParams.c_str(), macros);
+    auto sm = ShaderCompiler::compileFromString(sourceType, shaderStage, shaderName, source, entry.c_str(), extraParams.c_str(), macros);
     if (sm == nullptr) {
         assert(false);
         return false;

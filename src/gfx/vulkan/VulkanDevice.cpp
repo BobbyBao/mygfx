@@ -20,7 +20,6 @@
 #define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #define VMA_IMPLEMENTATION
 #include "VkFormatHelper.h"
-#include "vulkan/ShaderCompiler.h"
 #include <vma/vk_mem_alloc.h>
 
 namespace mygfx {
@@ -327,11 +326,6 @@ SamplerHandle VulkanDevice::createSampler(const SamplerInfo& info)
 Ref<HwShaderModule> VulkanDevice::createShaderModule(ShaderStage stage, const ByteArray& shaderCode, ShaderCodeType shaderCodeType, const char* pShaderEntryPoint)
 {
     return makeShared<VulkanShaderModule>(stage, shaderCode, shaderCodeType, pShaderEntryPoint);
-}
-
-Ref<HwShaderModule> VulkanDevice::compileShaderModule(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& pShaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
-{
-    return ShaderCompiler::compileFromString(sourceType, shader_type, shaderName, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
 }
 
 SharedPtr<HwProgram> VulkanDevice::createProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)

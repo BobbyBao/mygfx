@@ -17,6 +17,6 @@ PUBLIC ${KTX_DIR}/lib
 PRIVATE ${KTX_DIR}/other_include
 )
 
-target_link_libraries(${TARGET} mygfx glm)
+target_link_libraries(${TARGET} glm)
 
 set_target_properties(${TARGET} PROPERTIES FOLDER external)
