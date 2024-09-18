@@ -10,26 +10,20 @@ enum class FileMode : uint8_t {
     Write = (1 << 1),
     ReadWrite = Read | Write,
     Append = (1 << 2),
-    Truncate = (1 << 3)
 };
 
-class IFile {
+class Stream : public RefCounted {
 public:
-public:
-    IFile() = default;
-    virtual ~IFile() = default;
-
-    virtual const String& getName() const = 0;
-    virtual uint64_t size() = 0;
-    virtual bool isReadOnly() const = 0;
-    virtual void open(FileMode mode) = 0;
+    virtual bool isOpen() const = 0;
+    virtual size_t getSize() const = 0;
     virtual void close() = 0;
-    virtual bool isOpened() const = 0;
 
-    virtual uint64_t seek(uint64_t offset) = 0;
-    virtual uint64_t tell() = 0;
-    virtual uint64_t read(uint8_t* buffer, uint64_t size) = 0;
-    virtual uint64_t write(const uint8_t* buffer, uint64_t size) = 0;
+    virtual size_t seek(size_t offset) = 0;
+    virtual size_t read(void* buffer, size_t size) = 0;
+    virtual size_t write(const void* buffer, size_t size) = 0;
+
+    inline const String& getName() const { mName; }
+    inline void setName(const String& name) { mName = name; }
 
     template <typename T>
     bool read(T& value)
@@ -42,17 +36,13 @@ public:
     {
         return (write(reinterpret_cast<const uint8_t*>(&value), sizeof(value)));
     }
-};
 
-struct IOStream {
-    bool (*exist)(const Path&) = nullptr;
-    std::vector<uint8_t> (*readAll)(const Path&) = nullptr;
-    std::string (*readAllText)(const Path&) = nullptr;
+protected:
+    String mName;
 };
 
 class FileSystem {
 public:
-    inline static IOStream sIOStream;
     inline static Path sBasePath;
     static void setBasePath(const Path& path);
     static const Path& getCurrentPath();
@@ -64,7 +54,7 @@ public:
     static std::string readAllText(const Path& path) noexcept;
 };
 
-} // namespace utils
+} // namespace mygfx
 
 template <>
 struct mygfx::EnableBitMaskOperators<mygfx::FileMode>

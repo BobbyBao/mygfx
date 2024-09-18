@@ -10,9 +10,8 @@ public:
     ShaderCompiler();
     ~ShaderCompiler();
 
-    // Does as the function name says and uses a cache
-    static Ref<HwShaderModule> compileFromString(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& pShaderCode, const char* pShaderEntryPoint, const char* pExtraParams, const DefineList* pDefines);
-    static Ref<HwShaderModule> compileFromFile(const ShaderStage shader_type, const char* pFilename, const char* pShaderEntryPoint, const char* pExtraParams, const DefineList* pDefines);
+    static Ref<HwShaderModule> compileFromString(ShaderSourceType sourceType, ShaderStage shader_type, const String& shaderName, const String& pShaderCode, const char* pShaderEntryPoint, const char* pExtraParams, const DefineList* pDefines);
+    static Ref<HwShaderModule> compileFromFile(ShaderStage shader_type, const char* pFilename, const char* pShaderEntryPoint, const char* pExtraParams, const DefineList* pDefines);
 };
 
 }

@@ -28,39 +28,6 @@ void* getNativeWindow(SDL_Window* sdlWindow)
     return nullptr;
 }
 
-bool fileExist(const Path& filePath)
-{
-    return std::filesystem::exists(filePath);
-}
-
-std::vector<uint8_t> readAll(const Path& filePath)
-{
-    auto file = SDL_IOFromFile(filePath.string().c_str(), "rb");
-    if (!file) {
-        return {};
-    }
-    auto fileSize = SDL_GetIOSize(file);
-    std::vector<uint8_t> bytes;
-    bytes.resize(fileSize);
-    SDL_ReadIO(file, bytes.data(), fileSize);
-    SDL_CloseIO(file);
-    return bytes;
-}
-
-std::string readAllText(const Path& filePath)
-{
-    auto file = SDL_IOFromFile(filePath.string().c_str(), "rb");
-    if (!file) {
-        return {};
-    }
-    auto fileSize = SDL_GetIOSize(file);
-    std::string str;
-    str.resize(fileSize);
-    SDL_ReadIO(file, str.data(), fileSize);
-    SDL_CloseIO(file);
-    return str;
-}
-
 Application::Application(int argc, char** argv)
 {
     for (int i = 0; i < argc; i++) {
@@ -77,7 +44,6 @@ Application::Application(int argc, char** argv)
     setupConsole(mTitle);
     setupDPIAwareness();
 #endif
-    FileSystem::sIOStream = { &fileExist, &readAll, &readAllText };
     FileSystem::setBasePath("../../media");
 }
 

@@ -194,7 +194,7 @@ String generateSource(ShaderSourceType sourceType, const ShaderStage shader_type
     return shaderCode;
 }
 
-Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
+Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, ShaderStage shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
 {
     assert(shaderCode.size() > 0);
 
@@ -210,7 +210,7 @@ Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceTyp
     return sm;
 }
 
-Ref<HwShaderModule> ShaderCompiler::compileFromFile(const ShaderStage shader_type, const char* pFilename, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
+Ref<HwShaderModule> ShaderCompiler::compileFromFile(ShaderStage shader_type, const char* pFilename, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
 {
     String pShaderCode;
     ShaderSourceType sourceType = ShaderSourceType::GLSL;
@@ -227,7 +227,6 @@ Ref<HwShaderModule> ShaderCompiler::compileFromFile(const ShaderStage shader_typ
     pShaderCode = FileSystem::readAllText(fullpath);
     auto res = compileFromString(sourceType, shader_type, pFilename, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
     if (res) {
-        // gfx().setResourceName(VK_OBJECT_TYPE_SHADER_MODULE, (uint64_t)pShader->module, pFilename);
         return res;
     }
 
