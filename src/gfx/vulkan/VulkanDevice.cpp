@@ -331,7 +331,7 @@ Ref<HwShaderModule> VulkanDevice::createShaderModule(ShaderStage stage, const By
 
 Ref<HwShaderModule> VulkanDevice::compileShaderModule(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& pShaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
 {
-    return ShaderCompiler::compileFromString(sourceType, ToVkShaderStage(shader_type), shaderName, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
+    return ShaderCompiler::compileFromString(sourceType, shader_type, shaderName, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
 }
 
 SharedPtr<HwProgram> VulkanDevice::createProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)

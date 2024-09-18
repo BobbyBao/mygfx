@@ -1,18 +1,12 @@
 #include "ShaderCompiler.h"
-#include <codecvt>
-#include <locale>
-// #include <shlobj.h>
-#include "VulkanDevice.h"
-#include <fstream>
-#include <iostream>
-
-#define USE_SHADER_C
-
+#include "GraphicsDevice.h"
 #include "utils/FileUtils.h"
 #include "utils/Log.h"
 #include <shaderc/shaderc.hpp>
+#include <mutex>
 
 namespace mygfx {
+
 namespace {
     std::mutex sIncludeFileMutex;
     std::unordered_map<String, String> sIncludeFiles;
@@ -57,24 +51,24 @@ public:
     // Handles shaderc_include_result_release_fn callbacks.
     void ReleaseInclude(shaderc_include_result* data) override
     {
-        // delete data;
+        delete data;
     }
 };
 
-static shaderc_shader_kind getShadercKind(VkShaderStageFlagBits stage)
+static shaderc_shader_kind getShadercKind(ShaderStage stage)
 {
     switch (stage) {
-    case VK_SHADER_STAGE_VERTEX_BIT:
+    case ShaderStage::VERTEX:
         return shaderc_vertex_shader;
-    case VK_SHADER_STAGE_GEOMETRY_BIT:
+    case ShaderStage::GEOMETRY:
         return shaderc_geometry_shader;
-    case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
+    case ShaderStage::TESSELLATION_CONTROL:
         return shaderc_tess_control_shader;
-    case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
+    case ShaderStage::TESSELLATION_EVALUATION:
         return shaderc_tess_evaluation_shader;
-    case VK_SHADER_STAGE_FRAGMENT_BIT:
+    case ShaderStage::FRAGMENT:
         return shaderc_fragment_shader;
-    case VK_SHADER_STAGE_COMPUTE_BIT:
+    case ShaderStage::COMPUTE:
         return shaderc_compute_shader;
     default:
         assert(false && "Invalid shader stage");
@@ -83,7 +77,7 @@ static shaderc_shader_kind getShadercKind(VkShaderStageFlagBits stage)
     }
 }
 
-bool compileShaderC(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines, ByteArray& outSpvData)
+bool compileShaderC(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines, ByteArray& outSpvData)
 {
     shaderc::CompileOptions options;
     // if (debug) {
@@ -149,7 +143,7 @@ bool compileShaderC(ShaderSourceType sourceType, const VkShaderStageFlagBits sha
     return true;
 }
 
-bool compileToSpirv(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines, ByteArray& outSpvData)
+bool compileToSpirv(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines, ByteArray& outSpvData)
 {
     if (sourceType == ShaderSourceType::GLSL) {
         return compileShaderC(sourceType, shader_type, shaderName, shaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines, outSpvData);
@@ -158,7 +152,7 @@ bool compileToSpirv(ShaderSourceType sourceType, const VkShaderStageFlagBits sha
     return false;
 }
 
-String generateSource(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& pshader, const char* shaderCompilerParams, const DefineList* pDefines)
+String generateSource(ShaderSourceType sourceType, const ShaderStage shader_type, const String& pshader, const char* shaderCompilerParams, const DefineList* pDefines)
 {
     String shaderCode(pshader);
     String code;
@@ -180,11 +174,11 @@ String generateSource(ShaderSourceType sourceType, const VkShaderStageFlagBits s
 
     shaderCode += "#define TARGET_VULKAN_ENVIRONMENT\n";
 
-    if (shader_type == VK_SHADER_STAGE_VERTEX_BIT) {
+    if (shader_type == ShaderStage::VERTEX) {
         shaderCode += "#define SHADER_STAGE_VERTEX\n";
-    } else if (shader_type == VK_SHADER_STAGE_FRAGMENT_BIT) {
+    } else if (shader_type == ShaderStage::FRAGMENT) {
         shaderCode += "#define SHADER_STAGE_FRAGMENT\n";
-    } else if (shader_type == VK_SHADER_STAGE_COMPUTE_BIT) {
+    } else if (shader_type == ShaderStage::COMPUTE) {
         shaderCode += "#define SHADER_STAGE_COMPUTE\n";
     }
 
@@ -200,27 +194,7 @@ String generateSource(ShaderSourceType sourceType, const VkShaderStageFlagBits s
     return shaderCode;
 }
 
-ShaderStage ToShaderStage(VkShaderStageFlagBits stage)
-{
-    switch (stage) {
-    case VK_SHADER_STAGE_VERTEX_BIT:
-        return ShaderStage::VERTEX;
-    case VK_SHADER_STAGE_FRAGMENT_BIT:
-        return ShaderStage::FRAGMENT;
-    case VK_SHADER_STAGE_COMPUTE_BIT:
-        return ShaderStage::COMPUTE;
-    case VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT:
-        return ShaderStage::TESSELLATION_CONTROL;
-    case VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT:
-        return ShaderStage::TESSELLATION_EVALUATION;
-    case VK_SHADER_STAGE_GEOMETRY_BIT:
-        return ShaderStage::GEOMETRY;
-    default:
-        return ShaderStage::None;
-    }
-}
-
-Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, const VkShaderStageFlagBits shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
+Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceType, const ShaderStage shader_type, const String& shaderName, const String& shaderCode, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
 {
     assert(shaderCode.size() > 0);
 
@@ -232,14 +206,14 @@ Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceTyp
     }
 
     assert(SpvData.size() != 0);
-    sm = device().createShaderModule(ToShaderStage(shader_type), SpvData, ShaderCodeType::SPIRV, pShaderEntryPoint);
+    sm = device().createShaderModule(shader_type, SpvData, ShaderCodeType::SPIRV, pShaderEntryPoint);
     return sm;
 }
 
-Ref<HwShaderModule> ShaderCompiler::compileFromFile(const VkShaderStageFlagBits shader_type, const char* pFilename, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
+Ref<HwShaderModule> ShaderCompiler::compileFromFile(const ShaderStage shader_type, const char* pFilename, const char* pShaderEntryPoint, const char* shaderCompilerParams, const DefineList* pDefines)
 {
     String pShaderCode;
-    ShaderSourceType sourceType;
+    ShaderSourceType sourceType = ShaderSourceType::GLSL;
 
     const char* pExtension = pFilename + std::max<size_t>(strlen(pFilename) - 4, 0);
     if (strcmp(pExtension, "glsl") == 0)
