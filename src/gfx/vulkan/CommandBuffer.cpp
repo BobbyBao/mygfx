@@ -723,7 +723,6 @@ void CommandBuffer::free() const
 {
     if (cmd != VK_NULL_HANDLE && commandPool != nullptr) {
         commandPool->free();
-        commandPool = nullptr;
     }
 }
 

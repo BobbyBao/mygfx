@@ -94,9 +94,9 @@ bool VulkanDevice::create(const Settings& settings)
     // mImageSet = new DescriptorTable(DescriptorType::StorageImage);
     // mBufferSet = new DescriptorTable(DescriptorType::StorageBuffer);
 
-    mCommandQueues[0].Init(CommandQueueType::Graphics, queueFamilyIndices.graphics, 0, 3, "");
-    mCommandQueues[1].Init(CommandQueueType::Compute, queueFamilyIndices.compute, 0, 3, "");
-    mCommandQueues[2].Init(CommandQueueType::Copy, queueFamilyIndices.transfer, 1, 3, "");
+    mCommandQueues[0].init(CommandQueueType::Graphics, queueFamilyIndices.graphics, 0, 3, "");
+    mCommandQueues[1].init(CommandQueueType::Compute, queueFamilyIndices.compute, 0, 3, "");
+    mCommandQueues[2].init(CommandQueueType::Copy, queueFamilyIndices.transfer, 1, 3, "");
 
     SamplerHandle::init();
 
@@ -161,14 +161,14 @@ void VulkanDevice::executeCommand(CommandQueueType queueType, const std::functio
     fn(*cmd);
     cmd->end();
     uint64_t waitValue = mCommandQueues[(int)queueType].submit(&cmd->cmd, 1, VK_NULL_HANDLE, VK_NULL_HANDLE);
-    mCommandQueues[(int)queueType].Wait(device, waitValue);
+    mCommandQueues[(int)queueType].wait(waitValue);
     freeCommandBuffer(cmd);
 }
 
 void VulkanDevice::resize(HwSwapchain* sc, uint32_t destWidth, uint32_t destHeight)
 {
     // Ensure all operations on the device have been finished before destroying resources
-    vkDeviceWaitIdle(device);
+    vkDeviceWaitIdle(gfx().device);
 
     VulkanSwapChain* swapChain = static_cast<VulkanSwapChain*>(sc);
 
@@ -215,9 +215,9 @@ void VulkanDevice::destroy()
     vmaDestroyAllocator(mVmaAllocator);
     mVmaAllocator = NULL;
 
-    mCommandQueues[0].Release(device);
-    mCommandQueues[1].Release(device);
-    mCommandQueues[2].Release(device);
+    mCommandQueues[0].release();
+    mCommandQueues[1].release();
+    mCommandQueues[2].release();
 
     if (device) {
         vkDestroyDevice(device, nullptr);
@@ -696,7 +696,7 @@ void VulkanDevice::drawMultiThreaded(const std::vector<RenderCommand>& items, co
     for (auto cmdList : mCmdList) {
         auto c = cmdList;
         post([=]() {
-            mCommandQueues[(int)CommandQueueType::Graphics].ReleaseCommandPool(c->commandPool);
+            mCommandQueues[(int)CommandQueueType::Graphics].releaseCommandPool(c->commandPool);
             c->free();
         },
             4);
@@ -721,7 +721,7 @@ void VulkanDevice::commit(HwSwapchain* sc)
     mCommandQueues[0].present(swapChain->swapChain, mCurrentImage);
     auto cmd = (CommandBuffer*)mCurrentCmd;
     auto future = std::async(std::launch::async, [this, semaphoreValue, cmd]() {
-        mCommandQueues[0].Wait(device, semaphoreValue);
+        mCommandQueues[0].wait(semaphoreValue);
         freeCommandBuffer(cmd);
     });
 
