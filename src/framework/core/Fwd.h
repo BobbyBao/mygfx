@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicsFwd.h"
+#include "utils/BitmaskEnum.h"
 #include <filesystem>
 
 #pragma warning(push)

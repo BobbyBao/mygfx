@@ -42,7 +42,7 @@ public:
         for (int i = 0; i < GRID_SIZE; i++) {
             for (int j = 0; j < GRID_SIZE; j++) {
                 auto model = co_await background_executor()->submit([this]() {
-                    return Renderable::createCube(1.0f);
+                    return MeshRenderable::createCube(1.0f);
                 });
 
                 co_await timer_queue()->make_delay_object(1000ms, background_executor());

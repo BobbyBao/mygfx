@@ -9,18 +9,28 @@ namespace mygfx {
 
 Renderable::Renderable() = default;
 
-Object* Renderable::createObject()
+void Renderable::onAddToScene(Scene* scene)
 {
-    return new Renderable();
+    scene->mRenderables.insert(this);
 }
 
-void Renderable::cloneProcess(Object* destNode)
+void Renderable::onRemoveFromScene(Scene* scene)
 {
-    Renderable* renderable = static_cast<Renderable*>(destNode);
+    scene->mRenderables.erase(this);
+}
+
+Object* MeshRenderable::createObject()
+{
+    return new MeshRenderable();
+}
+
+void MeshRenderable::cloneProcess(Object* destNode)
+{
+    MeshRenderable* renderable = static_cast<MeshRenderable*>(destNode);
     renderable->setMesh(mMesh);
 }
 
-void Renderable::setMesh(Mesh* m)
+void MeshRenderable::setMesh(Mesh* m)
 {
     mMesh = m;
     primitives.clear();
@@ -33,17 +43,7 @@ void Renderable::setMesh(Mesh* m)
     }
 }
 
-void Renderable::onAddToScene(Scene* scene)
-{
-    scene->mRenderables.insert(this);
-}
-
-void Renderable::onRemoveFromScene(Scene* scene)
-{
-    scene->mRenderables.erase(this);
-}
-
-Ref<Node> Renderable::createCube(float size)
+Ref<Node> MeshRenderable::createCube(float size)
 {
     Ref<Mesh> mesh(Mesh::createCube(size));
     DefineList macros;
@@ -65,7 +65,7 @@ Ref<Node> Renderable::createCube(float size)
     material->setShaderParameter("u_RoughnessFactor", 0.5f);
 
     Ref<Node> node(new Node());
-    node->addComponent<Renderable>()->setMesh(mesh);
+    node->addComponent<MeshRenderable>()->setMesh(mesh);
     return node;
 }
 

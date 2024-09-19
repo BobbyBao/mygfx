@@ -7,7 +7,7 @@ namespace mygfx {
 class Texture;
 class Shader;
 
-class Skybox : public Renderable {
+class Skybox : public MeshRenderable {
 public:
     Skybox();
 

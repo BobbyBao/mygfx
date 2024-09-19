@@ -13,24 +13,29 @@ struct Primitive {
     uint32_t primitiveUniforms = 0;
 };
 
-class Renderable : public Component {
+class Renderable abstract : public Component {
 public:
     Renderable();
 
-    void setMesh(Mesh* m);
-
     Vector<Primitive> primitives;
+
+protected:
+    void onAddToScene(Scene* scene) override;
+    void onRemoveFromScene(Scene* scene) override;
+
+    mutable bool mSkinning : 1 = false;
+    mutable bool mMorphing : 1 = false;
+};
+
+class MeshRenderable : public Renderable {
+public:
+    void setMesh(Mesh* m);
 
     static Ref<Node> createCube(float size);
 
 protected:
     Object* createObject() override;
     void cloneProcess(Object* destNode) override;
-    void onAddToScene(Scene* scene) override;
-    void onRemoveFromScene(Scene* scene) override;
-
-    mutable bool mSkinning : 1 = false;
-    mutable bool mMorphing : 1 = false;
     Ref<Mesh> mMesh;
 };
 

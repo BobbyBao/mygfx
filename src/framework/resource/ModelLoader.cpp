@@ -91,11 +91,11 @@ bool ModelLoader::hasSkin() const
 void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
 {
     Node* newNode = parent->createChild<Node>(node.name ? node.name : "UnNamed");
-    Renderable* renderable = nullptr;
+    MeshRenderable* renderable = nullptr;
     Camera* camera = nullptr;
     Light* light = nullptr;
     if (node.mesh) {
-        renderable = newNode->addComponent<Renderable>();
+        renderable = newNode->addComponent<MeshRenderable>();
     } else if (node.camera) {
         camera = newNode->addComponent<Camera>();
         createCamera(camera, node.camera);

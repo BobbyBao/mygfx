@@ -36,7 +36,7 @@ void Skybox::setIrrMap(Texture* tex)
 
 void Skybox::onAddToScene(Scene* scene)
 {
-    Renderable::onAddToScene(scene);
+    MeshRenderable::onAddToScene(scene);
 
     if (mMesh == nullptr) {
         auto mesh = Mesh::createFullScreen();
@@ -65,7 +65,7 @@ void Skybox::onAddToScene(Scene* scene)
 
 void Skybox::onRemoveFromScene(Scene* scene)
 {
-    Renderable::onRemoveFromScene(scene);
+    MeshRenderable::onRemoveFromScene(scene);
 
     if (scene->mSkybox == this) {
         scene->mSkybox = nullptr;
