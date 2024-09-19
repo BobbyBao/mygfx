@@ -139,7 +139,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
             : any(renderInfo.loadFlags & TargetBufferFlags::DEPTH)                            ? VK_ATTACHMENT_LOAD_OP_LOAD
                                                                                               : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthStencilAttachment.storeOp = any(renderInfo.storeFlags & TargetBufferFlags::DEPTH) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthStencilAttachment.clearValue.depthStencil = { InvertedDepth ? 0.0f : 1.0f, 0 };
+        depthStencilAttachment.clearValue.depthStencil = { INVERTED_DEPTH ? 0.0f : 1.0f, 0 };
     }
 
     VkRenderingInfoKHR renderingInfo {};
@@ -213,7 +213,7 @@ void CommandBuffer::resetState() const VULKAN_NOEXCEPT
     g_vkCmdSetFrontFaceEXT(cmd, VK_FRONT_FACE_COUNTER_CLOCKWISE);
     g_vkCmdSetDepthTestEnableEXT(cmd, VK_TRUE);
     g_vkCmdSetDepthWriteEnableEXT(cmd, VK_TRUE);
-    g_vkCmdSetDepthCompareOpEXT(cmd, InvertedDepth ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL);
+    g_vkCmdSetDepthCompareOpEXT(cmd, INVERTED_DEPTH ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL);
     g_vkCmdSetPrimitiveTopologyEXT(cmd, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     g_vkCmdSetRasterizerDiscardEnableEXT(cmd, VK_FALSE);
     g_vkCmdSetPolygonModeEXT(cmd, VK_POLYGON_MODE_FILL);
@@ -326,7 +326,7 @@ void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) 
 
 VkCompareOp convertComparisonFunc(const CompareOp func)
 {
-    static bool invertedDepth = InvertedDepth;
+    static bool invertedDepth = INVERTED_DEPTH;
 
     switch (func) {
     case CompareOp::NEVER:

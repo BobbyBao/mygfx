@@ -9,7 +9,7 @@
 namespace mygfx {
 
 static constexpr uint32_t MAX_BACKBUFFER_COUNT = 3;
-static constexpr bool InvertedDepth = true;
-static constexpr bool LinearColorOutput = true;
-
+static constexpr bool INVERTED_DEPTH = true;
+static constexpr bool LINEAR_COLOR_OUTPUT = true;
+static constexpr uint32_t INVALID_UNIFORM_OFFSET = 0xffffffff;
 }

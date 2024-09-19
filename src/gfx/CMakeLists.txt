@@ -28,8 +28,6 @@ IF(WIN32)
 	ENDIF()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_WIN32_KHR")
 
-	link_libraries(shaderc_combined.lib spirv-cross-core.lib spirv-cross-glsl.lib )
-
 ELSEIF(LINUX)
 	IF (NOT Vulkan_FOUND)
 		find_library(Vulkan_LIBRARY NAMES vulkan HINTS "$ENV{VULKAN_SDK}/lib" "${CMAKE_SOURCE_DIR}/libs/vulkan" REQUIRED)
@@ -93,6 +91,12 @@ ENDIF(WIN32)
 IF (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
 ENDIF()
+
+IF(WIN32)
+	link_libraries(shaderc_combined.lib spirv-cross-core.lib spirv-cross-glsl.lib)
+ELSE(WIN32)
+	link_libraries(libspirv-cross-core.a libspirv-cross-glsl.a )
+ENDIF(WIN32)
 
 ucm_add_dirs("" TO _SRC RECURSIVE FILTER_POP 1)
 ucm_remove_directories("tiny_imageformat" FROM _SRC)

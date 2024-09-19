@@ -24,7 +24,6 @@ public:
     ModelLoader() = default;
 
     Ref<Node> load(const String& fileName);
-
     bool hasSkin() const;
 
     auto& getBoundingBox() const

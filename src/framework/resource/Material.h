@@ -45,7 +45,7 @@ protected:
     String mMaterialUniformName;
     Ref<ShaderResourceInfo> mShaderResourceInfo;
     ByteArray mMaterialData;
-    mutable uint32_t mMaterialUniforms = 0xffffffff;
+    mutable uint32_t mMaterialUniforms = INVALID_UNIFORM_OFFSET;
 };
 
 }

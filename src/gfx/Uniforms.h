@@ -6,6 +6,7 @@ namespace mygfx {
 class Uniforms {
 public:
     static constexpr int MAX_COUNT = 4;
+
     Uniforms();
 
     Uniforms(uint32_t v0)
@@ -106,7 +107,9 @@ inline Uniforms::Uniforms(std::initializer_list<uint32_t> const& list)
 
 inline void Uniforms::push_back(uint32_t v)
 {
-    mValues[mSize++] = v;
+    if (v != INVALID_UNIFORM_OFFSET) {
+        mValues[mSize++] = v;
+    }
 }
 
 inline void Uniforms::pop_back()

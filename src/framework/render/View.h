@@ -9,6 +9,7 @@ class GraphicsApi;
 class Scene;
 class Camera;
 class Texture;
+class RenderQueue;
 
 struct FrameUniforms {
     mat4 viewMatrix;
@@ -73,6 +74,7 @@ protected:
     Ref<Scene> mScene;
     Ref<Camera> mCamera;
     FrameUniforms mFrameUniforms;
+    Ref<RenderQueue> mRenderQueue = nullptr;
 };
 
 }

@@ -80,9 +80,9 @@ const mat4& Camera::getProjMatrix() const
 void Camera::updateProjection() const
 {
     if (mOrtho)
-        mProjection = orthographic(-mOrthoSize.x, mOrthoSize.x, -mOrthoSize.y, mOrthoSize.y, mNearPlane, mFarPlane, InvertedDepth);
+        mProjection = orthographic(-mOrthoSize.x, mOrthoSize.x, -mOrthoSize.y, mOrthoSize.y, mNearPlane, mFarPlane, INVERTED_DEPTH);
     else
-        mProjection = perspective(mFov, mAspectRatio, mNearPlane, mFarPlane, InvertedDepth);
+        mProjection = perspective(mFov, mAspectRatio, mNearPlane, mFarPlane, INVERTED_DEPTH);
 
     mProjDirty = false;
 }

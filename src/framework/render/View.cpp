@@ -5,12 +5,14 @@ namespace mygfx {
 
 View::View()
 {
+    mRenderQueue = new RenderQueue();
 }
 
 View::View(HwSwapchain* swapChain)
 {
     mSwapchain = swapChain;
     mRenderTarget = swapChain->renderTarget;
+    mRenderQueue = new RenderQueue();
 }
 
 void View::setScene(Scene* scene)
@@ -39,6 +41,8 @@ void View::update(double delta)
 
     mFrameUniforms.screenSize = { mRenderTarget->width, mRenderTarget->height };
     mFrameUniforms.invScreenSize = { 1.0f / mFrameUniforms.screenSize.x, 1.0f / mFrameUniforms.screenSize.y };
+
+    mRenderQueue->clear();
 
     if (mScene == nullptr) {
         return;
@@ -69,21 +73,24 @@ void View::render(GraphicsApi& cmd)
 {
     uint32_t perView = gfxApi().allocConstant(mFrameUniforms);
 
-    for (auto renderable : mScene->getRenderables()) {
-        ObjectUniforms objectUniforms;
-        objectUniforms.worldMatrix = renderable->getOwner()->getWorldTransform();
-        objectUniforms.normalMatrix = transpose(inverse(objectUniforms.worldMatrix));
+    auto& renderCmds = mRenderQueue->getWriteCommands();
+    for (auto& renderable : mScene->getRenderables()) {
+        ObjectUniforms objectUniforms {
+            .worldMatrix = renderable->getOwner()->getWorldTransform(),
+            .normalMatrix = transpose(inverse(objectUniforms.worldMatrix))
+        };
 
         uint32_t perObject = gfxApi().allocConstant(objectUniforms);
 
         for (auto& prim : renderable->primitives) {
-
-            uint32_t perMaterial = prim.material->getMaterialUniforms();
-
-            cmd.bindPipelineState(prim.material->getPipelineState());
-            cmd.bindUniforms(perMaterial == 0xffffffff ? Uniforms { perView, perObject } : Uniforms { perView, perObject, perMaterial });
-            cmd.drawPrimitive(prim.renderPrimitive);
+            auto& rc = renderCmds.emplace_back();
+            rc.renderPrimitive = prim.renderPrimitive;
+            rc.pipelineState = prim.material->getPipelineState();
+            rc.uniforms.set(perView, perObject, prim.material->getMaterialUniforms());
         }
     }
+
+    cmd.drawBatch(mRenderQueue);
 }
+
 }
