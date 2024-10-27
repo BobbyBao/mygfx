@@ -27,7 +27,7 @@ void IBL::filter(Texture* hdr)
         mCubeMap = Texture::createFromData(textureData);
 
         auto panorama_to_cubemap = Shader::fromFile("shaders/fullscreen.vert", "shaders/tools/panorama_to_cubemap.frag");
-        auto renderTexture = Texture::createRenderTarget(IMAGE_SIZE, IMAGE_SIZE, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED | TextureUsage::TRANSFER_SRC);
+        auto renderTexture = Texture::createRenderTexture(IMAGE_SIZE, IMAGE_SIZE, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED | TextureUsage::TRANSFER_SRC);
 
         struct {
             int u_currentFace;
@@ -80,7 +80,7 @@ void IBL::filter(Texture* hdr)
         auto textureData = TextureData::TextureCube(64, 64, 1, Format::R16G16B16A16_SFLOAT);
         textureData.usage = TextureUsage::COLOR_ATTACHMENT | TextureUsage::SAMPLED;
         mIrrMap = Texture::createFromData(textureData);
-        mLUT = Texture::createRenderTarget(IMAGE_SIZE, IMAGE_SIZE, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED);
+        mLUT = Texture::createRenderTexture(IMAGE_SIZE, IMAGE_SIZE, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED);
         
         RenderTargetDesc desc { .width = IMAGE_SIZE, .height = IMAGE_SIZE };
 

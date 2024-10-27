@@ -161,7 +161,7 @@ Ref<Texture> Texture::createFromData(const Span<uint8_t>& content, const String&
     return dataProvider.onLoad(content, samplerInfo);
 }
 
-Ref<Texture> Texture::createRenderTarget(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa)
+Ref<Texture> Texture::createRenderTexture(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa)
 {
     auto textureData = TextureData::Texture2D(width, height, format);
     textureData.sampleCount = msaa;

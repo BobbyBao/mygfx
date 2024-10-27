@@ -38,6 +38,10 @@ public:
     void quit() { mQuit = true; }
     void destroy();
 
+    Ref<View> createView(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa);
+    Ref<View> createView(HwSwapchain* swapChain);
+    void destroyView(const Ref<View>& view);
+
     inline static Framework* msInstance = nullptr;
 
 protected:

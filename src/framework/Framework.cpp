@@ -56,6 +56,21 @@ bool Framework::createWindow(void** window, void** windowInstance)
     return false;
 }
 
+Ref<View> Framework::createView(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa)
+{
+    return mViews.emplace(new View(width, height, format, usage, msaa)).first.operator*();
+}
+
+Ref<View> Framework::createView(HwSwapchain* swapChain)
+{
+    return mViews.emplace(new View(swapChain)).first.operator*();
+}
+
+void Framework::destroyView(const Ref<View>& view)
+{
+    mViews.erase(view);
+}
+
 void Framework::run()
 {
     init();
@@ -117,6 +132,10 @@ void Framework::updateFrame()
     cmd.beginRendering(mSwapchain->renderTarget, renderInfo);
 
     onDraw(cmd);
+
+    for (auto& view : mViews) {
+        view->render(cmd);
+    }
 
     onPostDraw(cmd);
 

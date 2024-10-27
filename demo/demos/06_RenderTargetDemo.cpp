@@ -15,7 +15,7 @@ public:
     {
         mShader = ShaderLibs::getSimpleLightShader();
         mMesh = Mesh::createCube();
-        mRenderTexture = Texture::createRenderTarget(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
+        mRenderTexture = Texture::createRenderTexture(1024, 1024, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
 
         RenderTargetDesc desc {
             .width = 1024,

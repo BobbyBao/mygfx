@@ -3,8 +3,17 @@
 
 namespace mygfx {
 
-View::View()
+View::View(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa)
 {
+    mRenderTexture = Texture::createRenderTexture(width, height, Format::R8G8B8A8_UNORM, TextureUsage::SAMPLED);
+
+    RenderTargetDesc desc {
+        .width = width,
+        .height = height
+    };
+
+    desc.colorAttachments.emplace_back(mRenderTexture->getRTV());
+    mRenderTarget = gfxApi().createRenderTarget(desc);
     mRenderQueue = new RenderQueue();
 }
 

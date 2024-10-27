@@ -64,7 +64,7 @@ public:
     static Ref<Texture> createFromFile(const String& fileName, SamplerInfo samplerInfo = {});
     static Ref<Texture> createFromData(const Span<uint8_t>& content, const String& type, SamplerInfo samplerInfo = {});
 
-    static Ref<Texture> createRenderTarget(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::NONE, SampleCount msaa = SampleCount::SAMPLE_1);
+    static Ref<Texture> createRenderTexture(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::NONE, SampleCount msaa = SampleCount::SAMPLE_1);
     static Ref<Texture> createDepthStencil(uint16_t width, uint16_t height, Format format, TextureUsage usage = TextureUsage::NONE, bool isShadowMap = false, SampleCount msaa = SampleCount::SAMPLE_1);
 
     static Ref<Texture> createByColor(const char* name, const float4& color);

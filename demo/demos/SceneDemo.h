@@ -26,7 +26,7 @@ public:
         mCameraController = mCameraNode->addComponent<CameraController>();
         mCameraController->lookAt(vec3 { 0.0f, 0.0f, 4.0f }, vec3 { 0.0f });
 
-        mView = new View(mApp->getSwapChain());
+        mView = mApp->createView(mApp->getSwapChain());
         mView->setScene(mScene);
         mView->setCamera(mCamera);
 
@@ -38,17 +38,22 @@ public:
 
         mView->setEnvIntensity(0.75f);
     }
+    
+    void stop() override 
+    {
+        mApp->destroyView(mView);
+    }
 
     void update(double delta) override
     {
         mCameraController->update((float)delta);
 
-        mView->update(delta);
+        //mView->update(delta);
     }
 
     void draw(GraphicsApi& cmd) override
     {
-        mView->render(cmd);
+        //mView->render(cmd);
     }
 };
 

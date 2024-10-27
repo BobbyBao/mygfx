@@ -2,6 +2,7 @@
 #include "Core/Fwd.h"
 #include "core/Maths.h"
 #include "utils/RefCounted.h"
+#include "GraphicsDefs.h"
 
 namespace mygfx {
 
@@ -52,7 +53,7 @@ struct ObjectUniforms {
 
 class View : public utils::RefCounted {
 public:
-    View();
+    View(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa);
     View(HwSwapchain* swapChain);
 
     void setScene(Scene* scene);
@@ -63,6 +64,8 @@ public:
         mFrameUniforms.envIntensity = envIntensity;
     }
 
+    Texture* getRenderTexture() { return mRenderTexture; }
+
     auto& frameUniforms() { return mFrameUniforms; }
 
     void update(double delta);
@@ -70,6 +73,7 @@ public:
 
 protected:
     Ref<HwSwapchain> mSwapchain;
+    Ref<Texture> mRenderTexture;
     Ref<HwRenderTarget> mRenderTarget;
     Ref<Scene> mScene;
     Ref<Camera> mCamera;
