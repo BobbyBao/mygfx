@@ -8,7 +8,6 @@ namespace mygfx {
 class Material;
 
 struct SubMesh {
-
     SubMesh() = default;
     SubMesh(VertexData* vertexData);
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderable.h"
+#include "MeshRenderable.h"
 
 namespace mygfx {
 

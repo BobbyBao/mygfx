@@ -3,12 +3,15 @@
 #include "core/Fwd.h"
 #include "core/Maths.h"
 #include "core/Resource.h"
+#include <variant>
 
 namespace mygfx {
 
 class Shader;
 class ShaderResourceInfo;
 class Texture;
+
+using ShaderParameter = std::variant<int, float, vec2, vec3, vec4, Ref<Texture>>;
 
 class Material : public Resource {
 public:
@@ -45,6 +48,7 @@ protected:
     String mMaterialUniformName;
     Ref<ShaderResourceInfo> mShaderResourceInfo;
     ByteArray mMaterialData;
+    HashMap<String, ShaderParameter> mShaderParameters;
     mutable uint32_t mMaterialUniforms = INVALID_UNIFORM_OFFSET;
 };
 

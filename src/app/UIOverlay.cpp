@@ -127,7 +127,6 @@ UIOverlay::UIOverlay(SDL_Window* wnd)
 
 UIOverlay::~UIOverlay()
 {
-
     freeResources();
 
     ImGui_ImplSDL3_Shutdown();

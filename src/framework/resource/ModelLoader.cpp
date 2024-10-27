@@ -7,7 +7,7 @@
 #include "scene/Camera.h"
 #include "scene/Light.h"
 #include "scene/Node.h"
-#include "scene/Renderable.h"
+#include "scene/MeshRenderable.h"
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>

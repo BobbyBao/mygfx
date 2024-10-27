@@ -20,7 +20,7 @@ public:
     void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
     void loadShader(const String& cs);
 
-    const std::vector<Ref<HwShaderModule>>& shaderModules() const { return mShaderModules; }
+    const std::vector<Ref<HwShaderModule>>& getShaderModules() const { return mShaderModules; }
     VertexAttribute getVertexSemantic() const { return pipelineState.vertexSemantic; }
     HwProgram* getProgram() { return mProgram; }
 

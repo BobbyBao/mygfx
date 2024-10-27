@@ -3,7 +3,6 @@
 
 namespace mygfx {
 
-class Mesh;
 class HwRenderPrimitive;
 class Material;
 
@@ -27,16 +26,6 @@ protected:
     mutable bool mMorphing : 1 = false;
 };
 
-class MeshRenderable : public Renderable {
-public:
-    void setMesh(Mesh* m);
 
-    static Ref<Node> createCube(float size);
-
-protected:
-    Object* createObject() override;
-    void cloneProcess(Object* destNode) override;
-    Ref<Mesh> mMesh;
-};
 
 }

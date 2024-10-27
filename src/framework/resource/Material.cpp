@@ -59,6 +59,7 @@ void Material::setShaderParameter(const String& name, int v)
             assert(member->size == sizeof(int));
             std::memcpy(&mMaterialData[member->offset], &v, sizeof(int));
         }
+        mShaderParameters[name] = v;
     }
 }
 
@@ -70,6 +71,7 @@ void Material::setShaderParameter(const String& name, float v)
             assert(member->size == sizeof(float));
             std::memcpy(&mMaterialData[member->offset], &v, sizeof(float));
         }
+        mShaderParameters[name] = v;
     }
 }
 
@@ -81,6 +83,7 @@ void Material::setShaderParameter(const String& name, const vec3& v)
             assert(member->size == sizeof(vec3));
             std::memcpy(&mMaterialData[member->offset], &v, sizeof(vec3));
         }
+        mShaderParameters[name] = v;
     }
 }
 
@@ -92,6 +95,7 @@ void Material::setShaderParameter(const String& name, const vec4& v)
             assert(member->size == sizeof(vec4));
             std::memcpy(&mMaterialData[member->offset], &v, sizeof(vec4));
         }
+        mShaderParameters[name] = v;
     }
 }
 
@@ -104,6 +108,7 @@ void Material::setShaderParameter(const String& name, Texture* tex)
             assert(member->size == sizeof(int32_t));
             std::memcpy(&mMaterialData[member->offset], &texIndex, sizeof(int32_t));
         }
+        mShaderParameters[name] = Ref<Texture>(tex);
     }
 }
 
