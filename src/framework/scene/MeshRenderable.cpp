@@ -1,8 +1,8 @@
 #include "MeshRenderable.h"
+#include "Node.h"
 #include "resource/Material.h"
 #include "resource/Mesh.h"
 #include "resource/Shader.h"
-#include "Node.h"
 
 namespace mygfx {
 
@@ -20,6 +20,12 @@ void MeshRenderable::cloneProcess(Object* destNode)
 void MeshRenderable::setMesh(Mesh* m)
 {
     mMesh = m;
+
+    updateRenderable();
+}
+
+void MeshRenderable::updateRenderable()
+{
     primitives.clear();
 
     for (uint32_t i = 0; i < mMesh->getSubMeshCount(); i++) {

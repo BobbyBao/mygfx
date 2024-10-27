@@ -7,12 +7,15 @@
 namespace mygfx {
 
 class Texture;
-class GraphicsApi;
 
 class Shader : public Resource {
 public:
     Shader();
     ~Shader();
+
+    class Pass : public Object {
+    public:
+    };
 
     Shader(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
     Shader(const String& csCode);
@@ -47,6 +50,8 @@ protected:
     std::vector<Ref<HwShaderModule>> mShaderModules;
     Ref<HwVertexInput> mVertexInput;
     Ref<HwProgram> mProgram;
+
+    Vector<Ref<Pass>> mPasses;
 };
 
 }

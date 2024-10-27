@@ -14,6 +14,7 @@ public:
 protected:
     Object* createObject() override;
     void cloneProcess(Object* destNode) override;
+    virtual void updateRenderable();
     Ref<Mesh> mMesh;
 };
 }

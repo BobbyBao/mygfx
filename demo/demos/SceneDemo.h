@@ -47,14 +47,8 @@ public:
     void update(double delta) override
     {
         mCameraController->update((float)delta);
-
-        //mView->update(delta);
     }
 
-    void draw(GraphicsApi& cmd) override
-    {
-        //mView->render(cmd);
-    }
 };
 
 }

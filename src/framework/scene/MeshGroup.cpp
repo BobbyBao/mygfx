@@ -21,14 +21,9 @@ void MeshGroup::cloneProcess(Object* destNode)
     MeshGroup* group = (MeshGroup*)destNode;
 }
 
-
-void MeshGroup::onAddToScene(Scene* scene)
+void MeshGroup::updateRenderable()
 {
-    MeshRenderable::onAddToScene(scene);
+
 }
 
-void MeshGroup::onRemoveFromScene(Scene* scene)
-{
-    MeshRenderable::onRemoveFromScene(scene);
-}
 }

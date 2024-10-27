@@ -167,6 +167,8 @@ void Framework::updateFrame()
 void Framework::destroy()
 {
     onDestroy();
+    
+    mViews.clear();
 
     Texture::staticDeinit();
 
