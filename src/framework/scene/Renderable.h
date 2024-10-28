@@ -5,9 +5,11 @@ namespace mygfx {
 
 class HwRenderPrimitive;
 class Material;
+class InstanceBuffer;
 
 struct Primitive {
     HwRenderPrimitive* renderPrimitive = nullptr;
+    InstanceBuffer* instanceBuffer = nullptr;
     Material* material = nullptr;
     uint32_t primitiveUniforms = 0;
 };

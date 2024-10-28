@@ -7,6 +7,9 @@ class Mesh;
 
 class MeshRenderable : public Renderable {
 public:
+    
+    PROPERTY_GET(Mesh*, Mesh)
+
     void setMesh(Mesh* m);
 
     static Ref<Node> createCube(float size);
