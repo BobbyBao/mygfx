@@ -11,9 +11,11 @@ Object* Camera::createObject()
     return new Camera();
 }
 
-void Camera::cloneProcess(Object* destNode)
+void Camera::cloneProcess(Object* destObj)
 {
-    Camera* camera = (Camera*)destNode;
+    Component::cloneProcess(destObj);
+
+    Camera* camera = (Camera*)destObj;
     camera->mOrtho = mOrtho;
     camera->mOrthoSize = mOrthoSize;
     camera->mFov = mFov;

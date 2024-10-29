@@ -10,9 +10,11 @@ Object* Light::createObject()
     return new Light();
 }
 
-void Light::cloneProcess(Object* destNode)
+void Light::cloneProcess(Object* destObj)
 {
-    Light* light = (Light*)destNode;
+    Component::cloneProcess(destObj);
+
+    Light* light = (Light*)destObj;
     light->mColor = mColor;
     light->mIntensity = mIntensity;
     light->mType = mType;

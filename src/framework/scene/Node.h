@@ -102,7 +102,7 @@ public:
 
 protected:
     virtual Object* createObject();
-    virtual void cloneProcess(Object* destNode);
+    virtual void cloneProcess(Object* destObj);
     void setScene(Scene* scene);
     virtual void addToScene();
     virtual void removeFromScene();

@@ -10,6 +10,14 @@ Scene* Component::getScene() const
     return mOwner ? mOwner->getScene() : nullptr;
 }
 
+void Component::cloneProcess(Object* destObj)
+{
+    Component* dest = static_cast<Component*>(destObj);
+
+    dest->mEnable = mEnable;
+    dest->mEnabledEffective = mEnabledEffective;
+}
+
 void Component::onActive()
 {
 }

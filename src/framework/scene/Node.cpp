@@ -82,9 +82,9 @@ Object* Node::createObject()
     return new Node();
 }
 
-void Node::cloneProcess(Object* destNode)
+void Node::cloneProcess(Object* destObj)
 {
-    Node* node = (Node*)destNode;
+    Node* node = (Node*)destObj;
     node->mName = mName;
     node->mPosition = mPosition;
     node->mRotation = mRotation;

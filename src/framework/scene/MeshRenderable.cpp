@@ -11,10 +11,12 @@ Object* MeshRenderable::createObject()
     return new MeshRenderable();
 }
 
-void MeshRenderable::cloneProcess(Object* destNode)
+void MeshRenderable::cloneProcess(Object* destObj)
 {
-    MeshRenderable* renderable = static_cast<MeshRenderable*>(destNode);
-    renderable->setMesh(mMesh);
+    Renderable::cloneProcess(destObj);
+
+    MeshRenderable* dest = static_cast<MeshRenderable*>(destObj);
+    dest->setMesh(mMesh);
 }
 
 void MeshRenderable::setMesh(Mesh* m)

@@ -21,6 +21,7 @@ public:
 
 protected:
     void setOwner(Node* node);
+    void cloneProcess(Object* destObj) override;
     virtual void onActive();
     virtual void onDeactive();
     virtual void onSetOwner(Node* node);

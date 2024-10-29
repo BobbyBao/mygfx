@@ -16,9 +16,11 @@ Object* Skybox::createObject()
     return new Skybox();
 }
 
-void Skybox::cloneProcess(Object* destNode)
+void Skybox::cloneProcess(Object* destObj)
 {
-    Skybox* skybox = (Skybox*)destNode;
+    MeshRenderable::cloneProcess(destObj);
+
+    Skybox* skybox = (Skybox*)destObj;
     skybox->mCubeMap = mCubeMap;
     skybox->mIrrMap = mIrrMap;
     skybox->mGGXLUT = mGGXLUT;

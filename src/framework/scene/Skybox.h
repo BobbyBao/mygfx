@@ -21,7 +21,7 @@ public:
 
 protected:
     Object* createObject() override;
-    void cloneProcess(Object* destNode) override;
+    void cloneProcess(Object* destObj) override;
     void onAddToScene(Scene* scene) override;
     void onRemoveFromScene(Scene* scene) override;
 
