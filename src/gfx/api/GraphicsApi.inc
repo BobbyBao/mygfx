@@ -218,9 +218,9 @@ DECL_DRIVER_API_N(drawIndirect, HwBuffer*, buffer, uint64_t, offset, uint32_t, d
 DECL_DRIVER_API_N(drawIndexedIndirect, HwBuffer*, buffer, uint64_t, offset, uint32_t, drawCount, uint32_t, stride)
 DECL_DRIVER_API_N(dispatch, uint32_t, groupCountX,	uint32_t, groupCountY, uint32_t, groupCountZ)
 DECL_DRIVER_API_N(dispatchIndirect, HwBuffer*, buffer, uint64_t, offset)
-
-DECL_DRIVER_API_N(drawPrimitive, HwRenderPrimitive*, primitive)
-DECL_DRIVER_API_N(drawBatch, RenderQueue*, renderQueue)
+DECL_DRIVER_API_N(drawPrimitive, HwRenderPrimitive*, primitive, uint32_t, instanceCount, uint32_t, firstInstance)
+DECL_DRIVER_API_N(drawIndirectPrimitive, HwRenderPrimitive*, primitive, HwBuffer*, indirectBuffer, uint64_t, offset, uint32_t, drawCount, uint32_t, stride)
+DECL_DRIVER_API_N(drawBatch, HwRenderQueue*, renderQueue)
 DECL_DRIVER_API_N(resourceBarrier, uint32_t, barrierCount, const Barrier*, pBarriers)
 
 #ifdef __clang__

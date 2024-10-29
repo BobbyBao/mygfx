@@ -38,7 +38,7 @@ public:
         cmd.bindUniforms({ perView, perObject });
 
         for (auto& prim : mMesh->renderPrimitives) {
-            cmd.drawPrimitive(prim);
+            cmd.drawPrimitive(prim,  1, 0);
         }
     }
 

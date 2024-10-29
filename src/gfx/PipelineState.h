@@ -100,9 +100,11 @@ struct PipelineState {
     HwProgram* program;
     VertexAttribute vertexSemantic = VertexAttribute::ALL;
     PrimitiveState primitiveState {};
+    DepthState depthState {};
     ColorBlendState colorBlendState {};
     RasterState rasterState {};
-    DepthState depthState {};
+    uint16_t p1;
+    uint32_t p2;
     StencilState* stencilState {};
 };
 

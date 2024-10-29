@@ -1,19 +1,21 @@
 #pragma once
-#include "Renderable.h"
+#include "MeshRenderable.h"
 #include "core/Maths.h"
 
 namespace mygfx {
 
 class Mesh;
 
-class InstanceBuffer : public RefCounted {
+class IndirectBuffer : public RefCounted {
 public:
-    Vector<Ref<HwBuffer>> mInstanceBuffer;
-    Ref<HwBuffer> mIndirectBuffer;
-    uint32_t mMaxInstance = 0;
+    PROPERTY_GET(HwBuffer*, IndirectBuffer)
+
+    uint32_t drawCount = 0;
+private:
+    Ref<HwBuffer> mIndirectBuffer;  
 };
 
-class InstanceRenderable : public Renderable {
+class InstanceRenderable : public MeshRenderable {
 public:
     InstanceRenderable();
 
@@ -23,19 +25,16 @@ public:
         Quaternion rotation = identity<Quaternion>();
     };
 
-    PROPERTY_GET(Mesh*, Mesh)
-
-    void setMesh(Mesh* mesh);
-
 protected:
     Object* createObject() override;
     void cloneProcess(Object* destNode) override;
-    void updateRenderable();
+    void updateRenderable() override;
 
-    Ref<Mesh> mMesh;
     Ref<Material> mMaterial;
     Vector<Vector<InstanceData>> mInstanceData;
-    Ref<InstanceBuffer> mInstanceBuffer;
+    Vector<Ref<HwBuffer>> mInstanceBuffers;
+    uint32_t mMaxInstance = 0;
+    Ref<IndirectBuffer> mIndirectBuffer;
 };
 
 }

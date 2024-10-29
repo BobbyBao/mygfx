@@ -594,7 +594,7 @@ void VulkanDevice::dispatchIndirect(HwBuffer* buffer, uint64_t offset)
     mCurrentCmd->dispatchIndirect(buffer, offset);
 }
 
-void VulkanDevice::drawPrimitive(HwRenderPrimitive* primitive)
+void VulkanDevice::drawPrimitive(HwRenderPrimitive* primitive, uint32_t instanceCount, uint32_t firstInstance)
 {
     VulkanRenderPrimitive* rp = static_cast<VulkanRenderPrimitive*>(primitive);
     if (rp->vertexBuffers.size() > 0) {
@@ -603,9 +603,26 @@ void VulkanDevice::drawPrimitive(HwRenderPrimitive* primitive)
 
     if (rp->indexBuffer != nullptr) {
         vkCmdBindIndexBuffer(mCurrentCmd->cmd, rp->indexBuffer, 0, rp->indexType);
-        mCurrentCmd->drawIndexed(rp->drawArgs.indexCount, rp->drawArgs.instanceCount, rp->drawArgs.firstIndex, rp->drawArgs.vertexOffset, rp->drawArgs.firstInstance);
+        mCurrentCmd->drawIndexed(rp->drawArgs.indexCount, instanceCount, rp->drawArgs.firstIndex, rp->drawArgs.vertexOffset, firstInstance);
     } else {
-        mCurrentCmd->draw(rp->drawArgs.vertexCount, rp->drawArgs.instanceCount, rp->drawArgs.firstVertex, rp->drawArgs.firstInstance);
+        mCurrentCmd->draw(rp->drawArgs.vertexCount, instanceCount, rp->drawArgs.firstVertex, firstInstance);
+    }
+
+    Stats::drawCall()++;
+}
+
+void VulkanDevice::drawIndirectPrimitive(HwRenderPrimitive* primitive, HwBuffer* indirectBuffer, uint64_t offset, uint32_t drawCount, uint32_t stride)
+{
+    VulkanRenderPrimitive* rp = static_cast<VulkanRenderPrimitive*>(primitive);
+    if (rp->vertexBuffers.size() > 0) {
+        vkCmdBindVertexBuffers(mCurrentCmd->cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
+    }
+
+    if (rp->indexBuffer != nullptr) {
+        vkCmdBindIndexBuffer(mCurrentCmd->cmd, rp->indexBuffer, 0, rp->indexType);
+        mCurrentCmd->drawIndexedIndirect(indirectBuffer, offset, drawCount, stride);
+    } else {
+        mCurrentCmd->drawIndirect(indirectBuffer, offset, drawCount, stride);
     }
 
     Stats::drawCall()++;
@@ -617,11 +634,11 @@ static void drawBatch1(const CommandBuffer& cmd, const RenderCommand* start, uin
         auto& primitive = start[i];
         cmd.bindPipelineState(&primitive.pipelineState);
         cmd.bindUniforms(primitive.uniforms);
-        cmd.drawPrimitive(primitive.renderPrimitive);
+        cmd.drawPrimitive(primitive.renderPrimitive, primitive.instanceCount, primitive.firstInstance);
     }
 }
 
-void VulkanDevice::drawBatch(RenderQueue* renderQueue)
+void VulkanDevice::drawBatch(HwRenderQueue* renderQueue)
 {
     const auto& primitives = renderQueue->getReadCommands();
     if (primitives.size() > 200) {

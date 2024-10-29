@@ -18,14 +18,9 @@ Object* InstanceRenderable::createObject()
 
 void InstanceRenderable::cloneProcess(Object* destNode)
 {
+    MeshRenderable::cloneProcess(destNode);
+
     InstanceRenderable* group = (InstanceRenderable*)destNode;
-}
-
-void InstanceRenderable::setMesh(Mesh* mesh)
-{
-    mMesh = mesh;
-
-    updateRenderable();
 }
 
 void InstanceRenderable::updateRenderable()

@@ -3,14 +3,13 @@
 #include "core/Maths.h"
 #include "utils/RefCounted.h"
 #include "GraphicsDefs.h"
+#include "RenderQueue.h"
 
 namespace mygfx {
 
-class GraphicsApi;
 class Scene;
 class Camera;
 class Texture;
-class RenderQueue;
 
 struct FrameUniforms {
     mat4 viewMatrix;
@@ -46,11 +45,6 @@ struct FrameUniforms {
     mat3x4 envRotation = identity<mat3x4>();
 };
 
-struct ObjectUniforms {
-    mat4 worldMatrix;
-    mat4 normalMatrix;
-};
-
 class View : public utils::RefCounted {
 public:
     View(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa);
@@ -78,7 +72,10 @@ protected:
     Ref<Scene> mScene;
     Ref<Camera> mCamera;
     FrameUniforms mFrameUniforms;
-    Ref<RenderQueue> mRenderQueue = nullptr;
+    
+    RenderQueue mRenderQueue;
+
+    //Ref<HwRenderQueue> mRenderQueue = nullptr;
 };
 
 }

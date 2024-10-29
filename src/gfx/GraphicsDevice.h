@@ -15,7 +15,7 @@ struct Settings {
 
 struct PipelineState;
 struct RenderCommand;
-class RenderQueue;
+class HwRenderQueue;
 
 template <typename T>
 class ConcreteDispatcher;
@@ -120,12 +120,14 @@ protected:
 };
 
 struct RenderCommand {
-    HwRenderPrimitive* renderPrimitive;
+    HwRenderPrimitive* renderPrimitive = nullptr;
     PipelineState pipelineState;
     Uniforms uniforms;
+    uint16_t firstInstance = 0;
+    uint16_t instanceCount = 1;
 };
 
-class RenderQueue : public HwObject {
+class HwRenderQueue : public HwObject {
 public:
     std::vector<RenderCommand>& getWriteCommands();
     const std::vector<RenderCommand>& getReadCommands() const;

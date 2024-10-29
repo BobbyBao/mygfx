@@ -15,7 +15,7 @@ public:
     };
 
     Vector<Renderable> mRenderables;
-    Ref<RenderQueue> mRenderQueue = nullptr;
+    Ref<HwRenderQueue> mRenderQueue = nullptr;
     Vector<Ref<Texture>> mTextures;
 
     void start() override
@@ -42,7 +42,7 @@ public:
             }
         }
 
-        mRenderQueue = new RenderQueue();
+        mRenderQueue = new HwRenderQueue();
     }
 
     void draw(GraphicsApi& cmd) override

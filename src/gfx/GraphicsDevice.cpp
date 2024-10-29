@@ -74,17 +74,17 @@ void GraphicsDevice::executeAll()
     mPostCall.clear();
 }
 
-std::vector<RenderCommand>& RenderQueue::getWriteCommands()
+std::vector<RenderCommand>& HwRenderQueue::getWriteCommands()
 {
     return mRenderables[gInstance->workContext()];
 }
 
-const std::vector<RenderCommand>& RenderQueue::getReadCommands() const
+const std::vector<RenderCommand>& HwRenderQueue::getReadCommands() const
 {
     return mRenderables[gInstance->renderFrame()];
 }
 
-void RenderQueue::clear()
+void HwRenderQueue::clear()
 {
     mRenderables[gInstance->workContext()].clear();
 }

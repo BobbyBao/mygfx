@@ -181,15 +181,12 @@ struct DrawPrimitiveCommand {
         uint32_t vertexCount;
     };
 
-    uint32_t instanceCount = 1;
-
     union {
         uint32_t firstIndex = 0;
         uint32_t firstVertex;
     };
 
     int32_t vertexOffset = 0;
-    uint32_t firstInstance = 0;
 };
 
 class VertexData : public RefCounted {

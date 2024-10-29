@@ -81,7 +81,7 @@ public:
     void bindUniformBuffer(uint32_t offsetCount, const uint32_t* offsets) const VULKAN_NOEXCEPT;
     void bindIndexBuffer(HwBuffer* buffer, VkDeviceSize offset, IndexType indexType) const VULKAN_NOEXCEPT;
     void bindVertexBuffer(uint32_t firstBinding, HwBuffer* pBuffer, VkDeviceSize pOffsets = 0) const VULKAN_NOEXCEPT;
-    void drawPrimitive(HwRenderPrimitive* primitive) const;
+    void drawPrimitive(HwRenderPrimitive* primitive, uint32_t instanceCount = 1, uint32_t firstInstance  = 0) const;
     void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) const VULKAN_NOEXCEPT;
     void drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) const VULKAN_NOEXCEPT;
     void drawIndirect(HwBuffer* buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) const VULKAN_NOEXCEPT;
@@ -199,7 +199,7 @@ inline void CommandBuffer::bindVertexBuffer(uint32_t firstBinding, HwBuffer* pBu
     vkCmdBindVertexBuffers(cmd, firstBinding, 1, reinterpret_cast<const VkBuffer*>(&vkBuffer->buffer), reinterpret_cast<const VkDeviceSize*>(&pOffset));
 }
 
-inline void CommandBuffer::drawPrimitive(HwRenderPrimitive* primitive) const
+inline void CommandBuffer::drawPrimitive(HwRenderPrimitive* primitive, uint32_t instanceCount, uint32_t firstInstance) const
 {
     VulkanRenderPrimitive* rp = static_cast<VulkanRenderPrimitive*>(primitive);
 
@@ -209,14 +209,14 @@ inline void CommandBuffer::drawPrimitive(HwRenderPrimitive* primitive) const
             vkCmdBindIndexBuffer(cmd, rp->indexBuffer, 0, rp->indexType);
         }
 
-        drawIndexed(rp->drawArgs.indexCount, 1, rp->drawArgs.firstIndex, 0, 0);
+        drawIndexed(rp->drawArgs.indexCount, instanceCount, rp->drawArgs.firstIndex, 0, firstInstance);
 
     } else {
         if (mPrimitive != primitive && rp->vertexBuffers.size() > 0) {
             vkCmdBindVertexBuffers(cmd, 0, (uint32_t)rp->vertexBuffers.size(), rp->vertexBuffers.data(), rp->bufferOffsets.get());
         }
 
-        draw(rp->drawArgs.vertexCount, 1, rp->drawArgs.firstVertex, 0);
+        draw(rp->drawArgs.vertexCount, instanceCount, rp->drawArgs.firstVertex, firstInstance);
     }
 
     mPrimitive = primitive;
