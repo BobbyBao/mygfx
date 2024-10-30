@@ -1,6 +1,8 @@
 #ifndef _COMMON_UNIFORMS_
 #define _COMMON_UNIFORMS_
 
+#extension GL_EXT_buffer_reference : enable
+#extension GL_EXT_scalar_block_layout : enable
 
 layout(std140, binding = 0) uniform FrameUniforms {
     mat4 u_ViewMatrix;

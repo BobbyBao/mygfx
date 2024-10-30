@@ -99,7 +99,32 @@ void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
     if (node.mesh) {
         if (node.has_mesh_gpu_instancing) {
             instanceRenderable = newNode->addComponent<InstanceRenderable>();
-            renderable = instanceRenderable;
+            renderable = instanceRenderable; 
+            /*
+            Vector<Vector<InstanceData>> instanceData;
+            auto& dataList = instanceData.emplace_back();
+            for (auto i = 0; i < node.mesh_gpu_instancing.attributes_count; i++) {
+                const cgltf_attribute& attribute = node.mesh_gpu_instancing.attributes[i];
+                auto accessor = attribute.data;
+                dataList.resize(accessor->count);
+
+                if (std::strcmp(attribute.name, "ROTATION") == 0) {
+                    for (auto j = 0; j < accessor->count; j++) {
+                        dataList[j].rotation = getBufferData<Quaternion>(accessor)[j];
+                    }
+                } else if (std::strcmp(attribute.name, "SCALE") == 0) {
+                    for (auto j = 0; j < accessor->count; j++) {
+                        dataList[j].scale = getBufferData<Vector3>(accessor)[j].x;
+                    }
+                } else if (std::strcmp(attribute.name, "TRANSLATION") == 0) {
+                    for (auto j = 0; j < accessor->count; j++) {
+                        dataList[j].position = getBufferData<Vector3>(accessor)[j];
+                    }
+                }
+            }
+
+            instanceRenderable->setInstanceData(std::move(instanceData));*/
+
         } else {
             renderable = newNode->addComponent<MeshRenderable>();
         }

@@ -12,7 +12,12 @@ struct RenderingContext {
 
 struct ObjectUniforms {
     mat4 worldMatrix;
-    mat4 normalMatrix;
+    mat3x4 normalMatrix;
+    uint64_t transformBuffer = 0;
+    uint64_t normalBuffer = 0;
+};
+
+struct PrimitiveUniforms {
 };
 
 }
