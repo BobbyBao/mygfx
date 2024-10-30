@@ -123,8 +123,7 @@ struct RenderCommand {
     HwRenderPrimitive* renderPrimitive = nullptr;
     PipelineState pipelineState;
     Uniforms uniforms;
-    uint16_t firstInstance = 0;
-    uint16_t instanceCount = 1;
+    uint32_t instanceCount = 1;
 };
 
 class HwRenderQueue : public HwObject {

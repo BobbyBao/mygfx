@@ -634,7 +634,7 @@ static void drawBatch1(const CommandBuffer& cmd, const RenderCommand* start, uin
         auto& primitive = start[i];
         cmd.bindPipelineState(&primitive.pipelineState);
         cmd.bindUniforms(primitive.uniforms);
-        cmd.drawPrimitive(primitive.renderPrimitive, primitive.instanceCount, primitive.firstInstance);
+        cmd.drawPrimitive(primitive.renderPrimitive, primitive.instanceCount, 0);
     }
 }
 
