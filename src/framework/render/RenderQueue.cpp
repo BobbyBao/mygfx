@@ -37,7 +37,6 @@ void RenderList::draw(GraphicsApi& cmd, uint32_t perView)
             auto& rc = renderCmds.emplace_back();
             rc.renderPrimitive = prim.renderPrimitive;
             rc.pipelineState = prim.material->getPipelineState();
-            rc.firstInstance = prim.firstInstance;
             rc.instanceCount = prim.instanceCount;
             rc.uniforms.set(perView, perObject, prim.material->getMaterialUniforms(), prim.primitiveUniforms);
         }

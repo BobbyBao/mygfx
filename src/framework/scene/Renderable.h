@@ -13,8 +13,7 @@ struct Primitive {
     HwRenderPrimitive* renderPrimitive = nullptr;
     IndirectBuffer* indirectBuffer = nullptr;
     Material* material = nullptr;
-    uint16_t instanceCount = 1;
-    uint16_t firstInstance = 0;
+    uint32_t instanceCount = 1;
     uint32_t primitiveUniforms = INVALID_UNIFORM_OFFSET;
 };
 

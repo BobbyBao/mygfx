@@ -8,6 +8,7 @@
 #include "scene/Light.h"
 #include "scene/Node.h"
 #include "scene/MeshRenderable.h"
+#include "scene/InstanceRenderable.h"
 
 #define CGLTF_IMPLEMENTATION
 #include <cgltf/cgltf.h>
@@ -92,20 +93,22 @@ void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
 {
     Node* newNode = parent->createChild<Node>(node.name ? node.name : "UnNamed");
     MeshRenderable* renderable = nullptr;
+    InstanceRenderable* instanceRenderable = nullptr;
     Camera* camera = nullptr;
     Light* light = nullptr;
     if (node.mesh) {
-        renderable = newNode->addComponent<MeshRenderable>();
+        if (node.has_mesh_gpu_instancing) {
+            instanceRenderable = newNode->addComponent<InstanceRenderable>();
+            renderable = instanceRenderable;
+        } else {
+            renderable = newNode->addComponent<MeshRenderable>();
+        }
     } else if (node.camera) {
         camera = newNode->addComponent<Camera>();
         createCamera(camera, node.camera);
     } else if (node.light) {
         light = newNode->addComponent<Light>();
         createLight(light, node.light);
-    }
-
-    if (node.has_mesh_gpu_instancing) {
-        // todo:mesh gpu instancing
     }
 
     // Generate local node matrix
