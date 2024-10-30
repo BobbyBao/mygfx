@@ -25,6 +25,7 @@ void InstanceRenderable::cloneProcess(Object* destNode)
 
 void InstanceRenderable::updateRenderable()
 {
+    MeshRenderable::updateRenderable();
 }
 
 }
