@@ -34,7 +34,6 @@ protected:
     void updateRenderable() override;
     void updateInstanceBuffers();
 
-    Ref<Material> mMaterial;
     Vector<Vector<InstanceData>> mInstanceData;
     Vector<Ref<HwBuffer>> mInstanceBuffers;
     Ref<IndirectBuffer> mIndirectBuffer;

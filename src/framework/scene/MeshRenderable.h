@@ -19,5 +19,6 @@ protected:
     void cloneProcess(Object* destObj) override;
     virtual void updateRenderable();
     Ref<Mesh> mMesh;
+    Ref<Material> mMaterial;
 };
 }

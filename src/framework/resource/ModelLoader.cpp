@@ -100,7 +100,7 @@ void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
         if (node.has_mesh_gpu_instancing) {
             instanceRenderable = newNode->addComponent<InstanceRenderable>();
             renderable = instanceRenderable; 
-            /*
+            
             Vector<Vector<InstanceData>> instanceData;
             auto& dataList = instanceData.emplace_back();
             for (auto i = 0; i < node.mesh_gpu_instancing.attributes_count; i++) {
@@ -123,7 +123,7 @@ void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
                 }
             }
 
-            instanceRenderable->setInstanceData(std::move(instanceData));*/
+            instanceRenderable->setInstanceData(std::move(instanceData));
 
         } else {
             renderable = newNode->addComponent<MeshRenderable>();
@@ -397,7 +397,9 @@ void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
                 drawArgs.firstIndex = indexStart;
                 drawArgs.indexCount = indexCount;
                 auto& subMesh = newMesh->addSubMesh(vertexData, drawArgs);
-
+                if (node.has_mesh_gpu_instancing){
+                    defineList.add("USE_INSTANCING");
+                }
                 subMesh.material = primitive.material ? getMaterial(primitive.material - mGltfModel->materials, hasSkinOrMorphing, &defineList) : getDefaultMaterial(&defineList);
                 subMesh.material->shader()->setVertexInput(formats);
                 subMesh.boundingBox = Aabb{posMin, posMax};

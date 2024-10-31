@@ -46,7 +46,6 @@ void InstanceRenderable::updateRenderable()
         if (i < primitives.size()) {
             auto& primitive = primitives[i];
             primitive.instanceCount = (uint32_t)instanceBuffer->count();
-            //primitive.primitiveUniforms = gfxApi().allocConstant<PrimitiveUniforms>({.instanceBuffer = instanceBuffer->deviceAddress});
         }
     }
 }
@@ -71,10 +70,11 @@ void InstanceRenderable::updateInstanceBuffers()
             MemoryUsage::GPU_ONLY, Span { temp });
         mInstanceBuffers.emplace_back(instanceBuffer);
 
+        transformBuffer = instanceBuffer->deviceAddress;
+
         if (i < primitives.size()) {
             auto& primitive = primitives[i];
             primitive.instanceCount = (uint32_t)instData.size();
-            //primitive.primitiveUniforms = gfxApi().allocConstant<PrimitiveUniforms>({.instanceBuffer = instanceBuffer->deviceAddress});
         }
     }
 

@@ -23,7 +23,8 @@ void RenderList::draw(GraphicsApi& cmd, uint32_t perView)
     for (auto& renderable : renderables) {
         ObjectUniforms objectUniforms {
             .worldMatrix = renderable->getOwner()->getWorldTransform(),
-            .normalMatrix = transpose(inverse(objectUniforms.worldMatrix))
+            .normalMatrix = transpose(inverse(objectUniforms.worldMatrix)),
+            .transformBuffer =  renderable->transformBuffer,
         };
 
         uint32_t perObject = gfxApi().allocConstant(objectUniforms);

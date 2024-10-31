@@ -31,6 +31,7 @@ public:
     ICustomRenderer* getRenderer() { return mCustomRenderer; }
 
     Vector<Primitive> primitives;
+    uint64_t transformBuffer = 0;
 protected:
     void cloneProcess(Object* destObj) override;
     void onAddToScene(Scene* scene) override;

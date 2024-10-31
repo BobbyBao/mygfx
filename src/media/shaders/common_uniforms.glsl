@@ -2,6 +2,7 @@
 #define _COMMON_UNIFORMS_
 
 #extension GL_EXT_buffer_reference : enable
+#extension GL_EXT_buffer_reference2 : enable
 #extension GL_EXT_scalar_block_layout : enable
 
 layout(std140, binding = 0) uniform FrameUniforms {
@@ -38,9 +39,13 @@ layout(std140, binding = 0) uniform FrameUniforms {
     mat3 u_EnvRotation;
 };
 
+layout(buffer_reference, scalar) buffer MatrixBuffer { mat4x4 m[]; };
+
 layout(std140, binding = 1) uniform ObjectUniforms {
     mat4 u_ModelMatrix;
-    mat4 u_NormalMatrix;
+    mat3 u_NormalMatrix;
+    MatrixBuffer u_TransformBuffer;
+    MatrixBuffer u_NormalBuffer;
 };
 
 
