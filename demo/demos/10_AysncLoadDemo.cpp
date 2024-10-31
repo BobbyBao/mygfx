@@ -2,27 +2,19 @@
 #include "resource/Mesh.h"
 #include "resource/Texture.h"
 #if defined(_WIN32)
-#include <concurrencpp/concurrencpp.h>
 
 using namespace std::chrono_literals;
 
 namespace mygfx::demo {
 
-using namespace concurrencpp;
-
-template <typename T>
-using Result = concurrencpp::result<T>;
-
-class AysncLoadDemo : public SceneDemo, public concurrencpp::runtime {
+class AysncLoadDemo : public SceneDemo {
 public:
-    std::shared_ptr<concurrencpp::manual_executor> mMainExecutor;
+    std::atomic<bool> mLoading = false;
+    std::atomic<bool> mCancelLoad = false;
 
     AysncLoadDemo()
     {
-        mMainExecutor = make_manual_executor();
     }
-
-    const std::shared_ptr<concurrencpp::manual_executor>& getMainExecutor() const { return mMainExecutor; }
 
     void start() override
     {
@@ -38,30 +30,41 @@ public:
         int GRID_SIZE = 5;
         float SPACE = 2.0f;
         float offset = (GRID_SIZE - 1) * SPACE / 2;
+        mLoading = true;
+
+        Ref<AysncLoadDemo> this_(this);
 
         for (int i = 0; i < GRID_SIZE; i++) {
             for (int j = 0; j < GRID_SIZE; j++) {
-                auto model = co_await background_executor()->submit([this]() {
+                auto model = co_await mApp->background_executor()->submit([this]() {
                     return MeshRenderable::createCube(1.0f);
                 });
 
-                co_await timer_queue()->make_delay_object(1000ms, background_executor());
+                co_await mApp->timer_queue()->make_delay_object(1000ms, mApp->background_executor());
+                
+                co_await resume_on(mApp->getMainExecutor());
 
-                co_await resume_on(getMainExecutor());
+                if (mCancelLoad) {
+                    mLoading = false;
+                    co_return;
+                }
 
-                mScene->instantiate(model, { i * SPACE - offset, j * SPACE - offset, 0.0f });
+                if (mScene) {
+                    mScene->instantiate(model, { i * SPACE - offset, j * SPACE - offset, 0.0f });
+                }
             }
         }
 
         co_return;
     }
 
-    void update(double delta) override
+    void stop() override
     {
-        mMainExecutor->loop_once();
+        SceneDemo::stop();
 
-        SceneDemo::update(delta);
+        mCancelLoad = true;
     }
+
 };
 
 DEF_DEMO(AysncLoadDemo, "Aysnc Load Demo");

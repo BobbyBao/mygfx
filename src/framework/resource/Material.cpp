@@ -6,32 +6,29 @@
 namespace mygfx {
 
 static HashSet<Material*> sMaterials;
-static HashSet<Material*> sAddMaterials;
-static std::recursive_mutex sAddLock;
-static HashSet<Material*> sRemoveMaterials;
-static std::recursive_mutex sRemoveLock;
+static std::recursive_mutex sMaterialLock;
 
 Material::Material()
 {
-    sAddLock.lock();
-    sAddMaterials.insert(this);
-    sAddLock.unlock();
+    sMaterialLock.lock();
+    sMaterials.insert(this);
+    sMaterialLock.unlock();
 }
 
 Material::Material(Shader* shader, const String& materialUniformName)
 {
-    sAddLock.lock();
-    sAddMaterials.insert(this);
-    sAddLock.unlock();
+    sMaterialLock.lock();
+    sMaterials.insert(this);
+    sMaterialLock.unlock();
 
     setShader(shader, materialUniformName);
 }
 
 Material::~Material()
 {
-    sRemoveLock.lock();
-    sRemoveMaterials.insert(this);
-    sRemoveLock.unlock();
+    sMaterialLock.lock();
+    sMaterials.erase(this);
+    sMaterialLock.unlock();
 }
 
 void Material::setShader(Shader* shader, const String& materialUniformName)
@@ -145,20 +142,10 @@ void Material::update()
 
 void Material::updateAll()
 {
-    sAddLock.lock();
-    for (auto m : sAddMaterials) {
-        sMaterials.insert(m);
-    }
-    sAddLock.unlock();
-
-    sRemoveLock.lock();
-    for (auto m : sRemoveMaterials) {
-        sMaterials.erase(m);
-    }
-    sRemoveLock.unlock();
-
+    sMaterialLock.lock();
     for (auto material : sMaterials) {
         material->update();
     }
+    sMaterialLock.unlock();
 }
 }
