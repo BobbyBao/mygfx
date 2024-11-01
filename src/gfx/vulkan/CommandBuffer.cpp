@@ -278,6 +278,23 @@ void CommandBuffer::setScissor(uint32_t scissorCount, const VkRect2D* pScissors)
     g_vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
 }
 
+void CommandBuffer::bindDescriptorSets(HwDescriptorSet** ds, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT
+{
+    assert(setCount <= 8);
+
+    if (ds != nullptr) {
+        VkDescriptorSet vkDS[8];
+        for (uint32_t i = 0; i < setCount; i++) {
+            vkDS[i] = ((DescriptorSet*)ds[i])->handle();
+        }
+
+        vkCmdBindDescriptorSets(cmd, mProgram->getBindPoint(), mProgram->pipelineLayout, 0,
+            (uint32_t)setCount, vkDS, offsetCount, offsets);
+    } else {
+        bindUniformBuffer(offsets, offsetCount);
+    }
+}
+
 void CommandBuffer::bindRasterState(const RasterState* rasterState) const VULKAN_NOEXCEPT
 {
     if (mRasterState == *rasterState) {
@@ -301,7 +318,6 @@ void CommandBuffer::bindRasterState(const RasterState* rasterState) const VULKAN
 
 void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) const VULKAN_NOEXCEPT
 {
-
     if (mColorBlendState == *colorBlendState) {
         return;
     }
@@ -365,7 +381,6 @@ void CommandBuffer::bindDepthState(const DepthState* depthState) const VULKAN_NO
 
 void CommandBuffer::bindStencilState(const StencilState* stencilState) const VULKAN_NOEXCEPT
 {
-
     if (stencilState == nullptr || mStencilState == *stencilState) {
         return;
     }

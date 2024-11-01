@@ -73,15 +73,17 @@ public:
     void pushConstant(uint32_t binding, const void* data, uint32_t size) const VULKAN_NOEXCEPT;
     void pushConstant(uint32_t binding, const BufferInfo& bufferInfo) const VULKAN_NOEXCEPT;
 
+    void bindDescriptorSets(HwDescriptorSet**, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT;
+
     void bindUniforms(const Uniforms& uniforms) const VULKAN_NOEXCEPT
     {
-        bindUniformBuffer(uniforms.size(), uniforms.data());
+        bindUniformBuffer(uniforms.data(), uniforms.size());
     }
 
-    void bindUniformBuffer(uint32_t offsetCount, const uint32_t* offsets) const VULKAN_NOEXCEPT;
+    void bindUniformBuffer(const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT;
     void bindIndexBuffer(HwBuffer* buffer, VkDeviceSize offset, IndexType indexType) const VULKAN_NOEXCEPT;
     void bindVertexBuffer(uint32_t firstBinding, HwBuffer* pBuffer, VkDeviceSize pOffsets = 0) const VULKAN_NOEXCEPT;
-    void drawPrimitive(HwRenderPrimitive* primitive, uint32_t instanceCount = 1, uint32_t firstInstance  = 0) const;
+    void drawPrimitive(HwRenderPrimitive* primitive, uint32_t instanceCount = 1, uint32_t firstInstance = 0) const;
     void draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance) const VULKAN_NOEXCEPT;
     void drawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) const VULKAN_NOEXCEPT;
     void drawIndirect(HwBuffer* buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride) const VULKAN_NOEXCEPT;
@@ -181,7 +183,7 @@ inline void CommandBuffer::pushConstant(uint32_t binding, const BufferInfo& buff
     vkCmdPushConstants(cmd, mProgram->pipelineLayout, VK_SHADER_STAGE_ALL, binding * 8, sizeof(uint64_t), &bufferAddr);
 }
 
-inline void CommandBuffer::bindUniformBuffer(uint32_t offsetCount, const uint32_t* offsets) const VULKAN_NOEXCEPT
+inline void CommandBuffer::bindUniformBuffer(const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT
 {
     vkCmdBindDescriptorSets(cmd, mProgram->getBindPoint(), mProgram->pipelineLayout, 0,
         (uint32_t)mProgram->desciptorSets.size(), mProgram->desciptorSets.data(), offsetCount, offsets);
