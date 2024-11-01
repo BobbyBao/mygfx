@@ -547,9 +547,9 @@ void VulkanDevice::pushConstant(uint32_t index, const void* data, uint32_t size)
     mCurrentCmd->pushConstant(index, data, size);
 }
 
-void VulkanDevice::bindDescriptorSets(HwDescriptorSet** ds, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount)
+void VulkanDevice::bindDescriptorSets(HwDescriptorSet** ds, uint32_t setCount, const Uniforms& uniforms)
 {
-    mCurrentCmd->bindDescriptorSets(ds, setCount, offsets, offsetCount);
+    mCurrentCmd->bindDescriptorSets(ds, setCount, uniforms.data(), uniforms.size());
 }
 
 void VulkanDevice::bindUniforms(const Uniforms& uniforms)

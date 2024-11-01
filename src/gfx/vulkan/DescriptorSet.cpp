@@ -353,4 +353,26 @@ void DescriptorSet::bind(uint32_t index, uint32_t descriptorsCount, const std::v
     vkUpdateDescriptorSets(gfx().device, 1, &write, 0, NULL);
 }
 
+void DescriptorSet::bindDynamic(uint32_t index, uint32_t size, bool isStorage)
+{
+    VulkanBuffer* vkBuffer = (VulkanBuffer*) gfx().getGlobalUniformBuffer();
+    VkDescriptorBufferInfo out = {};
+    out.buffer = vkBuffer->buffer;
+    out.offset = 0;
+    out.range = size;
+
+    VkWriteDescriptorSet write;
+    write = {};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = NULL;
+    write.dstSet = handle_;
+    write.descriptorCount = 1;
+    write.descriptorType = isStorage ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    write.pBufferInfo = &out;
+    write.dstArrayElement = 0;
+    write.dstBinding = index;
+
+    vkUpdateDescriptorSets(gfx().device, 1, &write, 0, NULL);
+}
+
 }

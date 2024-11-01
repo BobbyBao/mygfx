@@ -93,7 +93,6 @@ void DescriptorSetLayout::define(const Span<DescriptorSetLayoutBinding>& binding
 
 void DescriptorSetLayout::defineDescriptorTable(DescriptorType descriptorType, ShaderStage shaderStageFlag)
 {
-
     isBindless = true;
 
     dsLayoutbindings_ = { DescriptorSetLayoutBinding { 0, DescriptorType::COMBINED_IMAGE_SAMPLER, VARIABLE_DESC_COUNT, shaderStageFlag } };

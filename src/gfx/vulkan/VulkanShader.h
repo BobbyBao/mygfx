@@ -37,6 +37,7 @@ public:
 
     ShaderResourceInfo* getShaderResource(const String& name);
     DescriptorSet* getDescriptorSet(uint32_t index);
+    HwDescriptorSet* createDescriptorSet(uint32_t index);
     bool createShaders();
     VkPipelineBindPoint getBindPoint() const { return (VkPipelineBindPoint)programType; }
     static constexpr int MAX_SHADER_STAGE = 8;
@@ -46,6 +47,8 @@ public:
     VkShaderStageFlagBits stages[MAX_SHADER_STAGE] {};
     Vector<VkDescriptorSet> desciptorSets;
     Vector<PushConstant> pushConstants;
+
+    std::map<uint32_t, std::vector<Ref<ShaderResourceInfo>>> combinedBindingMap;
 
 private:
     Vector<Ref<VulkanShaderModule>> mShaderModules;

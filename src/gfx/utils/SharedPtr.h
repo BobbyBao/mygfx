@@ -182,7 +182,12 @@ public:
     operator T*() const
     {
         return ptr_;
-    } // NOLINT(google-explicit-constructor)
+    }
+
+    T** getAddr()
+    {
+        return &ptr_;
+    }
 
     /// swap with another SharedPtr.
     void swap(SharedPtr<T>& rhs)

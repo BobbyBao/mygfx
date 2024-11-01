@@ -8,7 +8,7 @@ class DescriptorSetDemo : public Demo {
 public:
     Ref<Mesh> mMesh;
     Ref<Shader> mShader;
-
+    Ref<HwDescriptorSet> mDescriptorSet;
     void start() override
     {
         mMesh = Mesh::createCube();
@@ -18,7 +18,31 @@ public:
             Format::R32G32_SFLOAT, Format::END,
             Format::R32G32B32_SFLOAT });
 
-        mShader->updateDescriptorSet(0, 2, Texture::Green);
+        /*
+        std::array<DescriptorSetLayoutBinding, 3> bindings = {
+            DescriptorSetLayoutBinding {
+                .binding = 0,
+                .descriptorType = DescriptorType::UNIFORM_BUFFER_DYNAMIC,
+                .descriptorCount = 1,
+                .stageFlags = ShaderStage::VERTEX },
+
+            DescriptorSetLayoutBinding {
+                .binding = 1,
+                .descriptorType = DescriptorType::UNIFORM_BUFFER_DYNAMIC,
+                .descriptorCount = 1,
+                .stageFlags = ShaderStage::VERTEX },
+
+            DescriptorSetLayoutBinding {
+                .binding = 2,
+                .descriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER,
+                .descriptorCount = 1,
+                .stageFlags = ShaderStage::FRAGMENT },
+        };
+
+        mDescriptorSet = gfxApi().createDescriptorSet(Span<DescriptorSetLayoutBinding>(bindings));*/
+
+        mDescriptorSet = mShader->getProgram()->createDescriptorSet(0);
+        gfxApi().updateDescriptorSet1(mDescriptorSet, 2, Texture::Green->getSRV());
     }
 
     void draw(GraphicsApi& cmd) override
@@ -34,11 +58,11 @@ public:
 
         uint32_t perObject = gfxApi().allocConstant(world);
 
-        cmd.bindPipelineState(mShader->pipelineState);
-        cmd.bindUniforms({ perView, perObject });
+        cmd.bindPipelineState(mShader->pipelineState);        
+        cmd.bindDescriptorSets(mDescriptorSet.getAddr(), 1, Uniforms{ perView, perObject });
 
         for (auto& prim : mMesh->renderPrimitives) {
-            cmd.drawPrimitive(prim,  1, 0);
+            cmd.drawPrimitive(prim, 1, 0);
         }
     }
 

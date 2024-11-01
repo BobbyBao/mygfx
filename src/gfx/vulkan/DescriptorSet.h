@@ -39,7 +39,7 @@ public:
     void bind(uint32_t index, VkImageView imageView, VkSampler pSampler, VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     void bind(uint32_t index, VkImageView imageView);
     void bind(uint32_t index, uint32_t descriptorsCount, const std::vector<Ref<HwTexture>>& imageViews);
-
+    void bindDynamic(uint32_t index, uint32_t size, bool isStorage = false);
     const VkDescriptorSetLayout& layout() const { return resourceLayout_->handle(); }
     uint32_t binding(const String& name) const;
     const DescriptorSetLayoutBinding& getBinding(uint32_t index) const;

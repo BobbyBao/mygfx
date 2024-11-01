@@ -28,6 +28,11 @@ HwDescriptorSet* HwProgram::getDescriptorSet(uint32_t index)
     return static_cast<VulkanProgram*>(this)->getDescriptorSet(index);
 }
 
+HwDescriptorSet* HwProgram::createDescriptorSet(uint32_t index)
+{
+    return static_cast<VulkanProgram*>(this)->createDescriptorSet(index);
+}
+
 VulkanProgram::VulkanProgram()
 {
 }
@@ -40,7 +45,6 @@ VulkanProgram::VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)
 
     VkShaderStageFlags fullShaderStageFlags = 0;
 
-    std::map<uint32_t, std::vector<Ref<ShaderResourceInfo>>> combinedBindingMap;
     for (uint32_t i = 0; i < stageCount; i++) {
         VulkanShaderModule* sm = static_cast<VulkanShaderModule*>(shaderModules[i].get());
         mShaderModules.emplace_back(sm);
@@ -98,19 +102,6 @@ VulkanProgram::VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)
         Sampler,
         SampledImage,
         StorageImage,
-    };
-
-    auto isDynamicUniformSet = [](const std::vector<Ref<ShaderResourceInfo>>& bindings) -> bool {
-        if (bindings.empty()) {
-            return false;
-        }
-
-        for (auto& res : bindings) {
-            if (res->dsLayoutBinding.descriptorType != DescriptorType::UNIFORM_BUFFER_DYNAMIC) {
-                return false;
-            }
-        }
-        return true;
     };
 
     VkDescriptorSetLayout descriptorSetLayout { VK_NULL_HANDLE };
@@ -208,6 +199,31 @@ DescriptorSet* VulkanProgram::getDescriptorSet(uint32_t index)
     return nullptr;
 }
 
+HwDescriptorSet* VulkanProgram::createDescriptorSet(uint32_t index)
+{
+    if (index < mDesciptorSets.size()) {
+        auto& dsLayout = mDescriptorSetLayouts[index];
+        if (dsLayout->isBindless) {
+            return mDesciptorSets[index];
+        } else {
+            auto ds = new DescriptorSet(dsLayout);
+            auto& res = combinedBindingMap[index];
+            for (uint32_t j = 0; j < dsLayout->numBindings(); j++) {
+                auto& layoutBinding = dsLayout->getBinding(j);
+                if (layoutBinding.descriptorType == DescriptorType::UNIFORM_BUFFER_DYNAMIC) {
+                    auto sz = res[j]->size;
+                    if (ds->dynamicBufferSize[j] < sz) {
+                        ds->dynamicBufferSize[j] = sz;
+                        gfx().updateDynamicDescriptorSet(layoutBinding.binding, sz, *ds);
+                    }
+                }
+            }
+            return ds;
+        }
+    }
+    return nullptr;
+}
+
 bool VulkanProgram::createShaders()
 {
     VkShaderCreateInfoEXT shaderCreateInfos[MAX_SHADER_STAGE] {};
@@ -281,7 +297,6 @@ bool VulkanProgram::createShaders()
 
 VkShaderStageFlagBits ToVkShaderStage(ShaderStage stage)
 {
-
     switch (stage) {
     case ShaderStage::VERTEX:
         return VK_SHADER_STAGE_VERTEX_BIT;
@@ -302,7 +317,6 @@ VkShaderStageFlagBits ToVkShaderStage(ShaderStage stage)
 
 VkShaderStageFlags GetNextShaderStage(ShaderStage stage)
 {
-
     switch (stage) {
     case ShaderStage::VERTEX:
         return VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -330,7 +344,6 @@ static void getMembers(CompilerGLSL* compiler, ShaderStruct& u, const SPIRType& 
 
 VulkanShaderModule::VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType, const char* pShaderEntryPoint)
 {
-
     this->shaderCode = shaderCode;
 
     if (pShaderEntryPoint && pShaderEntryPoint[0]) {
