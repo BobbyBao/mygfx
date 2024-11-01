@@ -6,8 +6,8 @@ namespace mygfx {
 class Uniforms {
 public:
     static constexpr int MAX_COUNT = 4;
-
-    Uniforms();
+    
+    Uniforms() = default;
 
     Uniforms(uint32_t v0)
     {
@@ -34,8 +34,13 @@ public:
         push_back(v2);
         push_back(v3);
     }
-
-    Uniforms(std::initializer_list<uint32_t> const& list);
+    
+    inline Uniforms(std::initializer_list<uint32_t> const& list)
+    {
+        for (auto& v : list) {
+            push_back(v);
+        }
+    }
 
     void set(uint32_t v0)
     {
@@ -87,41 +92,29 @@ public:
     const uint32_t* data() const { return &mValues[0]; }
     uint32_t* data() { return &mValues[0]; }
 
-    void push_back(uint32_t v);
-    void pop_back();
-    void clear();
+    inline void push_back(uint32_t v)
+    {
+        if (v != INVALID_UNIFORM_OFFSET) {
+            mValues[mSize++] = v;
+        }
+    }
+
+    inline void pop_back()
+    {
+        if (mSize > 0) {
+            --mSize;
+        }
+    }
+
+    inline void clear()
+    {
+        mSize = 0;
+    }
 
 private:
     uint32_t mValues[MAX_COUNT] = { 0 };
     uint32_t mSize = 0;
 };
 
-inline Uniforms::Uniforms() = default;
-
-inline Uniforms::Uniforms(std::initializer_list<uint32_t> const& list)
-{
-    for (auto& v : list) {
-        push_back(v);
-    }
-}
-
-inline void Uniforms::push_back(uint32_t v)
-{
-    if (v != INVALID_UNIFORM_OFFSET) {
-        mValues[mSize++] = v;
-    }
-}
-
-inline void Uniforms::pop_back()
-{
-    if (mSize > 0) {
-        --mSize;
-    }
-}
-
-inline void Uniforms::clear()
-{
-    mSize = 0;
-}
 
 }

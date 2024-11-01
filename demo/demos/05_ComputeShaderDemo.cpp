@@ -59,7 +59,7 @@ public:
             Format::R32_SFLOAT,
             Format::R32_SFLOAT });
         mShader->setBlendMode(BlendMode::ADD);
-        mShader->pipelineState.primitiveState.primitiveTopology = PrimitiveTopology::POINT_LIST;
+        mShader->setPrimitiveTopology(PrimitiveTopology::POINT_LIST);
 
         mParticleTexture = Texture::createFromFile("textures/particle_rgba.ktx", { .srgb = true });
         mGradientTexture = Texture::createFromFile("textures/particle_gradient_rgba.ktx", { .srgb = true });

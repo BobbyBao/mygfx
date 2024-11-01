@@ -209,7 +209,7 @@ HwDescriptorSet* VulkanProgram::createDescriptorSet(uint32_t index)
             auto ds = new DescriptorSet(dsLayout);
             auto& res = combinedBindingMap[index];
             for (uint32_t j = 0; j < dsLayout->numBindings(); j++) {
-                auto& layoutBinding = dsLayout->getBinding(j);
+                auto& layoutBinding = *dsLayout->getBinding(j);
                 if (layoutBinding.descriptorType == DescriptorType::UNIFORM_BUFFER_DYNAMIC) {
                     auto sz = res[j]->size;
                     if (ds->dynamicBufferSize[j] < sz) {

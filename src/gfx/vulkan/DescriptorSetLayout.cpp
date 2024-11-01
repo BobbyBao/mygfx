@@ -56,14 +56,20 @@ const DescriptorSetLayoutBinding* DescriptorSetLayout::getBinding(const String& 
     return nullptr;
 }
 
-const DescriptorSetLayoutBinding& DescriptorSetLayout::getBinding(uint32_t index) const
+const DescriptorSetLayoutBinding* DescriptorSetLayout::getBinding(uint32_t index) const
 {
-    return dsLayoutbindings_[index];
+    if (index < dsLayoutbindings_.size()) {
+        return &dsLayoutbindings_[index];
+    }
+    return nullptr;
 }
 
-DescriptorSetLayoutBinding& DescriptorSetLayout::getBinding(uint32_t index)
+DescriptorSetLayoutBinding* DescriptorSetLayout::getBinding(uint32_t index)
 {
-    return dsLayoutbindings_[index];
+    if (index < dsLayoutbindings_.size()) {
+        return &dsLayoutbindings_[index];
+    }
+    return nullptr;
 }
 
 ShaderStage DescriptorSetLayout::shaderStageFlags() const
@@ -145,13 +151,13 @@ void DescriptorSetLayout::create() const
             vkDestroyDescriptorSetLayout(gfx().device, handle, nullptr);
         });
 
-        descriptorResourceCounts_.fill(0);
+        mDescriptorResourceCounts.fill(0);
     }
 
     vkCreateDescriptorSetLayout(gfx().device, &layoutInfo, nullptr, &handle_);
 
     for (auto& binding : dsLayoutbindings_) {
-        descriptorResourceCounts_[(int)binding.descriptorType] += binding.descriptorCount;
+        mDescriptorResourceCounts[(int)binding.descriptorType] += binding.descriptorCount;
     }
 }
 
@@ -163,7 +169,7 @@ void DescriptorSetLayout::destroy()
             vkDestroyDescriptorSetLayout(gfx().device, handle, nullptr);
         });
 
-        descriptorResourceCounts_.fill(0);
+        mDescriptorResourceCounts.fill(0);
         handle_ = nullptr;
     }
 }

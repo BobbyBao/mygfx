@@ -101,15 +101,15 @@ bool VulkanDevice::create(const Settings& settings)
     SamplerHandle::init();
 
     // Create a 'dynamic' constant buffer
-    const uint32_t constantBuffersMemSize = 32 * 1024 * 1024;
+    const uint32_t constantBuffersMemSize = 16 * 1024 * 1024;
     mConstantBufferRing.create(BufferUsage::UNIFORM | BufferUsage::STORAGE | BufferUsage::SHADER_DEVICE_ADDRESS,
-        2560 * 1024, MAX_BACKBUFFER_COUNT, constantBuffersMemSize, "Uniforms");
+        constantBuffersMemSize, MAX_BACKBUFFER_COUNT, constantBuffersMemSize, "Uniforms");
 #if LARGE_DYNAMIC_INDEX
     const uint32_t vertexBuffersMemSize = 64 * 1024 * 1024;
 #else
     const uint32_t vertexBuffersMemSize = 16 * 1024 * 1024;
 #endif
-    mVertexBufferRing.create(BufferUsage::VERTEX | BufferUsage::INDEX, MAX_BACKBUFFER_COUNT, vertexBuffersMemSize, "VertexBuffers|IndexBuffers");
+    mVertexBufferRing.create(BufferUsage::VERTEX | BufferUsage::INDEX | BufferUsage::INDIRECT_BUFFER | BufferUsage::SHADER_DEVICE_ADDRESS, MAX_BACKBUFFER_COUNT, vertexBuffersMemSize, "VertexBuffers|IndexBuffers");
 
     const uint32_t uploadHeapMemSize = 64 * 1024 * 1024;
     mUploadHeap.create(uploadHeapMemSize);
@@ -405,6 +405,11 @@ void VulkanDevice::updateDescriptorSet3(HwDescriptorSet* descriptorSet, uint32_t
     static_cast<DescriptorSet*>(descriptorSet)->bind(dstBinding, buffer);
 }
 
+void VulkanDevice::updateDescriptorSet4(HwDescriptorSet* descriptorSet, uint32_t dstBinding, uint32_t bufferSize)
+{
+    static_cast<DescriptorSet*>(descriptorSet)->bind(dstBinding, bufferSize);
+}
+
 void VulkanDevice::beginFrame(int)
 {
     mCurrentCmd = getCommandBuffer(CommandQueueType::Graphics);
@@ -547,9 +552,9 @@ void VulkanDevice::pushConstant(uint32_t index, const void* data, uint32_t size)
     mCurrentCmd->pushConstant(index, data, size);
 }
 
-void VulkanDevice::bindDescriptorSets(HwDescriptorSet** ds, uint32_t setCount, const Uniforms& uniforms)
+void VulkanDevice::bindDescriptorSets(const Span<HwDescriptorSet*>& ds, const Uniforms& uniforms)
 {
-    mCurrentCmd->bindDescriptorSets(ds, setCount, uniforms.data(), uniforms.size());
+    mCurrentCmd->bindDescriptorSets(ds.data(), (uint32_t)ds.size(), uniforms.data(), uniforms.size());
 }
 
 void VulkanDevice::bindUniforms(const Uniforms& uniforms)

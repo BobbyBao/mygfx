@@ -278,7 +278,7 @@ void CommandBuffer::setScissor(uint32_t scissorCount, const VkRect2D* pScissors)
     g_vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
 }
 
-void CommandBuffer::bindDescriptorSets(HwDescriptorSet** ds, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT
+void CommandBuffer::bindDescriptorSets(HwDescriptorSet*const * ds, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT
 {
     assert(setCount <= 8);
 

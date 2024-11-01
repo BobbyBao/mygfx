@@ -19,12 +19,12 @@ public:
 
     inline uint32_t numBindings() const { return static_cast<uint32_t>(dsLayoutbindings_.size()); }
 
-    inline const DescriptorResourceCounts& sizeCounts() const { return descriptorResourceCounts_; }
+    inline const DescriptorResourceCounts& sizeCounts() const { return mDescriptorResourceCounts; }
     inline const std::vector<uint32_t>& variableDescCounts() const { return variableDescCounts_; }
 
     const DescriptorSetLayoutBinding* getBinding(const String& name) const;
-    const DescriptorSetLayoutBinding& getBinding(uint32_t index) const;
-    DescriptorSetLayoutBinding& getBinding(uint32_t index);
+    const DescriptorSetLayoutBinding* getBinding(uint32_t index) const;
+    DescriptorSetLayoutBinding* getBinding(uint32_t index);
 
     ShaderStage shaderStageFlags() const;
 
@@ -44,7 +44,7 @@ private:
     std::vector<DescriptorSetLayoutBinding> dsLayoutbindings_;
     mutable std::vector<VkDescriptorBindingFlags> descriptorBindingFlags_;
     std::vector<uint32_t> variableDescCounts_;
-    mutable DescriptorResourceCounts descriptorResourceCounts_ = { 0 };
+    mutable DescriptorResourceCounts mDescriptorResourceCounts = { 0 };
     mutable size_t hash_ { 0 };
 };
 

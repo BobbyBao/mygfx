@@ -39,6 +39,30 @@ public:
         return createBuffer(usage, memoryUsage, data.size() * sizeof(T), sizeof(T), (void*)data.data());
     }
 
+    GraphicsApi& updateDescriptorSet(HwDescriptorSet* descriptorSet, uint32_t dstBinding, HwTextureView* texView)
+    {
+        updateDescriptorSet1(descriptorSet, dstBinding, texView);
+        return *this;
+    }
+
+    GraphicsApi& updateDescriptorSet(HwDescriptorSet* descriptorSet, uint32_t dstBinding, HwBuffer* buffer)
+    {
+        updateDescriptorSet2(descriptorSet, dstBinding, buffer);
+        return *this;
+    }
+
+    GraphicsApi& updateDescriptorSet(HwDescriptorSet* descriptorSet, uint32_t dstBinding, const BufferInfo& buffer)
+    {
+        updateDescriptorSet3(descriptorSet, dstBinding, buffer);
+        return *this;
+    }
+
+    GraphicsApi& updateDescriptorSet(HwDescriptorSet* descriptorSet, uint32_t dstBinding, uint32_t bufferSize)
+    {
+        updateDescriptorSet4(descriptorSet, dstBinding, bufferSize);
+        return *this;
+    }
+
     template <typename V>
     void drawUserPrimitives(const Span<V>& vertices, uint32_t firstInstance = 0)
     {

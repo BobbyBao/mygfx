@@ -35,9 +35,14 @@ VulkanBuffer::VulkanBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t 
         flags |= VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
     }
 
+    if ((usage & BufferUsage::INDIRECT_BUFFER) != BufferUsage::NONE) {
+        flags |= VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+    }
+
     if ((usage & BufferUsage::SHADER_DEVICE_ADDRESS) != BufferUsage::NONE) {
         flags |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     }
+    
 
     VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
     bufferInfo.size = size;

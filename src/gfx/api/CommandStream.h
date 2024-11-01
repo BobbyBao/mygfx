@@ -333,6 +333,10 @@ public:
     inline PodType* allocatePod(
         size_t count = 1, size_t alignment = alignof(PodType)) noexcept;
 
+    template <typename PodType,
+        typename = typename std::enable_if<std::is_trivially_destructible<PodType>::value>::type>
+    inline Span<PodType> allocate(size_t count) noexcept;
+
 protected:
     inline void* allocateCommand(size_t size)
     {
@@ -378,6 +382,11 @@ template <typename PodType, typename>
 PodType* CommandStream::allocatePod(size_t count, size_t alignment) noexcept
 {
     return static_cast<PodType*>(allocate(count * sizeof(PodType), alignment));
+}
+
+template <typename PodType, typename>
+Span<PodType> CommandStream::allocate(size_t count) noexcept {
+    return Span<PodType>{static_cast<PodType*>(allocate(count * sizeof(PodType), alignof(PodType))), count};
 }
 
 } // namespace mygfx

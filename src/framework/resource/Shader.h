@@ -2,20 +2,16 @@
 #include "GraphicsHandles.h"
 #include "PipelineState.h"
 #include "ShaderResourceInfo.h"
-#include "core/Resource.h"
+#include "core/Object.h"
 
 namespace mygfx {
 
 class Texture;
 
-class Shader : public Resource {
+class Shader : public NamedObject {
 public:
     Shader();
     ~Shader();
-
-    class Pass : public Object {
-    public:
-    };
 
     Shader(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
     Shader(const String& csCode);
@@ -50,8 +46,6 @@ protected:
     std::vector<Ref<HwShaderModule>> mShaderModules;
     Ref<HwVertexInput> mVertexInput;
     Ref<HwProgram> mProgram;
-
-    Vector<Ref<Pass>> mPasses;
 };
 
 }

@@ -7,7 +7,7 @@
 
 namespace mygfx {
 
-enum class BufferUsage : uint16_t {
+enum class BufferUsage : uint32_t {
     NONE = 0,
     VERTEX = (1 << 0),
     INDEX = (1 << 1),
@@ -15,7 +15,8 @@ enum class BufferUsage : uint16_t {
     STORAGE = (1 << 3),
     UNIFORM_TEXEL = (1 << 4),
     STORAGE_TEXEL = (1 << 5),
-    SHADER_DEVICE_ADDRESS = (1 << 6),
+    INDIRECT_BUFFER = (1 << 6),
+    SHADER_DEVICE_ADDRESS = (1 << 7),
 };
 
 enum class MemoryUsage : uint8_t {

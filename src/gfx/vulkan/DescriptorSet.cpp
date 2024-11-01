@@ -2,8 +2,38 @@
 #include "DescriptorSetLayout.h"
 #include "VulkanDevice.h"
 #include "VulkanTextureView.h"
+#include "utils/Log.h"
 
 namespace mygfx {
+    
+VkDescriptorType toVk(DescriptorType descriptorType) {
+    switch (descriptorType) {
+    case DescriptorType::SAMPLER:
+        return VK_DESCRIPTOR_TYPE_SAMPLER;
+    case DescriptorType::COMBINED_IMAGE_SAMPLER:
+        return VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    case DescriptorType::SAMPLED_IMAGE:
+        return VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+    case DescriptorType::STORAGE_IMAGE:
+        return VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+    case DescriptorType::UNIFORM_TEXEL_BUFFER:
+        return VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+    case DescriptorType::STORAGE_TEXEL_BUFFER:
+        return VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+    case DescriptorType::UNIFORM_BUFFER:
+        return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    case DescriptorType::STORAGE_BUFFER:
+        return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    case DescriptorType::UNIFORM_BUFFER_DYNAMIC:
+        return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    case DescriptorType::STORAGE_BUFFER_DYNAMIC:
+        return VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
+    case DescriptorType::INPUT_ATTACHMENT:
+        return VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+    default:
+        return VK_DESCRIPTOR_TYPE_MAX_ENUM;
+    }
+}
 
 DescriptorSet::DescriptorSet()
 {
@@ -26,35 +56,35 @@ DescriptorSet::~DescriptorSet()
 
 void DescriptorSet::init(const Span<DescriptorSetLayoutBinding>& bindings)
 {
-    resourceLayout_ = makeShared<DescriptorSetLayout>(bindings);
+    mResourceLayout = makeShared<DescriptorSetLayout>(bindings);
     create();
 }
 
 void DescriptorSet::init(DescriptorSetLayout* layout)
 {
     destroy();
-    resourceLayout_ = layout;
+    mResourceLayout = layout;
     create();
 }
 
 void DescriptorSet::create()
 {
-    descriptorResourceCounts_ = resourceLayout_->sizeCounts();
-    descriptorPool_ = gfx().getDescriptorPools().getPool(descriptorResourceCounts_);
+    mDescriptorResourceCounts = mResourceLayout->sizeCounts();
+    mDescriptorPool = gfx().getDescriptorPools().getPool(mDescriptorResourceCounts);
 
     VkDescriptorSetVariableDescriptorCountAllocateInfo variableDescriptorCountAllocInfo {};
 
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.pNext = nullptr;
-    allocInfo.descriptorPool = descriptorPool_;
+    allocInfo.descriptorPool = mDescriptorPool;
     allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &resourceLayout_->handle();
+    allocInfo.pSetLayouts = &mResourceLayout->handle();
 
-    if (resourceLayout_->isBindless) {
+    if (mResourceLayout->isBindless) {
         variableDescriptorCountAllocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_VARIABLE_DESCRIPTOR_COUNT_ALLOCATE_INFO;
         variableDescriptorCountAllocInfo.descriptorSetCount = 1;
-        variableDescriptorCountAllocInfo.pDescriptorCounts = resourceLayout_->variableDescCounts().data();
+        variableDescriptorCountAllocInfo.pDescriptorCounts = mResourceLayout->variableDescCounts().data();
         allocInfo.pNext = &variableDescriptorCountAllocInfo;
     }
 
@@ -64,8 +94,8 @@ void DescriptorSet::create()
 void DescriptorSet::destroy()
 {
     if (handle_) {
-        auto sizeCounts = descriptorResourceCounts_;
-        auto dp = descriptorPool_;
+        auto sizeCounts = mDescriptorResourceCounts;
+        auto dp = mDescriptorPool;
         auto sets = handle_;
         vkFreeDescriptorSets(gfx().device, dp, 1, &sets);
     }
@@ -73,7 +103,7 @@ void DescriptorSet::destroy()
 
 uint32_t DescriptorSet::binding(const String& name) const
 {
-    auto binding = resourceLayout_->getBinding(name);
+    auto binding = mResourceLayout->getBinding(name);
     if (binding != nullptr) {
         return binding->binding;
     }
@@ -81,9 +111,9 @@ uint32_t DescriptorSet::binding(const String& name) const
     return -1;
 }
 
-const DescriptorSetLayoutBinding& DescriptorSet::getBinding(uint32_t index) const
+const DescriptorSetLayoutBinding* DescriptorSet::getBinding(uint32_t index) const
 {
-    return resourceLayout_->getBinding(index);
+    return mResourceLayout->getBinding(index);
 }
 
 void DescriptorSet::bind(uint32_t dstBinding, const BufferInfo& buffer)
@@ -116,7 +146,11 @@ void DescriptorSet::bind(uint32_t dstBinding, HwBuffer* buffer)
 
 DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const DescriptorInfo& descriptorInfo)
 {
-    auto descriptorType = resourceLayout_->getBinding(dstBinding).descriptorType;
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return *this;
+    }
 
     VkWriteDescriptorSet wds {
         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -124,7 +158,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const DescriptorInfo& de
         .dstBinding = dstBinding,
         .dstArrayElement = 0,
         .descriptorCount = 1,
-        .descriptorType = (VkDescriptorType)descriptorType
+        .descriptorType = toVk(layoutBinding->descriptorType)
     };
 
     switch (descriptorInfo.index()) {
@@ -150,7 +184,11 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const DescriptorInfo& de
 
 DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const Span<VkDescriptorImageInfo>& imageInfos)
 {
-    auto descriptorType = resourceLayout_->getBinding(dstBinding).descriptorType;
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return *this;
+    }
 
     VkWriteDescriptorSet write;
     write = {};
@@ -158,7 +196,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const Span<VkDescriptorI
     write.pNext = NULL;
     write.dstSet = handle_;
     write.descriptorCount = (uint32_t)imageInfos.size();
-    write.descriptorType = (VkDescriptorType)descriptorType;
+    write.descriptorType = toVk(layoutBinding->descriptorType);
     write.pImageInfo = imageInfos.data();
     write.dstBinding = dstBinding;
     write.dstArrayElement = 0;
@@ -170,7 +208,11 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const Span<VkDescriptorI
 
 DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkDescriptorImageInfo* imageInfo, uint32_t count)
 {
-    auto descriptorType = resourceLayout_->getBinding(dstBinding).descriptorType;
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return *this;
+    }
 
     VkWriteDescriptorSet write;
     write = {};
@@ -178,7 +220,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkDescriptorImageI
     write.pNext = NULL;
     write.dstSet = handle_;
     write.descriptorCount = count;
-    write.descriptorType = (VkDescriptorType)descriptorType;
+    write.descriptorType = toVk(layoutBinding->descriptorType);
     write.pImageInfo = imageInfo;
     write.dstBinding = dstBinding;
     write.dstArrayElement = 0;
@@ -189,7 +231,11 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkDescriptorImageI
 
 DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkDescriptorBufferInfo* bufferInfo, uint32_t count)
 {
-    auto descriptorType = resourceLayout_->getBinding(dstBinding).descriptorType;
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return *this;
+    }
 
     VkWriteDescriptorSet write;
     write = {};
@@ -197,7 +243,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkDescriptorBuffer
     write.pNext = NULL;
     write.dstSet = handle_;
     write.descriptorCount = count;
-    write.descriptorType = (VkDescriptorType)descriptorType;
+    write.descriptorType = toVk(layoutBinding->descriptorType);
     write.pBufferInfo = bufferInfo;
     write.dstBinding = dstBinding;
     write.dstArrayElement = 0;
@@ -208,7 +254,11 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkDescriptorBuffer
 
 DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkBufferView* bufferView, uint32_t count)
 {
-    auto descriptorType = resourceLayout_->getBinding(dstBinding).descriptorType;
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return *this;
+    }
 
     VkWriteDescriptorSet write;
     write = {};
@@ -216,7 +266,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkBufferView* buff
     write.pNext = NULL;
     write.dstSet = handle_;
     write.descriptorCount = count;
-    write.descriptorType = (VkDescriptorType)descriptorType;
+    write.descriptorType = toVk(layoutBinding->descriptorType);
     write.pTexelBufferView = bufferView;
     write.dstBinding = dstBinding;
     write.dstArrayElement = 0;
@@ -227,7 +277,11 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, const VkBufferView* buff
 
 DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement, const VkDescriptorImageInfo& imageInfo)
 {
-    auto descriptorType = resourceLayout_->getBinding(dstBinding).descriptorType;
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return *this;
+    }
 
     VkWriteDescriptorSet write;
     write = {};
@@ -235,7 +289,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement
     write.pNext = NULL;
     write.dstSet = handle_;
     write.descriptorCount = 1;
-    write.descriptorType = (VkDescriptorType)descriptorType;
+    write.descriptorType = toVk(layoutBinding->descriptorType);
     write.pImageInfo = &imageInfo;
     write.dstBinding = dstBinding;
     write.dstArrayElement = dstArrayElement;
@@ -246,7 +300,11 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement
 
 DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement, const VkDescriptorBufferInfo& bufferInfo)
 {
-    auto descriptorType = resourceLayout_->getBinding(dstBinding).descriptorType;
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return *this;
+    }
 
     VkWriteDescriptorSet write;
     write = {};
@@ -254,7 +312,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement
     write.pNext = NULL;
     write.dstSet = handle_;
     write.descriptorCount = 1;
-    write.descriptorType = (VkDescriptorType)descriptorType;
+    write.descriptorType = toVk(layoutBinding->descriptorType);
     write.pBufferInfo = &bufferInfo;
     write.dstBinding = dstBinding;
     write.dstArrayElement = dstArrayElement;
@@ -265,7 +323,11 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement
 
 DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement, const VkBufferView& bufferView)
 {
-    auto descriptorType = resourceLayout_->getBinding(dstBinding).descriptorType;
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return *this;
+    }
 
     VkWriteDescriptorSet write;
     write = {};
@@ -273,7 +335,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement
     write.pNext = NULL;
     write.dstSet = handle_;
     write.descriptorCount = 1;
-    write.descriptorType = (VkDescriptorType)descriptorType;
+    write.descriptorType = toVk(layoutBinding->descriptorType);
     write.pTexelBufferView = &bufferView;
     write.dstBinding = dstBinding;
     write.dstArrayElement = dstArrayElement;
@@ -282,7 +344,7 @@ DescriptorSet& DescriptorSet::bind(uint32_t dstBinding, uint32_t dstArrayElement
     return *this;
 }
 
-void DescriptorSet::bind(uint32_t index, VkImageView imageView, VkSampler pSampler, VkImageLayout imageLayout)
+void DescriptorSet::bind(uint32_t dstBinding, VkImageView imageView, VkSampler pSampler, VkImageLayout imageLayout)
 {
     VkDescriptorImageInfo desc_image;
     desc_image.sampler = pSampler;
@@ -297,13 +359,13 @@ void DescriptorSet::bind(uint32_t index, VkImageView imageView, VkSampler pSampl
     write.descriptorCount = 1;
     write.descriptorType = (pSampler == NULL) ? VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE : VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     write.pImageInfo = &desc_image;
-    write.dstBinding = index;
+    write.dstBinding = dstBinding;
     write.dstArrayElement = 0;
 
     vkUpdateDescriptorSets(gfx().device, 1, &write, 0, NULL);
 }
 
-void DescriptorSet::bind(uint32_t index, VkImageView imageView)
+void DescriptorSet::bind(uint32_t dstBinding, VkImageView imageView)
 {
     VkDescriptorImageInfo desc_image;
     desc_image.sampler = VK_NULL_HANDLE;
@@ -318,13 +380,13 @@ void DescriptorSet::bind(uint32_t index, VkImageView imageView)
     write.descriptorCount = 1;
     write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
     write.pImageInfo = &desc_image;
-    write.dstBinding = index;
+    write.dstBinding = dstBinding;
     write.dstArrayElement = 0;
 
     vkUpdateDescriptorSets(gfx().device, 1, &write, 0, NULL);
 }
 
-void DescriptorSet::bind(uint32_t index, uint32_t descriptorsCount, const std::vector<Ref<HwTexture>>& imageViews)
+void DescriptorSet::bind(uint32_t dstBinding, uint32_t descriptorsCount, const std::vector<Ref<HwTexture>>& imageViews)
 {
     std::vector<VkDescriptorImageInfo> desc_images(descriptorsCount);
     uint32_t i = 0;
@@ -347,17 +409,28 @@ void DescriptorSet::bind(uint32_t index, uint32_t descriptorsCount, const std::v
     write.descriptorCount = descriptorsCount;
     write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     write.pImageInfo = desc_images.data();
-    write.dstBinding = index;
+    write.dstBinding = dstBinding;
     write.dstArrayElement = 0;
 
     vkUpdateDescriptorSets(gfx().device, 1, &write, 0, NULL);
 }
 
-void DescriptorSet::bindDynamic(uint32_t index, uint32_t size, bool isStorage)
+void DescriptorSet::bind(uint32_t dstBinding, uint32_t size)
 {
-    VulkanBuffer* vkBuffer = (VulkanBuffer*) gfx().getGlobalUniformBuffer();
+    auto layoutBinding = mResourceLayout->getBinding(dstBinding);
+    if (!layoutBinding) {
+        LOG_WARNING("Cannot find DescriptorSetLayoutBinding : {}", dstBinding);
+        return;
+    }
+
+    if (layoutBinding->descriptorType != DescriptorType::UNIFORM_BUFFER_DYNAMIC
+        && layoutBinding->descriptorType != DescriptorType::STORAGE_BUFFER_DYNAMIC) {
+        LOG_ERROR("DescriptorType must be DescriptorType::UNIFORM_BUFFER_DYNAMIC or DescriptorType::STORAGE_BUFFER_DYNAMIC.", layoutBinding->descriptorType);
+        return;
+    }
+
     VkDescriptorBufferInfo out = {};
-    out.buffer = vkBuffer->buffer;
+    out.buffer = gfx().getGlobalUniformBuffer();
     out.offset = 0;
     out.range = size;
 
@@ -367,10 +440,10 @@ void DescriptorSet::bindDynamic(uint32_t index, uint32_t size, bool isStorage)
     write.pNext = NULL;
     write.dstSet = handle_;
     write.descriptorCount = 1;
-    write.descriptorType = isStorage ? VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    write.descriptorType = toVk(layoutBinding->descriptorType);
     write.pBufferInfo = &out;
     write.dstArrayElement = 0;
-    write.dstBinding = index;
+    write.dstBinding = dstBinding;
 
     vkUpdateDescriptorSets(gfx().device, 1, &write, 0, NULL);
 }

@@ -73,7 +73,7 @@ public:
     void pushConstant(uint32_t binding, const void* data, uint32_t size) const VULKAN_NOEXCEPT;
     void pushConstant(uint32_t binding, const BufferInfo& bufferInfo) const VULKAN_NOEXCEPT;
 
-    void bindDescriptorSets(HwDescriptorSet**, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT;
+    void bindDescriptorSets(HwDescriptorSet*const *, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT;
 
     void bindUniforms(const Uniforms& uniforms) const VULKAN_NOEXCEPT
     {

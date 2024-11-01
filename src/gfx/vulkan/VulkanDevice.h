@@ -71,6 +71,12 @@ public:
         VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(mConstantBufferRing.getBuffer());
         return vkBuffer->buffer;
     }
+    
+    VkBuffer getGlobalDynamicBuffer()
+    {
+        VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(mVertexBufferRing.getBuffer());
+        return vkBuffer->buffer;
+    }
 
     void updateDynamicDescriptorSet(int index, uint32_t size, VkDescriptorSet descriptorSet);
 

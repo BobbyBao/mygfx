@@ -18,7 +18,7 @@ public:
             Format::R32G32_SFLOAT, Format::END,
             Format::R32G32B32_SFLOAT });
 
-        /*
+        
         std::array<DescriptorSetLayoutBinding, 3> bindings = {
             DescriptorSetLayoutBinding {
                 .binding = 0,
@@ -39,10 +39,11 @@ public:
                 .stageFlags = ShaderStage::FRAGMENT },
         };
 
-        mDescriptorSet = gfxApi().createDescriptorSet(Span<DescriptorSetLayoutBinding>(bindings));*/
-
-        mDescriptorSet = mShader->getProgram()->createDescriptorSet(0);
-        gfxApi().updateDescriptorSet1(mDescriptorSet, 2, Texture::Green->getSRV());
+        mDescriptorSet = gfxApi().createDescriptorSet(Span<DescriptorSetLayoutBinding>(bindings));
+        
+        gfxApi().updateDescriptorSet(mDescriptorSet, 0, sizeof(mat4))
+            .updateDescriptorSet(mDescriptorSet, 1, sizeof(mat4))
+            .updateDescriptorSet(mDescriptorSet, 2, Texture::Green->getSRV());
     }
 
     void draw(GraphicsApi& cmd) override
@@ -57,9 +58,11 @@ public:
         auto world = identity<mat4>();
 
         uint32_t perObject = gfxApi().allocConstant(world);
-
+        
+        auto ds = cmd.allocate<HwDescriptorSet*>(1);
+        ds[0] = mDescriptorSet;
         cmd.bindPipelineState(mShader->pipelineState);        
-        cmd.bindDescriptorSets(mDescriptorSet.getAddr(), 1, Uniforms{ perView, perObject });
+        cmd.bindDescriptorSets(ds, Uniforms{ perView, perObject });
 
         for (auto& prim : mMesh->renderPrimitives) {
             cmd.drawPrimitive(prim, 1, 0);
