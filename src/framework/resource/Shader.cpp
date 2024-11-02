@@ -54,9 +54,7 @@ void Shader::loadShader(const String& vs, const String& fs, const DefineList* ma
         return;
     }
 
-    FileSystem::pushPath(vsPath.parent_path());
-    addShader(ShaderStage::VERTEX, vsPath.filename().string(), vsSource, ShaderSourceType::GLSL, "", "", macros);
-    FileSystem::popPath();
+    addShader(ShaderStage::VERTEX, vs, vsSource, ShaderSourceType::GLSL, "", "", macros);
 
     Path fsPath(fs);
     auto psSource = FileSystem::readAllText(fsPath);
@@ -64,9 +62,7 @@ void Shader::loadShader(const String& vs, const String& fs, const DefineList* ma
         return;
     }
 
-    FileSystem::pushPath(fsPath.parent_path());
-    addShader(ShaderStage::FRAGMENT, fsPath.filename().string(), psSource, ShaderSourceType::GLSL, "", "", macros);
-    FileSystem::popPath();
+    addShader(ShaderStage::FRAGMENT, fs, psSource, ShaderSourceType::GLSL, "", "", macros);
 
     init();
 }
@@ -79,9 +75,7 @@ void Shader::loadShader(const String& cs)
         return;
     }
 
-    FileSystem::pushPath(csPath.parent_path());
-    addShader(ShaderStage::COMPUTE, csPath.filename().string(), csSource, ShaderSourceType::GLSL, "", "", nullptr);
-    FileSystem::popPath();
+    addShader(ShaderStage::COMPUTE, cs, csSource, ShaderSourceType::GLSL, "", "", nullptr);
 
     init();
 }

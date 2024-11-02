@@ -483,8 +483,6 @@ static uint8_t* parseDataUri(const char* uri, std::string* mimeType, size_t* psi
 
 void ModelLoader::loadImages()
 {
-    FileSystem::pushPath(mFilePath);
-
     for (int i = 0; i < mGltfModel->textures_count; i++) {
         auto& srcTexture = mGltfModel->textures[i];
         const cgltf_image* image = srcTexture.basisu_image ? srcTexture.basisu_image : srcTexture.image;
@@ -523,7 +521,8 @@ void ModelLoader::loadImages()
 
             mTextures.push_back(tex);
         } else {
-            auto tex = Texture::createFromFile(uri, { .srgb = srgb });
+            auto filePath = mFilePath / uri;
+            auto tex = Texture::createFromFile(filePath.string(), { .srgb = srgb });
             if (tex == nullptr) {
                 LOG_ERROR("Load texture failed : {}", uri);
             }
@@ -532,7 +531,6 @@ void ModelLoader::loadImages()
         }
     }
 
-    FileSystem::popPath();
 }
 
 void ModelLoader::loadMaterials()

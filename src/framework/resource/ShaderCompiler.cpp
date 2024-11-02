@@ -2,22 +2,32 @@
 #include "GraphicsDevice.h"
 #include "core/FileSystem.h"
 #include "utils/Log.h"
-#include <shaderc/shaderc.hpp>
 #include <mutex>
+#include <shaderc/shaderc.hpp>
 
 namespace mygfx {
 
 namespace {
     std::mutex sIncludeFileMutex;
     std::unordered_map<String, String> sIncludeFiles;
-}
+    Vector<Path> sShaderPath;
 
-ShaderCompiler::ShaderCompiler()
-{
-}
+    bool getIncludeFilePath(const String& fileName, Path& outPath)
+    {
+        if (sShaderPath.empty()) {
+            sShaderPath.push_back(FileSystem::convertPath("shaders"));
+        }
 
-ShaderCompiler::~ShaderCompiler()
-{
+        for (auto& path : sShaderPath) {
+            Path p = path / fileName;
+            if (std::filesystem::exists(p)) {
+                outPath = p;
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface {
@@ -40,12 +50,15 @@ public:
             return ret;
         }
 
-        String content = FileSystem::readAllText(fileName);
-        ret->content = content.data();
-        ret->content_length = content.length();
-        sIncludeFiles.emplace(fileName, std::move(content));
-
-        return ret;
+        Path fullPath;
+        if (getIncludeFilePath(fileName, fullPath)) {
+            String content = FileSystem::readAllText(fullPath);
+            ret->content = content.data();
+            ret->content_length = content.length();
+            sIncludeFiles.emplace(fileName, std::move(content));
+            return ret;
+        }
+        return nullptr;
     }
 
     // Handles shaderc_include_result_release_fn callbacks.
@@ -223,12 +236,12 @@ Ref<HwShaderModule> ShaderCompiler::compileFromFile(ShaderStage shader_type, con
     else
         assert(!"Can't tell shader type from its extension");
 
-    std::string fullpath = pFilename;
-    pShaderCode = FileSystem::readAllText(fullpath);
+    Path fullPath = pFilename;
+    pShaderCode = FileSystem::readAllText(fullPath);
     auto res = compileFromString(sourceType, shader_type, pFilename, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
     if (res) {
         return res;
-    }
+    }   
 
     return nullptr;
 }
