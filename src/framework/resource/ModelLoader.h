@@ -12,7 +12,7 @@ struct cgltf_light;
 
 namespace mygfx {
 
-class Shader;
+class ShaderEffect;
 class Texture;
 class Material;
 class Node;
@@ -45,7 +45,7 @@ protected:
     VertexAttribute mVertexAttribute = VertexAttribute::NONE;
     float mScale = 1.0f;
     bool mEnableSkin = true;
-    Ref<Shader> mShader;
+    Ref<ShaderEffect> mShader;
     Path mFilePath;
     cgltf_data* mGltfModel = nullptr;
     Ref<Node> mRootNode;

@@ -3,6 +3,7 @@
 #include "PipelineState.h"
 #include "ShaderResourceInfo.h"
 #include "core/Object.h"
+#include "render/PassID.h"
 
 namespace mygfx {
 
@@ -14,7 +15,7 @@ public:
     ~Shader();
 
     Shader(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
-    Shader(const String& csCode);
+    Shader(const String& csCode, const DefineList* marcos = nullptr);
 
     void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
     void loadShader(const String& cs);
@@ -22,6 +23,7 @@ public:
     const std::vector<Ref<HwShaderModule>>& getShaderModules() const { return mShaderModules; }
     VertexAttribute getVertexSemantic() const { return pipelineState.vertexSemantic; }
     HwProgram* getProgram() { return mProgram; }
+    ShaderResourceInfo* getShaderResource(const String& name);
 
     void setVertexInput(const FormatList& fmts, const FormatList& fmts1 = {});
     void setVertexSemantic(VertexAttribute vertexSemantic);
@@ -35,6 +37,7 @@ public:
     void updateDescriptorSet(uint32_t set, uint32_t binding, HwBuffer* buffer);
     void updateDescriptorSet(uint32_t set, uint32_t binding, const BufferInfo& bufferInfo);
 
+    PassID passID;
     PipelineState pipelineState;
 
     static Ref<Shader> fromFile(const String& vs, const String& fs, const DefineList* marcos = nullptr);

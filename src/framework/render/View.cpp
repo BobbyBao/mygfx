@@ -88,7 +88,12 @@ void View::update(double delta)
 void View::render(GraphicsApi& cmd)
 {
     uint32_t perView = gfxApi().allocConstant(mFrameUniforms);
-    mRenderQueue.draw(cmd, perView);
+
+    RenderingContext ctx{
+        .perView = perView
+    };
+
+    mRenderQueue.draw(cmd, ctx);
 }
 
 }

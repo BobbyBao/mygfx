@@ -1,8 +1,8 @@
 #include "Shader.h"
 #include "GraphicsApi.h"
+#include "ShaderCompiler.h"
 #include "Texture.h"
 #include "core/FileSystem.h"
-#include "ShaderCompiler.h"
 
 namespace mygfx {
 
@@ -40,9 +40,9 @@ Shader::Shader(const String& vsCode, const String& psCode, const DefineList* mac
     init();
 }
 
-Shader::Shader(const String& csCode)
+Shader::Shader(const String& csCode, const DefineList* macros)
 {
-    addShader(ShaderStage::COMPUTE, "", csCode, ShaderSourceType::GLSL, "", "", nullptr);
+    addShader(ShaderStage::COMPUTE, "", csCode, ShaderSourceType::GLSL, "", "", macros);
     init();
 }
 
@@ -84,6 +84,11 @@ void Shader::loadShader(const String& cs)
     FileSystem::popPath();
 
     init();
+}
+
+ShaderResourceInfo* Shader::getShaderResource(const String& name)
+{
+    return mProgram->getShaderResource(name);
 }
 
 void Shader::setVertexInput(const FormatList& fmts, const FormatList& fmts1)

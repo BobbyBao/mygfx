@@ -1,10 +1,12 @@
 #pragma once
 #include "Component.h"
 #include "GraphicsConsts.h"
+#include "core/Maths.h"
 
 namespace mygfx {
 
 class GraphicsApi;
+struct RenderingContext;
 class HwRenderPrimitive;
 class Material;
 class IndirectBuffer;
@@ -17,9 +19,9 @@ struct Primitive {
     uint32_t primitiveUniforms = INVALID_UNIFORM_OFFSET;
 };
 
-class ICustomRenderer {
+class IRenderer {
 public:
-    virtual void draw(GraphicsApi& cmd, uint32_t perView) = 0;
+    virtual void draw(GraphicsApi& cmd, RenderingContext& ctx) = 0;
 };
 
 class Renderable abstract : public Component {
@@ -28,7 +30,7 @@ public:
 
     PROPERTY_GET_SET(uint32_t, RenderQueue)
     
-    ICustomRenderer* getRenderer() { return mCustomRenderer; }
+    IRenderer* getRenderer() { return mRenderer; }
 
     Vector<Primitive> primitives;
     uint64_t transformBuffer = 0;
@@ -36,8 +38,9 @@ protected:
     void cloneProcess(Object* destObj) override;
     void onAddToScene(Scene* scene) override;
     void onRemoveFromScene(Scene* scene) override;
-    ICustomRenderer* mCustomRenderer = nullptr;
+    IRenderer* mRenderer = nullptr;
     uint32_t mRenderQueue = 0;
+    mutable Aabb mBoundingBox;
     mutable bool mSkinning : 1 = false;
     mutable bool mMorphing : 1 = false;
 };

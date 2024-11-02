@@ -5,7 +5,7 @@
 namespace mygfx {
 
 class Texture;
-class Shader;
+class ShaderEffect;
 
 class Skybox : public MeshRenderable {
 public:
@@ -28,7 +28,7 @@ protected:
     Ref<Texture> mCubeMap;
     Ref<Texture> mIrrMap;
     Ref<Texture> mGGXLUT;
-    inline static Ref<Shader> msDefaultShader;
+    inline static Ref<ShaderEffect> msDefaultShader;
 };
 
 }

@@ -15,7 +15,7 @@ Material::Material()
     sMaterialLock.unlock();
 }
 
-Material::Material(Shader* shader, const String& materialUniformName)
+Material::Material(ShaderEffect* shader, const String& materialUniformName)
 {
     sMaterialLock.lock();
     sMaterials.insert(this);
@@ -31,16 +31,16 @@ Material::~Material()
     sMaterialLock.unlock();
 }
 
-void Material::setShader(Shader* shader, const String& materialUniformName)
+void Material::setShader(ShaderEffect* shader, const String& materialUniformName)
 {
-    if (mShader == shader || shader == nullptr) {
+    if (mShaderFX == shader || shader == nullptr) {
         return;
     }
 
-    mShader = shader;
+    mShaderFX = shader;
     mMaterialUniformName = materialUniformName;
-    mPipelineState = mShader->pipelineState;
-    mShaderResourceInfo = shader->getProgram()->getShaderResource(materialUniformName);
+    mPipelineState = mShaderFX->getMainPass()->pipelineState;
+    mShaderResourceInfo = mShaderFX->getMainPass()->getShaderResource(materialUniformName);
 
     if (mShaderResourceInfo) {
         mMaterialData.resize(mShaderResourceInfo->getMemberSize());

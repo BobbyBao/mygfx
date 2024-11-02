@@ -626,7 +626,7 @@ Material* ModelLoader::getMaterial(size_t index, bool skined, const DefineList* 
     auto& mat = mGltfModel->materials[index];
     getDefines(mat, defineList);
 
-    auto defaultShader = mShader ? mShader : Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &defineList);
+    auto defaultShader = mShader ? mShader : ShaderEffect::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &defineList);
 
     Material* material = new Material(defaultShader, "MaterialUniforms");
 
@@ -703,8 +703,8 @@ Ref<Material> ModelLoader::getDefaultMaterial(const DefineList* marcos)
         .add("DEBUG_NONE", 0)
         .add("DEBUG", 0);
 
-    auto defaultShader = Shader::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
-    defaultShader->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT });
+    auto defaultShader = ShaderEffect::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
+    defaultShader->getMainPass()->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT });
 
     Ref<Material> material(new Material(defaultShader, "MaterialUniforms"));
     material->setShaderParameter("u_BaseColorFactor", vec4 { 1.0f, 1.0f, 1.0f, 1.0f });

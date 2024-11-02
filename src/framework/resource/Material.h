@@ -3,11 +3,13 @@
 #include "core/Fwd.h"
 #include "core/Maths.h"
 #include "core/Resource.h"
+#include "resource/ShaderEffect.h"
 #include <variant>
 
 namespace mygfx {
 
 class Shader;
+class ShaderEffect;
 class ShaderResourceInfo;
 class Texture;
 
@@ -16,10 +18,10 @@ using ShaderParameter = std::variant<int, float, vec2, vec3, vec4, Ref<Texture>>
 class Material : public Resource {
 public:
     Material();
-    Material(Shader* shader, const String& materialUniformName);
+    Material(ShaderEffect* shader, const String& materialUniformName);
     ~Material();
 
-    void setShader(Shader* shader, const String& materialUniformName);
+    void setShader(ShaderEffect* shader, const String& materialUniformName);
 
     void setShaderParameter(const String& name, int v);
     void setShaderParameter(const String& name, float v);
@@ -31,7 +33,7 @@ public:
     void setWireframe(bool v);
     void setBlendMode(BlendMode blendMode);
 
-    Shader* shader() { return mShader; }
+    Shader* shader() { return mShaderFX->getMainPass(); }
     const PipelineState& getPipelineState() const { return mPipelineState; }
 
     inline uint32_t getMaterialUniforms() const
@@ -43,7 +45,7 @@ public:
 
 protected:
     void update();
-    Ref<Shader> mShader;
+    Ref<ShaderEffect> mShaderFX;
     PipelineState mPipelineState;
     String mMaterialUniformName;
     Ref<ShaderResourceInfo> mShaderResourceInfo;

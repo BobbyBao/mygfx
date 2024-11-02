@@ -109,22 +109,26 @@ vec3 getTangent()
 void main()
 {
     gl_PointSize = 1.0f;
+    
 #ifdef USE_INSTANCING
-    vec4 pos = u_ModelMatrix * u_TransformBuffer.m[gl_InstanceIndex] * getPosition();
+    mat4 worldMatrix = u_ModelMatrix * u_TransformBuffer.m[gl_InstanceIndex];
+    vec4 pos = worldMatrix * getPosition();
+    mat3 normalMatrix = mat3(worldMatrix);
 #else
     vec4 pos = u_ModelMatrix * getPosition();
+    mat3 normalMatrix = mat3(u_ModelMatrix);
 #endif
     v_Position = vec3(pos.xyz) / pos.w;
 
 #ifdef HAS_NORMAL_VEC3
 #ifdef HAS_TANGENT_VEC4
     vec3 tangent = getTangent();
-    vec3 normalW = normalize(u_NormalMatrix * getNormal());
+    vec3 normalW = normalize(normalMatrix * getNormal());
     vec3 tangentW = normalize(vec3(u_ModelMatrix * vec4(tangent, 0.0)));
     vec3 bitangentW = cross(normalW, tangentW) * a_tangent.w;
     v_TBN = mat3(tangentW, bitangentW, normalW);
 #else
-    v_Normal = normalize(u_NormalMatrix * getNormal());
+    v_Normal = normalize(normalMatrix * getNormal());
 #endif
 #endif
 

@@ -12,8 +12,9 @@ void Renderable::cloneProcess(Object* destObj)
 
     Renderable* dest = static_cast<Renderable*>(destObj);
 
-    dest->mCustomRenderer = mCustomRenderer;
+    dest->mRenderer = mRenderer;
     dest->mRenderQueue = mRenderQueue;
+    dest->mBoundingBox = mBoundingBox;
     dest->mSkinning = mSkinning;
     dest->mMorphing = mMorphing;
 
