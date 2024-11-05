@@ -8,7 +8,7 @@ static constexpr uint32_t MAX_RENDER_QUEUE_COUNT = 32;
 
 
 struct RenderingContext {
-    PassID pass = 0;
+    PassID pass;
     uint32_t perView = 0;
 };
 

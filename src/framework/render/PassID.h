@@ -9,7 +9,7 @@ static const int MAX_PASS = 64;
 struct PassID
 {
 	PassID() = default;
-	PassID(const char* name);
+	PassID(const std::string_view& name);
 
 	inline operator uint32_t() { return index; }
 

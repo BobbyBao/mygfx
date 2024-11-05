@@ -9,15 +9,16 @@ namespace {
     std::shared_mutex sPassNameLock;
 }
 
-static uint32_t getPassID(const char* pass)
+static uint32_t getPassID(const std::string_view& pass)
 {
-    if (pass == nullptr || pass[0] == 0) {
+    if (pass.empty()) {
         return 0;
     }
 
+    String passName(pass);
     {
         std::shared_lock<std::shared_mutex> lock(sPassNameLock);
-        auto it = sPassNames.find(pass);
+        auto it = sPassNames.find(passName);
         if (it != sPassNames.end()) {
             return it->second;
         }
@@ -26,12 +27,12 @@ static uint32_t getPassID(const char* pass)
     {
         uint32_t index = (uint32_t)sPassNames.size();
         std::unique_lock<std::shared_mutex> lock(sPassNameLock);
-        sPassNames.try_emplace(pass, index);
+        sPassNames.try_emplace(passName, index);
         return index;
     }
 }
 
-PassID::PassID(const char* name)
+PassID::PassID(const std::string_view& name)
 {
     index = getPassID(name);
 }

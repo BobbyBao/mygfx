@@ -16,9 +16,13 @@ public:
 
     Shader(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
     Shader(const String& csCode, const DefineList* marcos = nullptr);
+    
+    void setName(const std::string_view& name) override;
 
     void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
     void loadShader(const String& cs);
+    bool addShader(ShaderStage shaderStage, const String& shaderName, const String& source, ShaderSourceType sourceType = ShaderSourceType::GLSL, const String& entry = "", const String& extraParams = "", const DefineList* macros = nullptr);
+
 
     const std::vector<Ref<HwShaderModule>>& getShaderModules() const { return mShaderModules; }
     VertexAttribute getVertexSemantic() const { return pipelineState.vertexSemantic; }
@@ -44,8 +48,6 @@ public:
 
 protected:
     void init();
-    bool addShader(ShaderStage shaderStage, const String& shaderName, const String& source, ShaderSourceType sourceType, const String& entry, const String& extraParams, const DefineList* macros = nullptr);
-
     std::vector<Ref<HwShaderModule>> mShaderModules;
     Ref<HwVertexInput> mVertexInput;
     Ref<HwProgram> mProgram;

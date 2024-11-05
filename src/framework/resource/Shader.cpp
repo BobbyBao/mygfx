@@ -46,6 +46,13 @@ Shader::Shader(const String& csCode, const DefineList* macros)
     init();
 }
 
+void Shader::setName(const std::string_view& name)
+{
+    NamedObject::setName(name);
+
+    passID = PassID(name);
+}
+
 void Shader::loadShader(const String& vs, const String& fs, const DefineList* macros)
 {
     Path vsPath(vs);

@@ -23,6 +23,7 @@ public:
     void add(const String& csCode, const DefineList* marcos = nullptr);
     void add(Shader* shader);
 
+    static Ref<ShaderEffect> load(const String& fileName);
     static Ref<ShaderEffect> fromFile(const String& vs, const String& fs, const DefineList* marcos = nullptr);
 private:
     Vector<Ref<Shader>> mShaders;

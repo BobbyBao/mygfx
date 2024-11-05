@@ -31,7 +31,7 @@ public:
     NamedObject() = default;
 
     inline const String& getName() const { return mName; }
-    virtual void setName(const char* name);
+    virtual void setName(const std::string_view& name);
 protected:
     String mName;
 };

@@ -22,7 +22,7 @@ void Object::cloneProcess(Object* destObj)
 {
 }
 
-void NamedObject::setName(const char* name)
+void NamedObject::setName(const std::string_view& name)
 {
     mName = name;
 }
