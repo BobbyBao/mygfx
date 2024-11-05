@@ -177,7 +177,7 @@ String generateSource(ShaderSourceType sourceType, const ShaderStage shader_type
             code = shaderCode.substr(offset, shaderCode.size() - offset);
             shaderCode = shaderCode.substr(0, offset) + "\n";
         } else {
-            shaderCode = "";
+         //   shaderCode = "";
         }
 
     } else if (sourceType == ShaderSourceType::HLSL) {
@@ -213,10 +213,28 @@ Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceTyp
 
     Ref<HwShaderModule> sm;
     ByteArray SpvData;
+    #if false
     String shader = generateSource(sourceType, shader_type, shaderCode, shaderCompilerParams, pDefines);
     if (!compileToSpirv(sourceType, shader_type, shaderName, shader.c_str(), pShaderEntryPoint, shaderCompilerParams, pDefines, SpvData)) {
         return nullptr;
     }
+    #else
+    DefineList defines;
+    if (shader_type == ShaderStage::VERTEX) {
+        defines.add("SHADER_STAGE_VERTEX");
+    } else if (shader_type == ShaderStage::FRAGMENT) {
+        defines.add("SHADER_STAGE_FRAGMENT");
+    } else if (shader_type == ShaderStage::COMPUTE) {
+        defines.add("SHADER_STAGE_COMPUTE");
+    }
+    if (pDefines) {
+        defines += *pDefines;
+    }
+
+    if (!compileToSpirv(sourceType, shader_type, shaderName, shaderCode.c_str(), pShaderEntryPoint, shaderCompilerParams, &defines, SpvData)) {
+        return nullptr;
+    }
+    #endif
 
     assert(SpvData.size() != 0);
     sm = device().createShaderModule(shader_type, SpvData, ShaderCodeType::SPIRV, pShaderEntryPoint);
