@@ -1,17 +1,17 @@
 #pragma once
 #include <map>
 #include <string>
-#include <vector>
 #include <variant>
+#include <vector>
 
 namespace mygfx {
 
 using String = std::string;
 
 struct ConfigValue;
-using ChildMap = std::multimap<std::string_view, ConfigValue>;
-using ChildMapIterator = std::pair<ChildMap::const_iterator, ChildMap::const_iterator>;
-using ValueBase = std::variant<std::nullptr_t, bool, int, double, std::string_view, std::vector<ConfigValue>, ChildMap>;
+using ElementMap = std::multimap<std::string_view, ConfigValue>;
+using ChildMapIterator = std::pair<ElementMap::const_iterator, ElementMap::const_iterator>;
+using ValueBase = std::variant<std::nullptr_t, bool, int64_t, double, std::string_view, std::vector<ConfigValue>, ElementMap>;
 
 struct ConfigValue : public ValueBase {
     enum Type {
@@ -19,7 +19,7 @@ struct ConfigValue : public ValueBase {
         Bool,
         Int,
         Float,
-        Source,
+        Str,
         List,
         Object
     };
@@ -28,6 +28,12 @@ struct ConfigValue : public ValueBase {
 
     Type getType() const { return (Type)index(); }
     bool isNull() const { return getType() == Type::Null; }
+
+    template <typename T>
+    T& get()
+    {
+        return std::get<T>(*this);
+    }
 
     String getString() const;
 

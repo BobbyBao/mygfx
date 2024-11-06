@@ -1,10 +1,24 @@
 #include "Config.h"
 #include "utils/Log.h"
 #include <array>
+#include <format>
 
 namespace mygfx {
 
-static void parseError(const std::string_view& source, size_t at, const std::string_view& expected)
+class ParseError : public std::exception {
+public:
+    explicit ParseError(const std::string& _Message)
+        : std::exception(_Message.c_str())
+    {
+    }
+
+    explicit ParseError(const char* _Message)
+        : std::exception(_Message)
+    {
+    }
+};
+
+static ParseError parseError(const std::string_view& source, size_t at, const std::string_view& expected)
 {
     auto token = source[at];
     auto near = source.substr(at, 25);
@@ -12,11 +26,10 @@ static void parseError(const std::string_view& source, size_t at, const std::str
     for (auto i = 0; i < at; ++i)
         if (source[i] == 10)
             ++line;
-
-    return LOG_ERROR("Unexpected token {}, expected {} on line {} near {}", token, expected, line, near);
+    return ParseError(std::format("Unexpected token {}, expected {} on line {} near {}", token, expected, line, near));
 }
 
-static void parseError(const std::string_view& source, size_t at, char expected)
+static ParseError parseError(const std::string_view& source, size_t at, char expected)
 {
     auto token = source[at];
     auto near = source.substr(at, 25);
@@ -25,7 +38,7 @@ static void parseError(const std::string_view& source, size_t at, char expected)
         if (source[i] == 10)
             ++line;
 
-    return LOG_ERROR("Unexpected token {}, expected {} on line {} near {}", token, expected, line, near);
+    return ParseError(std::format("Unexpected token {}, expected {} on line {} near {}", token, expected, line, near));
 }
 
 inline static std::array<uint32_t, 4> characterMask(const std::string_view& str)
@@ -49,25 +62,34 @@ const std::array<uint32_t, 4> ID_TERM = characterMask(" \t\n=:");
 const std::array<uint32_t, 4> WHITESPACE = characterMask(" \n\r\t,");
 
 class SJSON {
-
 public:
     auto parse(std::string_view str)
     {
         s = str;
         i = 0;
-        return proot();
+
+        try {
+            return proot();
+        } catch (const ParseError& e) {
+            LOG_ERROR(e.what());
+            return ConfigValue {};
+        }
     }
 
 private:
     size_t i = 0;
     std::string_view s;
 
+    static const char QUOTE = '\"', SLASH = '/', BACKSLASH = '\\', OPENBRACE = '{', CLOSEBRACE = '}',
+                      COLON = ':', STAR = '*', CR = '\r', LF = '\n',
+                      OPENSQUAREBRAC = '[', CLOSESQUAREBRAC = ']';
+
     void ws()
     {
         while (i < s.length()) {
-            if (s[i] == 47) { // "/"
+            if (s[i] == SLASH) { // "/"
                 ++i;
-                if (s[i] == 47)
+                if (s[i] == SLASH)
                     while (s[++i] != 10)
                         ; // "\n"
                 else if (s[i] == 42) // "*"
@@ -84,7 +106,7 @@ private:
     {
         ws();
         if (s[i++] != c)
-            parseError(s, i - 1, c);
+            throw parseError(s, i - 1, c);
     }
 
     void consumeKeyword(const std::string_view& kw)
@@ -92,7 +114,7 @@ private:
         ws();
         for (auto c : kw) {
             if (s[i++] != c)
-                parseError(s, i - 1, { c });
+                throw parseError(s, i - 1, { c });
         }
     }
 
@@ -102,26 +124,26 @@ private:
         const auto c = s[i];
         if (hasChar(NUMBER, c))
             return pnumber();
-        if (c == 123)
+        if (c == OPENBRACE)
             return pobject(); // "{"
-        if (c == 91)
+        if (c == OPENSQUAREBRAC)
             return parray(); // "["
-        if (c == 34)
+        if (c == QUOTE)
             return pstring(); // "
-        if (c == 116) {
+        if (c == 't') {
             consumeKeyword("true");
             return true;
         }
-        if (c == 102) {
+        if (c == 'f') {
             consumeKeyword("false");
             return false;
         }
-        if (c == 110) {
+        if (c == 'n') {
             consumeKeyword("null");
             return nullptr;
         }
-        parseError(s, i, "number, {, [, \", true, false or null");
-        return {};
+
+        throw parseError(s, i, "number, {, [, \", true, false or null");
     }
 
     ConfigValue pnumber()
@@ -152,10 +174,10 @@ private:
     std::string_view pstring()
     {
         // Literal string
-        if (s[i] == 34 && s[i + 1] == 34 && s[i + 2] == 34) {
+        if (s[i] == QUOTE && s[i + 1] == QUOTE && s[i + 2] == QUOTE) {
             i += 3;
             auto start = i;
-            for (; s[i] != 34 || s[i + 1] != 34 || s[i + 2] != 34; ++i)
+            for (; s[i] != QUOTE || s[i + 1] != QUOTE || s[i + 2] != QUOTE; ++i)
                 ;
             i += 3;
             return s.substr(start, i - 3 - start);
@@ -163,14 +185,14 @@ private:
 
         const auto start = i;
         bool escape = false;
-        consume(34);
-        for (; s[i] != 34; ++i) { // unescaped "
+        consume(QUOTE);
+        for (; s[i] != QUOTE; ++i) { // unescaped "
             // if (s[i] == 92) {
             //     ++i;
             //    escape = true;
             //}
         }
-        consume(34);
+        consume(QUOTE);
         // if (!escape)
         return s.substr(start + 1, i - 1 - (start + 1));
         /*
@@ -206,20 +228,37 @@ private:
                 return octets;*/
     }
 
-    std::string_view psource() {
-        return std::string_view{};
+    std::string_view psource()
+    {
+        consume(OPENBRACE); // "{"
+        size_t start = i;
+        int depth = 1;
+        for (; i < s.length(); ++i) {
+            if (s[i] == OPENBRACE) {
+                depth++;
+            }
+            if (s[i] == CLOSEBRACE) {
+                depth--;
+
+                if (depth == 0) {
+                    break;
+                }
+            }
+        }
+
+        return s.substr(start, i - 1 - start);
     }
 
     std::vector<ConfigValue> parray()
     {
         std::vector<ConfigValue> ar;
         ws();
-        consume(91); // "["
+        consume(OPENSQUAREBRAC); // "["
         ws();
-        for (; s[i] != 93; ws()) // "]"
+        for (; s[i] != CLOSESQUAREBRAC; ws()) // "]"
             ar.push_back(pvalue());
 
-        consume(93);
+        consume(CLOSESQUAREBRAC);
         return ar;
     }
 
@@ -228,7 +267,7 @@ private:
         ws();
         if (i == s.length()) // Catch whitespace EOF
             return {};
-        if (s[i] == 34)
+        if (s[i] == QUOTE)
             return pstring();
 
         auto start = i;
@@ -237,8 +276,13 @@ private:
         return s.substr(start, i - start);
     }
 
-    void pchildren(ChildMap& object) {
+    void pelements(ElementMap& object)
+    {
         auto key = pidentifier();
+        if (key.empty()) {
+            return;
+        }
+
         ws();
         std::string_view name;
         if (s[i] == ':') {
@@ -248,60 +292,61 @@ private:
         } else if (s[i] == '"') {
             auto str = pstring();
             ws();
-            if (s[i] != '{') {
+            if (s[i] != OPENBRACE) {
                 object.emplace(key, str);
                 return;
             }
             name = str;
         }
 
-        if (s[i] == '{') {
+        if (s[i] == OPENBRACE) {
             if (key.starts_with('@')) {
-                auto child = object.emplace(key, psource());
-                child->second.name = name;
+                auto e = object.emplace(key, psource());
+                e->second.name = name;
                 return;
             }
         }
 
-        auto child = object.emplace(key, pvalue());
-        child->second.name = name;
+        auto e = object.emplace(key, pvalue());
+        e->second.name = name;
     }
 
     ConfigValue pobject()
     {
-        ChildMap object;
-        consume(123); // "{"
+        ElementMap object;
+        consume(OPENBRACE); // "{"
         ws();
-        for (; s[i] != 125; ws()) { // "}"
-            pchildren(object);
+        for (; s[i] != CLOSEBRACE; ws()) { // "}"
+            pelements(object);
         }
-        consume(125); // "}"
+        consume(CLOSEBRACE); // "}"
         return object;
     }
 
     ConfigValue proot()
     {
         ws();
-        if (s[i] == 123)
+        if (s[i] == OPENBRACE)
             return pobject();
 
-        ChildMap object;
-        while (i < s.length()) { // "}"
-            pchildren(object);
+        ElementMap object;
+        while (i < s.length()) {
+            pelements(object);
         }
 
         ws();
         if (i != s.length())
-            parseError(s, i, "end-of-string");
+            throw parseError(s, i, "end-of-string");
 
         return object;
     }
 };
 
-String ConfigValue::getString() const {
-    if (getType() == Source) {
+String ConfigValue::getString() const
+{
+    if (getType() == Str) {
         auto& str = std::get<std::string_view>(*this);
-        return String { str.data(), str.length() }; 
+        return String { str.data(), str.length() };
     }
     return "";
 }
@@ -312,7 +357,7 @@ size_t ConfigValue::getChildCount() const
         return 0;
     }
 
-    auto& children = std::get<ChildMap>(*this);
+    auto& children = std::get<ElementMap>(*this);
     return children.size();
 }
 
@@ -322,8 +367,8 @@ size_t ConfigValue::getChildCount(const std::string_view& key) const
         return 0;
     }
 
-    auto& children = std::get<ChildMap>(*this);
-    return children.count(key); 
+    auto& children = std::get<ElementMap>(*this);
+    return children.count(key);
 }
 
 ChildMapIterator ConfigValue::getIterator(const std::string_view& key) const
@@ -332,7 +377,7 @@ ChildMapIterator ConfigValue::getIterator(const std::string_view& key) const
         return {};
     }
 
-    auto& children = std::get<ChildMap>(*this);
+    auto& children = std::get<ElementMap>(*this);
     return children.equal_range(key);
 }
 
@@ -342,7 +387,7 @@ const ConfigValue* ConfigValue::find(const std::string_view& key) const
         return nullptr;
     }
 
-    auto& children = std::get<ChildMap>(*this);
+    auto& children = std::get<ElementMap>(*this);
     auto it = children.find(key);
     if (it != children.end()) {
         return &it->second;
