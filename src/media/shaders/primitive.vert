@@ -116,7 +116,7 @@ void main()
     mat3 normalMatrix = mat3(worldMatrix);
 #else
     vec4 pos = u_ModelMatrix * getPosition();
-    mat3 normalMatrix = mat3(u_ModelMatrix);
+    mat3 normalMatrix = u_NormalMatrix;
 #endif
     v_Position = vec3(pos.xyz) / pos.w;
 

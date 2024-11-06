@@ -33,6 +33,10 @@ precision highp float;
 #include <iridescence.glsl>
 #endif
 
+#define DEBUG_NONE 0
+#ifndef DEBUG
+#define DEBUG 0
+#endif
 
 layout(location = 0) out vec4 g_finalColor;
 

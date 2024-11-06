@@ -227,6 +227,11 @@ Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceTyp
     } else if (shader_type == ShaderStage::COMPUTE) {
         defines.add("SHADER_STAGE_COMPUTE");
     }
+
+    if (LINEAR_COLOR_OUTPUT){
+        defines.add("LINEAR_OUTPUT");
+    }
+
     if (pDefines) {
         defines += *pDefines;
     }

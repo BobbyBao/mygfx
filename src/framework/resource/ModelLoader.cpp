@@ -568,9 +568,7 @@ void ModelLoader::loadMaterials()
 
 void getDefines(cgltf_material& mat, DefineList& defineList)
 {
-    defineList.add("USE_IBL")
-        .add("DEBUG_NONE", 0)
-        .add("DEBUG", 0);
+    defineList.add("USE_IBL");
 
     if (mat.normal_texture.texture) {
         defineList.add("HAS_NORMAL_MAP");
@@ -696,10 +694,7 @@ Ref<Material> ModelLoader::getDefaultMaterial(const DefineList* marcos)
     macros.add("HAS_TEXCOORD_0_VEC2", 1)
         .add("HAS_NORMAL_VEC3", 2)
         .add("MATERIAL_METALLICROUGHNESS")
-        .add("LINEAR_OUTPUT")
-        .add("USE_IBL")
-        .add("DEBUG_NONE", 0)
-        .add("DEBUG", 0);
+        .add("USE_IBL");
 
     auto defaultShader = ShaderEffect::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
     defaultShader->getMainPass()->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT });
