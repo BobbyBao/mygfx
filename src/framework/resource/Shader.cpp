@@ -74,7 +74,7 @@ void Shader::loadShader(const String& vs, const String& fs, const DefineList* ma
     init();
 }
 
-void Shader::loadShader(const String& cs)
+void Shader::loadShader(const String& cs, const DefineList* macros)
 {
     Path csPath(cs);
     auto csSource = FileSystem::readAllText(csPath);
@@ -82,7 +82,7 @@ void Shader::loadShader(const String& cs)
         return;
     }
 
-    addShader(ShaderStage::COMPUTE, cs, csSource, ShaderSourceType::GLSL, "", "", nullptr);
+    addShader(ShaderStage::COMPUTE, cs, csSource, ShaderSourceType::GLSL, "", "", macros);
 
     init();
 }

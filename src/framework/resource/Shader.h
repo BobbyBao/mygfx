@@ -20,7 +20,7 @@ public:
     void setName(const std::string_view& name) override;
 
     void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
-    void loadShader(const String& cs);
+    void loadShader(const String& cs, const DefineList* macros = nullptr);
     bool addShader(ShaderStage shaderStage, const String& shaderName, const String& source, ShaderSourceType sourceType = ShaderSourceType::GLSL, const String& entry = "", const String& extraParams = "", const DefineList* macros = nullptr);
 
 

@@ -9,6 +9,7 @@ namespace mygfx {
 using String = std::string;
 
 struct ConfigValue;
+using ElementList = std::vector<ConfigValue>;
 using ElementMap = std::multimap<std::string_view, ConfigValue>;
 using ChildMapIterator = std::pair<ElementMap::const_iterator, ElementMap::const_iterator>;
 using ValueBase = std::variant<std::nullptr_t, bool, int64_t, double, std::string_view, std::vector<ConfigValue>, ElementMap>;
@@ -35,10 +36,24 @@ struct ConfigValue : public ValueBase {
         return std::get<T>(*this);
     }
 
+    template <typename T>
+    const T& get(const T& defaultVal = {}) const
+    {
+        if (!std::holds_alternative<T>(*this)) {
+            return defaultVal;
+        }
+
+        return std::get<T>(*this);
+    }
+
     String getString() const;
 
-    size_t getChildCount() const;
-    size_t getChildCount(const std::string_view& key) const;
+    size_t getArrayCount() const;
+    const ConfigValue& getAt(size_t index) const;
+
+    size_t getElementCount() const;
+    size_t getElementCount(const std::string_view& key) const;
+    ChildMapIterator getIterator() const;
     ChildMapIterator getIterator(const std::string_view& key) const;
     const ConfigValue* find(const std::string_view& key) const;
     std::string_view name;

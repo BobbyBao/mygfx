@@ -58,7 +58,7 @@ inline static bool hasChar(std::array<uint32_t, 4> mask, char c)
 
 const std::array<uint32_t, 4> NUMBER = characterMask("-+0123456789");
 const std::array<uint32_t, 4> NUMBER_EXP = characterMask(".eE");
-const std::array<uint32_t, 4> ID_TERM = characterMask(" \t\n=:");
+const std::array<uint32_t, 4> ID_TERM = characterMask(" \t\n\r=:,[]");
 const std::array<uint32_t, 4> WHITESPACE = characterMask(" \n\r\t,");
 
 class SJSON {
@@ -118,6 +118,25 @@ private:
         }
     }
 
+    bool tryParse(const std::string_view& kw)
+    {
+        ws();
+        auto start = i;
+        for (auto c : kw) {
+            if (s[i++] != c) {
+                i = start;
+                return false;
+            }
+        }
+
+        if (!hasChar(ID_TERM, s[i])) {
+            i = start;
+            return false;
+        }
+
+        return true;
+    }
+
     ConfigValue pvalue()
     {
         ws();
@@ -130,20 +149,28 @@ private:
             return parray(); // "["
         if (c == QUOTE)
             return pstring(); // "
+
         if (c == 't') {
-            consumeKeyword("true");
-            return true;
-        }
-        if (c == 'f') {
-            consumeKeyword("false");
-            return false;
-        }
-        if (c == 'n') {
-            consumeKeyword("null");
-            return nullptr;
+            if (tryParse("true")) {
+                return true;
+            }
         }
 
-        throw parseError(s, i, "number, {, [, \", true, false or null");
+        if (c == 'f') {
+            if (tryParse("false")) {
+                return false;
+            }
+        }
+
+        if (c == 'n') {
+            if (tryParse("null")) {
+                return false;
+            }
+        }
+
+        return pidentifier();
+
+        // throw parseError(s, i, "number, {, [, \", true, false or null");
     }
 
     ConfigValue pnumber()
@@ -351,7 +378,21 @@ String ConfigValue::getString() const
     return "";
 }
 
-size_t ConfigValue::getChildCount() const
+size_t ConfigValue::getArrayCount() const
+{
+    if (getType() != ConfigValue::List) {
+        return 0;
+    }
+
+    return std::get<ElementList>(*this).size();
+}
+
+const ConfigValue& ConfigValue::getAt(size_t index) const
+{
+    return std::get<ElementList>(*this).at(index);
+}
+
+size_t ConfigValue::getElementCount() const
 {
     if (getType() != ConfigValue::Object) {
         return 0;
@@ -361,7 +402,7 @@ size_t ConfigValue::getChildCount() const
     return children.size();
 }
 
-size_t ConfigValue::getChildCount(const std::string_view& key) const
+size_t ConfigValue::getElementCount(const std::string_view& key) const
 {
     if (getType() != ConfigValue::Object) {
         return 0;
@@ -369,6 +410,16 @@ size_t ConfigValue::getChildCount(const std::string_view& key) const
 
     auto& children = std::get<ElementMap>(*this);
     return children.count(key);
+}
+
+ChildMapIterator ConfigValue::getIterator() const
+{
+    if (getType() != ConfigValue::Object) {
+        return {};
+    }
+
+    auto& children = std::get<ElementMap>(*this);
+    return { children.begin(), children.end() };
 }
 
 ChildMapIterator ConfigValue::getIterator(const std::string_view& key) const

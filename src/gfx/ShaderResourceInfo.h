@@ -44,7 +44,7 @@ public:
 
     DefineList& add(const String& key, size_t val);
     DefineList& add(const String& key, int val);
-    DefineList& add(const String& key);
+    DefineList& add(const String& key, const String& val = "");
 
     DefineList operator+(const DefineList& def2);
     DefineList& operator+=(const DefineList& def2);

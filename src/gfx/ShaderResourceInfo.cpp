@@ -29,9 +29,9 @@ DefineList& DefineList::add(const String& key, int val)
     return *this;
 }
 
-DefineList& DefineList::add(const String& key)
+DefineList& DefineList::add(const String& key, const String& val)
 {
-    (*this)[key] = "";
+    (*this)[key] = val;
     return *this;
 }
 
