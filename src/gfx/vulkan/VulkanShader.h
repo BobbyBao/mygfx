@@ -43,7 +43,11 @@ public:
     static constexpr int MAX_SHADER_STAGE = 8;
     VkPipelineLayout pipelineLayout = 0;
     uint32_t stageCount = 0;
+#if HAS_SHADER_OBJECT_EXT
     VkShaderEXT shaders[MAX_SHADER_STAGE] {};
+#else
+    Vector<VkPipeline> pipelines;
+#endif
     VkShaderStageFlagBits stages[MAX_SHADER_STAGE] {};
     Vector<VkDescriptorSet> desciptorSets;
     Vector<PushConstant> pushConstants;

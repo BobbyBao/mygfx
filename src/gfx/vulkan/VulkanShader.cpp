@@ -172,10 +172,13 @@ VulkanProgram::VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)
 
 VulkanProgram::~VulkanProgram()
 {
+#if HAS_SHADER_OBJECT_EXT
     for (uint32_t i = 0; i < stageCount; i++) {
         g_vkDestroyShaderEXT(gfx().device, shaders[i], nullptr);
     }
+#else
 
+#endif
     vkDestroyPipelineLayout(gfx().device, pipelineLayout, nullptr);
 }
 
@@ -226,6 +229,7 @@ HwDescriptorSet* VulkanProgram::createDescriptorSet(uint32_t index)
 
 bool VulkanProgram::createShaders()
 {
+#if HAS_SHADER_OBJECT_EXT
     VkShaderCreateInfoEXT shaderCreateInfos[MAX_SHADER_STAGE] {};
     SmallVector<VkPushConstantRange, 16> pushConstRanges;
     SmallVector<VkSpecializationMapEntry, 32> specializationMapEntries;
@@ -291,7 +295,32 @@ bool VulkanProgram::createShaders()
     } else {
         std::cout << "Could not load binary shader files (" << tools::errorString(result) << ", loading SPIR - V instead\n";
     }
+#else
+        
+    VkPipelineShaderStageCreateInfo           stages;
+    VkPipelineVertexInputStateCreateInfo      vertexInputState;
+    VkPipelineInputAssemblyStateCreateInfo    inputAssemblyState;
+    VkPipelineTessellationStateCreateInfo     tessellationState;
+    VkPipelineViewportStateCreateInfo         viewportState;
+    VkPipelineRasterizationStateCreateInfo    rasterizationState;
+    VkPipelineMultisampleStateCreateInfo      multisampleState;
+    VkPipelineDepthStencilStateCreateInfo     depthStencilState;
+    VkPipelineColorBlendStateCreateInfo       colorBlendState;
+    VkPipelineDynamicStateCreateInfo          dynamicState;
 
+    VkGraphicsPipelineCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+        //todo:
+        .layout = pipelineLayout,
+        .renderPass = VK_NULL_HANDLE,
+        .subpass = 0,
+        .basePipelineHandle = VK_NULL_HANDLE,
+        .basePipelineIndex = 0,
+    };
+
+    VkPipeline pipeline;
+    vkCreateGraphicsPipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);
+#endif
     return false;
 }
 

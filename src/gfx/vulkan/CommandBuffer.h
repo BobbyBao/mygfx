@@ -164,7 +164,12 @@ inline void CommandBuffer::bindShaderProgram(HwProgram* program) const VULKAN_NO
     VulkanProgram* vkProgram = static_cast<VulkanProgram*>(program);
     if (mProgram != program) {
         mProgram = vkProgram;
-        g_vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);
+
+#if HAS_SHADER_OBJECT_EXT
+        g_vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);    
+#else
+
+#endif
     }
 }
 

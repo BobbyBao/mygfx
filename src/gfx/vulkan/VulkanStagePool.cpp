@@ -24,6 +24,7 @@ VulkanStage const* VulkanStagePool::acquireStage(const void* buffer, size_t size
         utils::ScopedSpinLock lock(mLockUsedStages);
         mUsedStages.insert(stage);
         mLockFreeStages.unlock();
+        stage->lastAccessed = mCurrentFrame;
         return stage;
     }
     mLockFreeStages.unlock();
@@ -71,6 +72,7 @@ VulkanStageImage const* VulkanStagePool::acquireImage(Format format, uint32_t wi
         if (image->format == vkformat && image->width == width && image->height == height) {
             mFreeImages.erase(image);
             mUsedImages.insert(image);
+            image->lastAccessed = mCurrentFrame;
             return image;
         }
     }

@@ -12,11 +12,12 @@ static VkPhysicalDeviceDescriptorIndexingFeatures DescriptorIndexingFeatures = {
 
 PFN_vkSetDebugUtilsObjectNameEXT g_vkSetDebugUtilsObjectNameEXT = nullptr;
 
+#if HAS_SHADER_OBJECT_EXT
 PFN_vkCreateShadersEXT g_vkCreateShadersEXT { VK_NULL_HANDLE };
 PFN_vkDestroyShaderEXT g_vkDestroyShaderEXT { VK_NULL_HANDLE };
 PFN_vkCmdBindShadersEXT g_vkCmdBindShadersEXT { VK_NULL_HANDLE };
 PFN_vkGetShaderBinaryDataEXT g_vkGetShaderBinaryDataEXT { VK_NULL_HANDLE };
-
+#endif
 // VK_EXT_shader_objects requires render passes to be dynamic
 PFN_vkCmdBeginRenderingKHR g_vkCmdBeginRenderingKHR { VK_NULL_HANDLE };
 PFN_vkCmdEndRenderingKHR g_vkCmdEndRenderingKHR { VK_NULL_HANDLE };
@@ -47,14 +48,17 @@ PFN_vkCmdSetVertexInputEXT g_vkCmdSetVertexInputEXT { VK_NULL_HANDLE };
 
 VulkanHelper::VulkanHelper()
 {
+#if HAS_SHADER_OBJECT_EXT
     enabledDeviceExtensions.push_back(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
-
+#endif
     enabledDeviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
 
     enabledDeviceExtensions.push_back(VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME);
 
     // With VK_EXT_shader_object all baked pipeline state is set dynamically at command buffer creation, so we need to enable additional extensions
     enabledDeviceExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+    enabledDeviceExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+    enabledDeviceExtensions.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
     enabledDeviceExtensions.push_back(VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME);
 
     // Since we are not requiring Vulkan 1.2, we need to enable some additional extensios for dynamic rendering
@@ -447,11 +451,13 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
     }
 
     GET_DEVICE_PROC_ADDR(vkSetDebugUtilsObjectNameEXT);
-
+    
+#if HAS_SHADER_OBJECT_EXT
     g_vkCreateShadersEXT = reinterpret_cast<PFN_vkCreateShadersEXT>(vkGetDeviceProcAddr(device, "vkCreateShadersEXT"));
     g_vkDestroyShaderEXT = reinterpret_cast<PFN_vkDestroyShaderEXT>(vkGetDeviceProcAddr(device, "vkDestroyShaderEXT"));
     g_vkCmdBindShadersEXT = reinterpret_cast<PFN_vkCmdBindShadersEXT>(vkGetDeviceProcAddr(device, "vkCmdBindShadersEXT"));
     g_vkGetShaderBinaryDataEXT = reinterpret_cast<PFN_vkGetShaderBinaryDataEXT>(vkGetDeviceProcAddr(device, "vkGetShaderBinaryDataEXT"));
+#endif
 
     g_vkCmdBeginRenderingKHR = reinterpret_cast<PFN_vkCmdBeginRenderingKHR>(vkGetDeviceProcAddr(device, "vkCmdBeginRenderingKHR"));
     g_vkCmdEndRenderingKHR = reinterpret_cast<PFN_vkCmdEndRenderingKHR>(vkGetDeviceProcAddr(device, "vkCmdEndRenderingKHR"));
@@ -478,8 +484,7 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
     g_vkCmdSetStencilTestEnableEXT = reinterpret_cast<PFN_vkCmdSetStencilTestEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT"));
     g_vkCmdSetVertexInputEXT = reinterpret_cast<PFN_vkCmdSetVertexInputEXT>(vkGetDeviceProcAddr(device, "vkCmdSetVertexInputEXT"));
     g_vkCmdSetViewportWithCountEXT = reinterpret_cast<PFN_vkCmdSetViewportWithCountEXT>(vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT"));
-    ;
-
+ 
     return result;
 }
 

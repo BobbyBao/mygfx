@@ -6,6 +6,12 @@
 
 #include <vma/vk_mem_alloc.h>
 
+#ifdef VK_EXT_shader_object
+#define HAS_SHADER_OBJECT_EXT 0
+#else
+#define HAS_SHADER_OBJECT_EXT 0
+#endif
+
 namespace mygfx {
 
 static constexpr uint32_t DESCRIPTOR_TYPE_COUNT = 16;
@@ -19,11 +25,12 @@ struct DescriptorResourceCounts : public std::array<uint32_t, DESCRIPTOR_TYPE_CO
     }
 };
 
-
+#if HAS_SHADER_OBJECT_EXT
 extern PFN_vkCreateShadersEXT g_vkCreateShadersEXT;
 extern PFN_vkDestroyShaderEXT g_vkDestroyShaderEXT;
 extern PFN_vkCmdBindShadersEXT g_vkCmdBindShadersEXT;
 extern PFN_vkGetShaderBinaryDataEXT g_vkGetShaderBinaryDataEXT;
+#endif
 
 // VK_EXT_shader_objects requires render passes to be dynamic
 extern PFN_vkCmdBeginRenderingKHR g_vkCmdBeginRenderingKHR;
