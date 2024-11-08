@@ -34,7 +34,7 @@ VulkanVertexInput::VulkanVertexInput(const FormatList& fmts)
 VulkanVertexInput::VulkanVertexInput(const FormatList& fmts, const FormatList& fmts1)
 {
     append(fmts, false);
-    append(fmts, true);
+    append(fmts1, true);
 }
 
 void VulkanVertexInput::append(const FormatList& fmts, bool perInstance)

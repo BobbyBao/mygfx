@@ -101,11 +101,6 @@ void Shader::setVertexInput(const FormatList& fmts, const FormatList& fmts1)
     }
 }
 
-void Shader::setVertexSemantic(VertexAttribute vertexSemantic)
-{
-    pipelineState.vertexSemantic = vertexSemantic;
-}
-
 void Shader::setBlendMode(BlendMode blendMode)
 {
     pipelineState.colorBlendState = ColorBlendState::get(blendMode);

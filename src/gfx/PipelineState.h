@@ -7,6 +7,7 @@ namespace mygfx {
 struct PrimitiveState {
     PrimitiveTopology primitiveTopology : 4 = PrimitiveTopology::TRIANGLE_LIST;
     bool restartEnable : 1 = false;
+    uint8_t reserve : 3 = 0;
 
     auto operator<=>(PrimitiveState const&) const = default;
 };
@@ -22,6 +23,7 @@ struct RasterState {
     bool alphaToCoverageEnable : 1 = false;
     bool alphaToOneEnable : 1 = false;
     bool rasterizerDiscardEnable : 1 = false;
+    uint8_t reserve : 1 = 0;
     SampleCount rasterizationSamples : 6 = SampleCount::SAMPLE_1;
 
     auto operator<=>(RasterState const&) const = default;
@@ -56,6 +58,7 @@ struct ColorBlendState {
     BlendOp alphaBlendOp : 3 = BlendOp::ADD;
 
     ColorComponent colorWrite : 4 = ColorComponent::RGBA;
+    uint32_t reserve : 1 = 0;
 
     static ColorBlendState get(BlendMode blendMode);
 
@@ -68,7 +71,8 @@ struct DepthState {
     bool depthTestEnable : 1 = true;
     bool depthWriteEnable : 1 = true;
     CompareOp depthCompareOp : 4 = CompareOp::LESS_OR_EQUAL;
-    bool depthBoundsTestEnable : 1 = false;
+    bool depthBoundsTestEnable : 1 = false;    
+    uint8_t reserve : 1 = 0;
 
     auto operator<=>(DepthState const&) const = default;
 };
@@ -98,13 +102,10 @@ class HwProgram;
 
 struct PipelineState {
     HwProgram* program;
-    VertexAttribute vertexSemantic = VertexAttribute::ALL;
     PrimitiveState primitiveState {};
     DepthState depthState {};
-    ColorBlendState colorBlendState {};
     RasterState rasterState {};
-    uint16_t p1;
-    uint32_t p2;
+    ColorBlendState colorBlendState {};
     StencilState* stencilState {};
 };
 

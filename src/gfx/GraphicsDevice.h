@@ -122,8 +122,9 @@ protected:
 struct RenderCommand {
     HwRenderPrimitive* renderPrimitive = nullptr;
     PipelineState pipelineState;
-    Uniforms uniforms;
+    HwBuffer* indirectBuffer = nullptr;
     uint32_t instanceCount = 1;
+    Uniforms uniforms;
 };
 
 class HwRenderQueue : public HwObject {

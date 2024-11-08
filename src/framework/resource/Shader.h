@@ -25,12 +25,10 @@ public:
 
 
     const std::vector<Ref<HwShaderModule>>& getShaderModules() const { return mShaderModules; }
-    VertexAttribute getVertexSemantic() const { return pipelineState.vertexSemantic; }
     HwProgram* getProgram() { return mProgram; }
     ShaderResourceInfo* getShaderResource(const String& name);
 
     void setVertexInput(const FormatList& fmts, const FormatList& fmts1 = {});
-    void setVertexSemantic(VertexAttribute vertexSemantic);
     void setBlendMode(BlendMode blendMode);
     void setPrimitiveTopology(PrimitiveTopology primitiveTopology);
     void setCullMode(CullMode cullMode);
