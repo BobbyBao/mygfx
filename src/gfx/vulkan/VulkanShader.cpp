@@ -166,7 +166,14 @@ VulkanProgram::VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)
         descriptorSetLayouts.push_back(dsLayout->handle());
     }
 
+    SmallVector<VkPushConstantRange, 16> pushConstRanges;
+    for (auto& pc : pushConstants) {
+        pushConstRanges.push_back(VkPushConstantRange { (VkShaderStageFlags)pc.stageFlags, pc.offset, pc.size });
+    }
+
     VkPipelineLayoutCreateInfo pipelineLayoutCI = initializers::pipelineLayoutCreateInfo(descriptorSetLayouts.data(), (uint32_t)descriptorSetLayouts.size());
+    pipelineLayoutCI.pushConstantRangeCount = (uint32_t)pushConstRanges.size();
+    pipelineLayoutCI.pPushConstantRanges = pushConstRanges.data();
     VK_CHECK_RESULT(vkCreatePipelineLayout(gfx().device, &pipelineLayoutCI, nullptr, &pipelineLayout));
 
     createShaders();
@@ -312,12 +319,17 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     if (ThreadUtils::isThisThread(gfx().renderThreadID)) {
         if (attachmentFormats.getHash() == attachmentFormatsHash) {
             return pipeline;
+        } else {
+            vkDestroyPipeline(gfx().device, pipeline, nullptr);
         }
     } else {
         auto it = sPipelineCache.find(this);
         if (it != sPipelineCache.end()) {
             if (it->second.second == attachmentFormats.getHash()) {
                 return it->second.first;
+            } else {
+                vkDestroyPipeline(gfx().device, it->second.first, nullptr);
+                sPipelineCache.erase(it);
             }
         }
     }
@@ -408,7 +420,7 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     };
 
     VkPipeline pipe = VK_NULL_HANDLE;
-    vkCreateGraphicsPipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipe);
+    VK_CHECK_RESULT(vkCreateGraphicsPipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipe));
 
     if (ThreadUtils::isThisThread(gfx().renderThreadID)) {
         attachmentFormatsHash = attachmentFormats.getHash();
@@ -444,7 +456,7 @@ VkPipeline VulkanProgram::getComputePipeline()
         .basePipelineIndex = -1,
     };
 
-    vkCreateComputePipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);
+    VK_CHECK_RESULT(vkCreateComputePipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline));
     return pipeline;
 }
 

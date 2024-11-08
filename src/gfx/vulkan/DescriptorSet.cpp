@@ -5,8 +5,9 @@
 #include "utils/Log.h"
 
 namespace mygfx {
-    
-VkDescriptorType toVk(DescriptorType descriptorType) {
+
+VkDescriptorType toVk(DescriptorType descriptorType)
+{
     switch (descriptorType) {
     case DescriptorType::SAMPLER:
         return VK_DESCRIPTOR_TYPE_SAMPLER;

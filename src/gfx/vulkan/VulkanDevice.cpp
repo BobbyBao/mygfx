@@ -96,7 +96,7 @@ bool VulkanDevice::create(const Settings& settings)
 
     mCommandQueues[0].init(CommandQueueType::Graphics, queueFamilyIndices.graphics, 0, 3, "");
     mCommandQueues[1].init(CommandQueueType::Compute, queueFamilyIndices.compute, 0, 3, "");
-    mCommandQueues[2].init(CommandQueueType::Copy, queueFamilyIndices.transfer, 1, 3, "");
+    mCommandQueues[2].init(CommandQueueType::Copy, queueFamilyIndices.transfer, copyQueueFamilyProperties().queueCount > 0 ? 1 : 0, 3, "");
 
     SamplerHandle::init();
 

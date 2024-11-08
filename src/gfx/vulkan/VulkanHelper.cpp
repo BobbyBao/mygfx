@@ -390,7 +390,7 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
         VkDeviceQueueCreateInfo queueInfo {};
         queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueInfo.queueFamilyIndex = queueFamilyIndices.graphics;
-        queueInfo.queueCount = 8;
+        queueInfo.queueCount = std::max(8u, queueFamilyProperties[queueFamilyIndices.graphics].queueCount);
         queueInfo.pQueuePriorities = graphicsQueuePriority;
         queueCreateInfos.push_back(queueInfo);
     } else {
@@ -405,7 +405,7 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
             VkDeviceQueueCreateInfo queueInfo {};
             queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueInfo.queueFamilyIndex = queueFamilyIndices.compute;
-            queueInfo.queueCount = 1;
+            queueInfo.queueCount = std::max(8u, queueFamilyProperties[queueFamilyIndices.compute].queueCount);
             queueInfo.pQueuePriorities = &computeQueuePriority;
             queueCreateInfos.push_back(queueInfo);
         }
@@ -422,7 +422,7 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
             VkDeviceQueueCreateInfo queueInfo {};
             queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueInfo.queueFamilyIndex = queueFamilyIndices.transfer;
-            queueInfo.queueCount = 8;
+            queueInfo.queueCount = std::max(8u, queueFamilyProperties[queueFamilyIndices.transfer].queueCount);;
             queueInfo.pQueuePriorities = copyQueuePriorities;
             queueCreateInfos.push_back(queueInfo);
         }

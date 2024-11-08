@@ -49,6 +49,10 @@ public:
         uint32_t transfer;
     } queueFamilyIndices;
 
+    const VkQueueFamilyProperties& graphicsQueueFamilyProperties() { return queueFamilyProperties[queueFamilyIndices.graphics]; }
+    const VkQueueFamilyProperties& computeQueueFamilyProperties() { return queueFamilyProperties[queueFamilyIndices.compute]; }
+    const VkQueueFamilyProperties& copyQueueFamilyProperties() { return queueFamilyProperties[queueFamilyIndices.transfer]; }
+
 protected:
 
     VkResult createInstance(const char* name, bool validation);
