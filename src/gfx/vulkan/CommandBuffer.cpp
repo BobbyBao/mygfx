@@ -230,6 +230,7 @@ void CommandBuffer::resetState() const VULKAN_NOEXCEPT
     const VkColorComponentFlags colorBlendComponentFlags = 0xf;
     const VkColorBlendEquationEXT colorBlendEquation {};
     g_vkCmdSetColorBlendEnableEXT(cmd, 0, 1, &colorBlendEnables);
+    g_vkCmdSetColorBlendEquationEXT(cmd, 0, 1, &colorBlendEquation);
     g_vkCmdSetColorWriteMaskEXT(cmd, 0, 1, &colorBlendComponentFlags);
 
     mProgram = nullptr;
@@ -257,7 +258,7 @@ void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t
     viewport.height = -static_cast<float>(height);
     viewport.minDepth = (float)0.0f;
     viewport.maxDepth = (float)1.0f;
-    g_vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
+    //g_vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
 
     VkRect2D scissor;
     scissor.extent.width = (uint32_t)(width);
@@ -265,20 +266,25 @@ void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t
     scissor.offset.x = topX;
     scissor.offset.y = topY;
 
-    g_vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
+    //g_vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
+
+    vkCmdSetViewport(cmd, 0, 1, &viewport);
+    vkCmdSetScissor(cmd, 0, 1, &scissor);
 }
 
 void CommandBuffer::setViewport(uint32_t viewportCount, const VkViewport* pViewports) const VULKAN_NOEXCEPT
 {
-    g_vkCmdSetViewportWithCountEXT(cmd, viewportCount, reinterpret_cast<const VkViewport*>(pViewports));
+    vkCmdSetViewport(cmd, 0, viewportCount, pViewports);
+    //g_vkCmdSetViewportWithCountEXT(cmd, viewportCount, reinterpret_cast<const VkViewport*>(pViewports));
 }
 
 void CommandBuffer::setScissor(uint32_t scissorCount, const VkRect2D* pScissors) const VULKAN_NOEXCEPT
 {
-    g_vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
+    vkCmdSetScissor(cmd, 0, scissorCount, pScissors);
+    //g_vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
 }
 
-void CommandBuffer::bindDescriptorSets(HwDescriptorSet*const * ds, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT
+void CommandBuffer::bindDescriptorSets(HwDescriptorSet* const* ds, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT
 {
     assert(setCount <= 8);
 
@@ -405,6 +411,20 @@ void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const 
     bindDepthState(&pipelineState->depthState);
     bindColorBlendState(&pipelineState->colorBlendState);
     bindStencilState(pipelineState->stencilState);
+}
+
+void CommandBuffer::bindPipeline(VulkanProgram* vkProgram) const VULKAN_NOEXCEPT
+{
+#if !HAS_SHADER_OBJECT_EXT
+    extern VulkanDevice& gfx();
+    if (vkProgram->getBindPoint() == VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE) {
+        auto pipeline = vkProgram->getComputePipeline();
+        vkCmdBindPipeline(cmd, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
+    } else {
+        auto pipeline = vkProgram->getGraphicsPipeline(gfx().mAttachmentFormats);
+        vkCmdBindPipeline(cmd, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    }
+#endif
 }
 
 void CommandBuffer::copyImage(VulkanTexture* srcTex, uint32_t srcLevel, uint32_t srcBaseLayer,

@@ -1,6 +1,8 @@
 #include "VulkanShader.h"
 #include "VulkanDevice.h"
+#include "VulkanInitializers.hpp"
 #include "utils/Log.h"
+#include "utils/ThreadUtils.h"
 #include <spirv_cross/spirv_glsl.hpp>
 
 using namespace spirv_cross;
@@ -177,7 +179,9 @@ VulkanProgram::~VulkanProgram()
         g_vkDestroyShaderEXT(gfx().device, shaders[i], nullptr);
     }
 #else
-
+    if (pipeline) {
+        vkDestroyPipeline(gfx().device, pipeline, nullptr);
+    }
 #endif
     vkDestroyPipelineLayout(gfx().device, pipelineLayout, nullptr);
 }
@@ -296,32 +300,152 @@ bool VulkanProgram::createShaders()
         std::cout << "Could not load binary shader files (" << tools::errorString(result) << ", loading SPIR - V instead\n";
     }
 #else
-        
-    VkPipelineShaderStageCreateInfo           stages;
-    VkPipelineVertexInputStateCreateInfo      vertexInputState;
-    VkPipelineInputAssemblyStateCreateInfo    inputAssemblyState;
-    VkPipelineTessellationStateCreateInfo     tessellationState;
-    VkPipelineViewportStateCreateInfo         viewportState;
-    VkPipelineRasterizationStateCreateInfo    rasterizationState;
-    VkPipelineMultisampleStateCreateInfo      multisampleState;
-    VkPipelineDepthStencilStateCreateInfo     depthStencilState;
-    VkPipelineColorBlendStateCreateInfo       colorBlendState;
-    VkPipelineDynamicStateCreateInfo          dynamicState;
+
+#endif
+    return false;
+}
+
+thread_local std::unordered_map<VulkanProgram*, std::pair<VkPipeline, size_t>> sPipelineCache;
+
+VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmentFormats)
+{
+    if (ThreadUtils::isThisThread(gfx().renderThreadID)) {
+        if (attachmentFormats.getHash() == attachmentFormatsHash) {
+            return pipeline;
+        }
+    } else {
+        auto it = sPipelineCache.find(this);
+        if (it != sPipelineCache.end()) {
+            if (it->second.second == attachmentFormats.getHash()) {
+                return it->second.first;
+            }
+        }
+    }
+
+    VkPipelineShaderStageCreateInfo stages[16];
+    for (int i = 0; i < mShaderModules.size(); i++) {
+        stages[i] = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .flags = 0,
+            .stage = mShaderModules[i]->vkShaderStage,
+            .module = mShaderModules[i]->shaderModule,
+            .pName = mShaderModules[i]->entryPoint.c_str(),
+        };
+    }
+
+    VkPipelineVertexInputStateCreateInfo vertexInputState = initializers::pipelineVertexInputStateCreateInfo();
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = initializers::pipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, false);
+    VkPipelineTessellationStateCreateInfo tessellationState = initializers::pipelineTessellationStateCreateInfo(3);
+    VkPipelineViewportStateCreateInfo viewportState = initializers::pipelineViewportStateCreateInfo(1, 1);
+    VkPipelineRasterizationStateCreateInfo rasterizationState = initializers::pipelineRasterizationStateCreateInfo(VkPolygonMode::VK_POLYGON_MODE_FILL, VkCullModeFlagBits::VK_CULL_MODE_NONE, VkFrontFace::VK_FRONT_FACE_COUNTER_CLOCKWISE);
+    VkPipelineMultisampleStateCreateInfo multisampleState = initializers::pipelineMultisampleStateCreateInfo(VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT);
+    VkPipelineDepthStencilStateCreateInfo depthStencilState = initializers::pipelineDepthStencilStateCreateInfo(true, true, INVERTED_DEPTH ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL);
+    auto colorBlendAttachmentState = initializers::pipelineColorBlendAttachmentState(VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT, false);
+    VkPipelineColorBlendStateCreateInfo colorBlendState = initializers::pipelineColorBlendStateCreateInfo(1, &colorBlendAttachmentState);
+
+    std::vector<VkDynamicState> dynamic_state_enables = {
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR,
+        // VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
+        // VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
+
+        VK_DYNAMIC_STATE_CULL_MODE,
+        VK_DYNAMIC_STATE_FRONT_FACE,
+
+        VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE,
+        VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE,
+        VK_DYNAMIC_STATE_DEPTH_COMPARE_OP,
+        VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE,
+
+        VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY,
+        VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE,
+        VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT,
+
+        VK_DYNAMIC_STATE_POLYGON_MODE_EXT,
+        VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT,
+        VK_DYNAMIC_STATE_SAMPLE_MASK_EXT,
+
+        VK_DYNAMIC_STATE_ALPHA_TO_COVERAGE_ENABLE_EXT,
+        VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT,
+
+        VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT,
+        VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT,
+        VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT,
+
+        VK_DYNAMIC_STATE_VERTEX_INPUT_EXT
+
+    };
+
+    VkPipelineDynamicStateCreateInfo dynamicState = initializers::pipelineDynamicStateCreateInfo(dynamic_state_enables);
+
+    VkPipelineRenderingCreateInfoKHR pipeline_create { VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR };
+    pipeline_create.pNext = VK_NULL_HANDLE;
+    pipeline_create.colorAttachmentCount = attachmentFormats.colorAttachmentCount;
+    pipeline_create.pColorAttachmentFormats = attachmentFormats.attachmentFormats;
+    pipeline_create.depthAttachmentFormat = attachmentFormats.depthAttachmentFormat();
+    pipeline_create.stencilAttachmentFormat = attachmentFormats.stencilAttachmentFormat();
 
     VkGraphicsPipelineCreateInfo createInfo = {
         .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
-        //todo:
+        .pNext = &pipeline_create,
+        .stageCount = (uint32_t)mShaderModules.size(),
+        .pStages = stages,
+        .pVertexInputState = &vertexInputState,
+        .pInputAssemblyState = &inputAssemblyState,
+        .pTessellationState = &tessellationState,
+        .pViewportState = &viewportState,
+        .pRasterizationState = &rasterizationState,
+        .pMultisampleState = &multisampleState,
+        .pDepthStencilState = &depthStencilState,
+        .pColorBlendState = &colorBlendState,
+        .pDynamicState = &dynamicState,
+
         .layout = pipelineLayout,
         .renderPass = VK_NULL_HANDLE,
         .subpass = 0,
         .basePipelineHandle = VK_NULL_HANDLE,
-        .basePipelineIndex = 0,
+        .basePipelineIndex = -1,
     };
 
-    VkPipeline pipeline;
-    vkCreateGraphicsPipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);
-#endif
-    return false;
+    VkPipeline pipe = VK_NULL_HANDLE;
+    vkCreateGraphicsPipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipe);
+
+    if (ThreadUtils::isThisThread(gfx().renderThreadID)) {
+        attachmentFormatsHash = attachmentFormats.getHash();
+        pipeline = pipe;
+    } else {
+        sPipelineCache.emplace(this, std::make_pair(pipe, attachmentFormats.getHash()));
+    }
+    return pipe;
+}
+
+VkPipeline VulkanProgram::getComputePipeline()
+{
+    if (pipeline) {
+        return pipeline;
+    }
+
+    if (mShaderModules.size() == 0) {
+        return VK_NULL_HANDLE;
+    }
+
+    VkComputePipelineCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
+        .pNext = VK_NULL_HANDLE,
+        .stage = {
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+            .flags = 0,
+            .stage = mShaderModules[0]->vkShaderStage,
+            .module = mShaderModules[0]->shaderModule,
+            .pName = mShaderModules[0]->entryPoint.c_str(),
+        },
+        .layout = pipelineLayout,
+        .basePipelineHandle = VK_NULL_HANDLE,
+        .basePipelineIndex = -1,
+    };
+
+    vkCreateComputePipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline);
+    return pipeline;
 }
 
 VkShaderStageFlagBits ToVkShaderStage(ShaderStage stage)
@@ -380,9 +504,29 @@ VulkanShaderModule::VulkanShaderModule(ShaderStage stage, const std::vector<uint
     }
 
     vkShaderStage = ToVkShaderStage(stage);
-    nextStage = GetNextShaderStage(stage);
 
     collectShaderResource();
+
+#if HAS_SHADER_OBJECT_EXT
+    nextStage = GetNextShaderStage(stage);
+#else
+    VkShaderModuleCreateInfo createInfo = {
+        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
+        .flags = 0,
+        .codeSize = shaderCode.size(),
+        .pCode = (uint32_t*)shaderCode.data(),
+    };
+    vkCreateShaderModule(gfx().device, &createInfo, nullptr, &shaderModule);
+#endif
+}
+
+VulkanShaderModule::~VulkanShaderModule()
+{
+#if !HAS_SHADER_OBJECT_EXT
+    if (shaderModule) {
+        vkDestroyShaderModule(gfx().device, shaderModule, nullptr);
+    }
+#endif
 }
 
 void VulkanShaderModule::collectShaderResource()

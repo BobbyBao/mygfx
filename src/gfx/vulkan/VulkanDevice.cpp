@@ -421,23 +421,25 @@ void VulkanDevice::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& ren
     mCurrentCmd->beginRendering(pRT, renderInfo);
     mRenderPassInfo = renderInfo;
     mRenderTarget = (VulkanRenderTarget*)pRT;
-    colorAttachmentCount = mRenderTarget->numAttachments();
-    for (uint32_t i = 0; i < colorAttachmentCount; i++) {
-        colorAttachmentFormats[i] = mRenderTarget->colorAttachments[i]->format();
+    mAttachmentFormats.colorAttachmentCount = mRenderTarget->numAttachments();
+    for (uint32_t i = 0; i < mAttachmentFormats.colorAttachmentCount; i++) {
+        mAttachmentFormats.attachmentFormats[i] = mRenderTarget->colorAttachments[i]->format();
     }
 
     if (mRenderTarget->depthAttachment) {
-        depthAttachmentFormat = mRenderTarget->depthAttachment->format();
-        if (isDepthStencilFormat(depthAttachmentFormat)) {
-            stencilAttachmentFormat = depthAttachmentFormat;
+        mAttachmentFormats.depthAttachmentFormat() = mRenderTarget->depthAttachment->format();
+        if (isDepthStencilFormat(mAttachmentFormats.depthAttachmentFormat())) {
+            mAttachmentFormats.stencilAttachmentFormat() = mAttachmentFormats.depthAttachmentFormat();
         } else {
-            stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+            mAttachmentFormats.stencilAttachmentFormat() = VK_FORMAT_UNDEFINED;
         }
 
     } else {
-        depthAttachmentFormat = VK_FORMAT_UNDEFINED;
-        stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+        mAttachmentFormats.depthAttachmentFormat() = VK_FORMAT_UNDEFINED;
+        mAttachmentFormats.stencilAttachmentFormat() = VK_FORMAT_UNDEFINED;
     }
+
+    mAttachmentFormats.calculateHash();
 }
 
 void VulkanDevice::endRendering(HwRenderTarget* pRT)
@@ -651,11 +653,15 @@ static void drawBatch1(const CommandBuffer& cmd, const RenderCommand* start, uin
 void VulkanDevice::drawBatch(HwRenderQueue* renderQueue)
 {
     const auto& primitives = renderQueue->getReadCommands();
+#if HAS_SHADER_OBJECT_EXT
     if (primitives.size() > 200) {
         drawMultiThreaded(primitives, *mCurrentCmd);
     } else {
         drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
     }
+#else
+    drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
+#endif
 
     Stats::drawCall() += (uint32_t)primitives.size();
 }
@@ -669,10 +675,10 @@ void drawWork(VulkanDevice* device, const RenderCommand* start, uint32_t count, 
         .pNext = nullptr,
         .flags = VK_RENDERING_CONTENTS_SECONDARY_COMMAND_BUFFERS_BIT,
         .viewMask = 0,
-        .colorAttachmentCount = device->colorAttachmentCount,
-        .pColorAttachmentFormats = device->colorAttachmentFormats,
-        .depthAttachmentFormat = device->depthAttachmentFormat,
-        .stencilAttachmentFormat = device->stencilAttachmentFormat,
+        .colorAttachmentCount = device->mAttachmentFormats.colorAttachmentCount,
+        .pColorAttachmentFormats = device->mAttachmentFormats.attachmentFormats,
+        .depthAttachmentFormat = device->mAttachmentFormats.depthAttachmentFormat(),
+        .stencilAttachmentFormat = device->mAttachmentFormats.stencilAttachmentFormat(),
         .rasterizationSamples = VK_SAMPLE_COUNT_1_BIT,
     };
 

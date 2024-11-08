@@ -52,7 +52,6 @@ void SyncContext::waitRender()
 
 void SyncContext::swapContext()
 {
-
     renderFrame_ = workFrame_;
     workFrame_ = (workFrame_ + 1) % (int)MAX_FRAME_COUNT;
 }

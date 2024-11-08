@@ -14,6 +14,7 @@ namespace mygfx {
 class VulkanShaderModule : public HwShaderModule {
 public:
     VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType = ShaderCodeType::SPIRV, const char* pShaderEntryPoint = nullptr);
+    ~VulkanShaderModule();
 
     void collectShaderResource();
 
@@ -21,10 +22,14 @@ public:
     Vector<SpecializationConst> specializationConsts;
     Vector<uint8_t> specializationData;
     ShaderStage shaderStage;
-    VkShaderStageFlagBits vkShaderStage;
-    VkShaderStageFlags nextStage;
     Vector<uint8_t> shaderCode;
     String entryPoint = "main";
+    VkShaderStageFlagBits vkShaderStage;
+#if HAS_SHADER_OBJECT_EXT
+    VkShaderStageFlags nextStage;
+#else
+    VkShaderModule shaderModule = VK_NULL_HANDLE;
+#endif
 };
 
 class DescriptorSet;
@@ -46,7 +51,10 @@ public:
 #if HAS_SHADER_OBJECT_EXT
     VkShaderEXT shaders[MAX_SHADER_STAGE] {};
 #else
-    Vector<VkPipeline> pipelines;
+    VkPipeline getGraphicsPipeline(const AttachmentFormats& attachmentFormats);
+    VkPipeline getComputePipeline();
+    VkPipeline pipeline = VK_NULL_HANDLE;
+    size_t attachmentFormatsHash = 0;
 #endif
     VkShaderStageFlagBits stages[MAX_SHADER_STAGE] {};
     Vector<VkDescriptorSet> desciptorSets;

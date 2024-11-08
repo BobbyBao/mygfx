@@ -25,6 +25,29 @@ struct DescriptorResourceCounts : public std::array<uint32_t, DESCRIPTOR_TYPE_CO
     }
 };
 
+struct AttachmentFormats {
+    uint32_t colorAttachmentCount = 0;
+    VkFormat attachmentFormats[10] = { VK_FORMAT_UNDEFINED };
+    VkFormat depthAttachmentFormat() const { return attachmentFormats[8]; }
+    VkFormat stencilAttachmentFormat() const { return attachmentFormats[9]; }
+    VkFormat& depthAttachmentFormat() { return attachmentFormats[8]; }
+    VkFormat& stencilAttachmentFormat() { return attachmentFormats[9]; }
+    size_t getHash() const { return mHash; }
+
+    void reset()
+    {
+        std::memset(&attachmentFormats[0], 0, sizeof(VkFormat) * 10);
+    }
+
+    void calculateHash()
+    {
+        mHash = std::_Hash_array_representation(attachmentFormats, 10);
+    }
+
+private:
+    size_t mHash = 0;
+};
+
 #if HAS_SHADER_OBJECT_EXT
 extern PFN_vkCreateShadersEXT g_vkCreateShadersEXT;
 extern PFN_vkDestroyShaderEXT g_vkDestroyShaderEXT;

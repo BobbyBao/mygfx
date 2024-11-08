@@ -35,6 +35,7 @@ class VulkanProgram;
 class CommandList;
 class CommandQueue;
 class VulkanTexture;
+class VulkanDevice;
 
 enum class CommandQueueType {
     Graphics,
@@ -64,7 +65,9 @@ public:
     void setVertexInput(HwVertexInput* vertexInput) const VULKAN_NOEXCEPT;
     void setPrimitiveTopology(PrimitiveTopology primitiveTopology) const VULKAN_NOEXCEPT;
     void setPrimitiveRestartEnable(bool restartEnable) const VULKAN_NOEXCEPT;
+
     void bindShaderProgram(HwProgram* program) const VULKAN_NOEXCEPT;
+    void bindPipeline(VulkanProgram* vkProgram) const VULKAN_NOEXCEPT;
     void bindRasterState(const RasterState* rasterState) const VULKAN_NOEXCEPT;
     void bindColorBlendState(const ColorBlendState* colorBlendState) const VULKAN_NOEXCEPT;
     void bindDepthState(const DepthState* depthState) const VULKAN_NOEXCEPT;
@@ -168,7 +171,7 @@ inline void CommandBuffer::bindShaderProgram(HwProgram* program) const VULKAN_NO
 #if HAS_SHADER_OBJECT_EXT
         g_vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);    
 #else
-
+        bindPipeline(vkProgram);
 #endif
     }
 }

@@ -121,10 +121,7 @@ protected:
 
     RenderPassInfo mRenderPassInfo {};
     VulkanRenderTarget* mRenderTarget = nullptr;
-    uint32_t colorAttachmentCount;
-    VkFormat colorAttachmentFormats[8];
-    VkFormat depthAttachmentFormat;
-    VkFormat stencilAttachmentFormat;
+    AttachmentFormats mAttachmentFormats;
 
     friend class CommandBuffer;
 

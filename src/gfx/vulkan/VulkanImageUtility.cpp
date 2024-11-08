@@ -1,5 +1,4 @@
 #include "VulkanImageUtility.h"
-
 #include "VkFormatHelper.h"
 #include "VulkanTexture.h"
 

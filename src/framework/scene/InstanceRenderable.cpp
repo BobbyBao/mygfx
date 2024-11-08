@@ -67,7 +67,7 @@ void InstanceRenderable::updateInstanceBuffers()
         }
 
         HwBuffer* instanceBuffer = gfxApi().createBuffer1(BufferUsage::STORAGE | BufferUsage::SHADER_DEVICE_ADDRESS,
-            MemoryUsage::GPU_ONLY, Span { temp });
+            MemoryUsage::GPU_ONLY, Span<Matrix4> { temp });
         mInstanceBuffers.emplace_back(instanceBuffer);
 
         transformBuffer = instanceBuffer->deviceAddress;

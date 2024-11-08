@@ -274,6 +274,41 @@ void VulkanHelper::getEnabledFeatures()
     if (tryAddExtension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
         featuresAppender.AppendNext(&BufferDeviceAddressFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES);
     }
+
+    if (tryAddExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME)) {
+        static VkPhysicalDeviceExtendedDynamicStateFeaturesEXT features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT,
+            .extendedDynamicState = VK_TRUE,
+        };
+        featuresAppender.AppendNext(&features);
+    }
+
+    if (tryAddExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME)) {
+        static VkPhysicalDeviceExtendedDynamicState2FeaturesEXT features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
+            .extendedDynamicState2 = VK_TRUE,
+            .extendedDynamicState2PatchControlPoints = VK_TRUE
+        };
+        featuresAppender.AppendNext(&features);
+    }
+
+    if (tryAddExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME)) {
+        static VkPhysicalDeviceExtendedDynamicState3FeaturesEXT features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
+            .extendedDynamicState3DepthClampEnable = VK_TRUE,
+            .extendedDynamicState3PolygonMode = VK_TRUE
+        };
+        featuresAppender.AppendNext(&features);
+    }
+
+    if (tryAddExtension(VK_EXT_VERTEX_INPUT_DYNAMIC_STATE_EXTENSION_NAME)) {
+        static VkPhysicalDeviceVertexInputDynamicStateFeaturesEXT features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VERTEX_INPUT_DYNAMIC_STATE_FEATURES_EXT,
+            .vertexInputDynamicState = VK_TRUE,
+        };
+        featuresAppender.AppendNext(&features);
+    }
+
 }
 
 void VulkanHelper::getEnabledExtensions()

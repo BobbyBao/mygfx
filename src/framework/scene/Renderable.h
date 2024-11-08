@@ -24,7 +24,7 @@ public:
     virtual void draw(GraphicsApi& cmd, RenderingContext& ctx) = 0;
 };
 
-class Renderable abstract : public Component {
+class Renderable : public Component {
 public:
     Renderable();
 
