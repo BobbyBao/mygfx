@@ -258,7 +258,6 @@ void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t
     viewport.height = -static_cast<float>(height);
     viewport.minDepth = (float)0.0f;
     viewport.maxDepth = (float)1.0f;
-    //g_vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
 
     VkRect2D scissor;
     scissor.extent.width = (uint32_t)(width);
@@ -266,22 +265,23 @@ void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t
     scissor.offset.x = topX;
     scissor.offset.y = topY;
 
-    //g_vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
+    g_vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
+    g_vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
 
-    vkCmdSetViewport(cmd, 0, 1, &viewport);
-    vkCmdSetScissor(cmd, 0, 1, &scissor);
+    //vkCmdSetViewport(cmd, 0, 1, &viewport);
+    //vkCmdSetScissor(cmd, 0, 1, &scissor);
 }
 
 void CommandBuffer::setViewport(uint32_t viewportCount, const VkViewport* pViewports) const VULKAN_NOEXCEPT
 {
-    vkCmdSetViewport(cmd, 0, viewportCount, pViewports);
-    //g_vkCmdSetViewportWithCountEXT(cmd, viewportCount, reinterpret_cast<const VkViewport*>(pViewports));
+    //vkCmdSetViewport(cmd, 0, viewportCount, pViewports);
+    g_vkCmdSetViewportWithCountEXT(cmd, viewportCount, reinterpret_cast<const VkViewport*>(pViewports));
 }
 
 void CommandBuffer::setScissor(uint32_t scissorCount, const VkRect2D* pScissors) const VULKAN_NOEXCEPT
 {
-    vkCmdSetScissor(cmd, 0, scissorCount, pScissors);
-    //g_vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
+    //vkCmdSetScissor(cmd, 0, scissorCount, pScissors);
+    g_vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
 }
 
 void CommandBuffer::bindDescriptorSets(HwDescriptorSet* const* ds, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT

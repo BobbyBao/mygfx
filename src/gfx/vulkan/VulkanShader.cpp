@@ -312,6 +312,8 @@ bool VulkanProgram::createShaders()
     return false;
 }
 
+#if !HAS_SHADER_OBJECT_EXT
+
 thread_local std::unordered_map<VulkanProgram*, std::pair<VkPipeline, size_t>> sPipelineCache;
 
 VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmentFormats)
@@ -348,7 +350,7 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     VkPipelineVertexInputStateCreateInfo vertexInputState = initializers::pipelineVertexInputStateCreateInfo();
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = initializers::pipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, false);
     VkPipelineTessellationStateCreateInfo tessellationState = initializers::pipelineTessellationStateCreateInfo(3);
-    VkPipelineViewportStateCreateInfo viewportState = initializers::pipelineViewportStateCreateInfo(1, 1);
+    VkPipelineViewportStateCreateInfo viewportState = initializers::pipelineViewportStateCreateInfo(0, 0);
     VkPipelineRasterizationStateCreateInfo rasterizationState = initializers::pipelineRasterizationStateCreateInfo(VkPolygonMode::VK_POLYGON_MODE_FILL, VkCullModeFlagBits::VK_CULL_MODE_NONE, VkFrontFace::VK_FRONT_FACE_COUNTER_CLOCKWISE);
     VkPipelineMultisampleStateCreateInfo multisampleState = initializers::pipelineMultisampleStateCreateInfo(VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencilState = initializers::pipelineDepthStencilStateCreateInfo(true, true, INVERTED_DEPTH ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL);
@@ -356,10 +358,10 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     VkPipelineColorBlendStateCreateInfo colorBlendState = initializers::pipelineColorBlendStateCreateInfo(1, &colorBlendAttachmentState);
 
     std::vector<VkDynamicState> dynamic_state_enables = {
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR,
-        // VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
-        // VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
+        //VK_DYNAMIC_STATE_VIEWPORT,
+        //VK_DYNAMIC_STATE_SCISSOR,
+        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
+        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
 
         VK_DYNAMIC_STATE_CULL_MODE,
         VK_DYNAMIC_STATE_FRONT_FACE,
@@ -459,6 +461,7 @@ VkPipeline VulkanProgram::getComputePipeline()
     VK_CHECK_RESULT(vkCreateComputePipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline));
     return pipeline;
 }
+#endif
 
 VkShaderStageFlagBits ToVkShaderStage(ShaderStage stage)
 {

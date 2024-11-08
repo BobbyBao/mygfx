@@ -52,7 +52,8 @@ VulkanHelper::VulkanHelper()
     enabledDeviceExtensions.push_back(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
 #endif
     enabledDeviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
-
+    enabledDeviceExtensions.push_back(VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME);
+    
     enabledDeviceExtensions.push_back(VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME);
 
     // With VK_EXT_shader_object all baked pipeline state is set dynamically at command buffer creation, so we need to enable additional extensions
@@ -259,7 +260,9 @@ bool VulkanHelper::selectPhysicalDevice()
 
 void VulkanHelper::getEnabledFeatures()
 {
+#if HAS_SHADER_OBJECT_EXT
     featuresAppender.AppendNext(&enabledShaderObjectFeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT);
+#endif
     featuresAppender.AppendNext(&enabledDynamicRenderingFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR);
 
     if (tryAddExtension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)) {
@@ -273,6 +276,16 @@ void VulkanHelper::getEnabledFeatures()
 
     if (tryAddExtension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
         featuresAppender.AppendNext(&BufferDeviceAddressFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES);
+    }
+    
+    if (tryAddExtension(VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME)) {
+        static VkPhysicalDeviceNestedCommandBufferFeaturesEXT features = {
+            .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
+            .nestedCommandBuffer = VK_TRUE,
+            .nestedCommandBufferRendering = VK_TRUE,
+            .nestedCommandBufferSimultaneousUse = VK_TRUE,
+        };
+        featuresAppender.AppendNext(&features);
     }
 
     if (tryAddExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME)) {
@@ -381,7 +394,7 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
     // Note that the indices may overlap depending on the implementation
 
     float graphicsQueuePriority[] = { 1.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
-    float computeQueuePriority = 1.0f;
+    float computeQueuePriority[] = { 1.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
     float copyQueuePriorities[] = { 1.0f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f, 0.5f };
 
     // Graphics queue
@@ -390,7 +403,7 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
         VkDeviceQueueCreateInfo queueInfo {};
         queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queueInfo.queueFamilyIndex = queueFamilyIndices.graphics;
-        queueInfo.queueCount = std::max(8u, queueFamilyProperties[queueFamilyIndices.graphics].queueCount);
+        queueInfo.queueCount = std::min(8u, queueFamilyProperties[queueFamilyIndices.graphics].queueCount);
         queueInfo.pQueuePriorities = graphicsQueuePriority;
         queueCreateInfos.push_back(queueInfo);
     } else {
@@ -405,8 +418,8 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
             VkDeviceQueueCreateInfo queueInfo {};
             queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueInfo.queueFamilyIndex = queueFamilyIndices.compute;
-            queueInfo.queueCount = std::max(8u, queueFamilyProperties[queueFamilyIndices.compute].queueCount);
-            queueInfo.pQueuePriorities = &computeQueuePriority;
+            queueInfo.queueCount = std::min(8u, queueFamilyProperties[queueFamilyIndices.compute].queueCount);
+            queueInfo.pQueuePriorities = computeQueuePriority;
             queueCreateInfos.push_back(queueInfo);
         }
     } else {
@@ -422,7 +435,7 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
             VkDeviceQueueCreateInfo queueInfo {};
             queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueInfo.queueFamilyIndex = queueFamilyIndices.transfer;
-            queueInfo.queueCount = std::max(8u, queueFamilyProperties[queueFamilyIndices.transfer].queueCount);;
+            queueInfo.queueCount = std::min(8u, queueFamilyProperties[queueFamilyIndices.transfer].queueCount);;
             queueInfo.pQueuePriorities = copyQueuePriorities;
             queueCreateInfos.push_back(queueInfo);
         }

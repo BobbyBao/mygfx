@@ -7,7 +7,7 @@
 #include <vma/vk_mem_alloc.h>
 
 #ifdef VK_EXT_shader_object
-#define HAS_SHADER_OBJECT_EXT 0
+#define HAS_SHADER_OBJECT_EXT 1
 #else
 #define HAS_SHADER_OBJECT_EXT 0
 #endif
