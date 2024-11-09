@@ -3,7 +3,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanDebug.h"
 #include "VulkanDefs.h"
-#include "VulkanHelper.h"
+#include "VulkanDeviceHelper.h"
 #include "VulkanInitializers.hpp"
 #include "VulkanStagePool.h"
 #include "VulkanSwapChain.h"
@@ -25,7 +25,7 @@ class VulkanBuffer;
 class VulkanRenderTarget;
 class VulkanStagePool;
 
-class VulkanDevice : public GraphicsDevice, public VulkanHelper {
+class VulkanDevice : public GraphicsDevice, public VulkanDeviceHelper {
 public:
     VulkanDevice();
     ~VulkanDevice();
@@ -35,7 +35,6 @@ public:
     const char* getDeviceName() const override;
     Dispatcher getDispatcher() const noexcept override;
 
-    VmaAllocator getVmaAllocator() { return mVmaAllocator; }
     DynamicBufferPool& getConstbufferRing() { return mConstantBufferRing; }
 
     bool allocVertexBuffer(uint32_t sizeInBytes, void** pData, BufferInfo* pOut);
@@ -92,7 +91,6 @@ public:
 protected:
     void drawMultiThreaded(const std::vector<RenderCommand>& items, const CommandBuffer& cmd);
 
-    VmaAllocator mVmaAllocator = NULL;
 
     DynamicBufferPool mConstantBufferRing;
     DynamicBufferPool mVertexBufferRing;

@@ -1,5 +1,6 @@
-#include "VulkanHelper.h"
-#include "VulkanDevice.h"
+#include "VulkanDeviceHelper.h"
+#include "VulkanTools.h"
+#include "VulkanDebug.h"
 #include "utils/Log.h"
 
 namespace mygfx {
@@ -10,8 +11,10 @@ namespace mygfx {
 static VkPhysicalDeviceBufferDeviceAddressFeatures BufferDeviceAddressFeatures = {};
 static VkPhysicalDeviceDescriptorIndexingFeatures DescriptorIndexingFeatures = {};
 
-VulkanHelper::VulkanHelper()
+VulkanDeviceHelper::VulkanDeviceHelper()
 {
+    enabledInstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
 #if HAS_SHADER_OBJECT_EXT
     enabledDeviceExtensions.push_back(VK_EXT_SHADER_OBJECT_EXTENSION_NAME);
 #endif
@@ -32,10 +35,55 @@ VulkanHelper::VulkanHelper()
     enabledDeviceExtensions.push_back(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME);
     enabledDeviceExtensions.push_back(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
 
-    enabledInstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    enabledDeviceExtensions.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
 }
 
-VkResult VulkanHelper::createInstance(const char* name, bool validation)
+bool VulkanDeviceHelper::create(const char* name, bool validation)
+{    
+    volkInitialize();
+
+    // Vulkan instance
+    VkResult err = createInstance(name, validation);
+    if (err) {
+        tools::exitFatal("Could not create Vulkan instance : \n" + tools::errorString(err), err);
+        return false;
+    }
+
+    volkLoadInstance(instance);
+
+    if (!selectPhysicalDevice()) {
+        return false;
+    }
+
+    getEnabledFeatures();
+    getEnabledExtensions();
+
+    VkResult res = createLogicalDevice(enabledFeatures, enabledDeviceExtensions);
+    if (res != VK_SUCCESS) {
+        tools::exitFatal("Could not create Vulkan device: \n" + tools::errorString(res), res);
+        return false;
+    }
+
+    // Get a graphics queue from the device
+    vkGetDeviceQueue(device, queueFamilyIndices.graphics, 0, &queue);
+    vkGetDeviceQueue(device, queueFamilyIndices.compute, 0, &computeQueue);
+    vkGetDeviceQueue(device, queueFamilyIndices.transfer, 0, &transferQueue);
+    
+    VmaVulkanFunctions vulkanFunctions = {};
+    vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    vulkanFunctions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+
+    VmaAllocatorCreateInfo allocatorInfo = {};
+    allocatorInfo.physicalDevice = physicalDevice;
+    allocatorInfo.device = device;
+    allocatorInfo.instance = instance;
+    allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+    allocatorInfo.pVulkanFunctions = &vulkanFunctions;
+    vmaCreateAllocator(&allocatorInfo, &mVmaAllocator);
+    return true;
+}
+
+VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
 {
     VkApplicationInfo appInfo = {};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -173,7 +221,7 @@ VkResult VulkanHelper::createInstance(const char* name, bool validation)
     return result;
 }
 
-bool VulkanHelper::selectPhysicalDevice()
+bool VulkanDeviceHelper::selectPhysicalDevice()
 {
     // Physical device
     uint32_t gpuCount = 0;
@@ -222,7 +270,7 @@ bool VulkanHelper::selectPhysicalDevice()
     return true;
 }
 
-void VulkanHelper::getEnabledFeatures()
+void VulkanDeviceHelper::getEnabledFeatures()
 {
 #if HAS_SHADER_OBJECT_EXT
     featuresAppender.AppendNext(&enabledShaderObjectFeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT);
@@ -287,11 +335,11 @@ void VulkanHelper::getEnabledFeatures()
     }
 }
 
-void VulkanHelper::getEnabledExtensions()
+void VulkanDeviceHelper::getEnabledExtensions()
 {
 }
 
-uint32_t VulkanHelper::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound) const
+uint32_t VulkanDeviceHelper::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound) const
 {
     for (uint32_t i = 0; i < memoryProperties.memoryTypeCount; i++) {
         if ((typeBits & 1) == 1) {
@@ -313,7 +361,7 @@ uint32_t VulkanHelper::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags pr
     }
 }
 
-uint32_t VulkanHelper::getQueueFamilyIndex(VkQueueFlags queueFlags) const
+uint32_t VulkanDeviceHelper::getQueueFamilyIndex(VkQueueFlags queueFlags) const
 {
     // Dedicated queue for compute
     // Try to find a queue family index that supports compute but not graphics
@@ -345,7 +393,7 @@ uint32_t VulkanHelper::getQueueFamilyIndex(VkQueueFlags queueFlags) const
     throw std::runtime_error("Could not find a matching queue family index");
 }
 
-VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures, std::vector<const char*> enabledExtensions, bool useSwapChain, VkQueueFlags requestedQueueTypes)
+VkResult VulkanDeviceHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatures, std::vector<const char*> enabledExtensions, bool useSwapChain, VkQueueFlags requestedQueueTypes)
 {
     // Desired queues need to be requested upon logical device creation
     // Due to differing queue family configurations of Vulkan implementations this can be a bit tricky, especially if the application
@@ -465,7 +513,7 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
     return result;
 }
 
-void VulkanHelper::setResourceName(VkObjectType objectType, uint64_t handle, const char* name)
+void VulkanDeviceHelper::setResourceName(VkObjectType objectType, uint64_t handle, const char* name)
 {
     if (vkSetDebugUtilsObjectNameEXT && handle && name) {
         VkDebugUtilsObjectNameInfoEXT nameInfo = {};
@@ -477,7 +525,7 @@ void VulkanHelper::setResourceName(VkObjectType objectType, uint64_t handle, con
     }
 }
 
-bool VulkanHelper::tryAddExtension(const char* pExtensionName)
+bool VulkanDeviceHelper::tryAddExtension(const char* pExtensionName)
 {
     if (extensionSupported(pExtensionName)) {
         enabledDeviceExtensions.push_back(pExtensionName);
@@ -488,7 +536,7 @@ bool VulkanHelper::tryAddExtension(const char* pExtensionName)
     }
 }
 
-bool VulkanHelper::extensionSupported(const char* pExtensionName)
+bool VulkanDeviceHelper::extensionSupported(const char* pExtensionName)
 {
     return std::find_if(
                supportedExtensions.begin(), supportedExtensions.end(),
@@ -498,7 +546,7 @@ bool VulkanHelper::extensionSupported(const char* pExtensionName)
         != supportedExtensions.end();
 }
 
-VkFormat VulkanHelper::getSupportedDepthFormat(bool checkSamplingSupport)
+VkFormat VulkanDeviceHelper::getSupportedDepthFormat(bool checkSamplingSupport)
 {
     // All depth formats may be optional, so we need to find a suitable depth format to use
     std::vector<VkFormat> depthFormats = { VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D32_SFLOAT, VK_FORMAT_D24_UNORM_S8_UINT, VK_FORMAT_D16_UNORM_S8_UINT, VK_FORMAT_D16_UNORM };

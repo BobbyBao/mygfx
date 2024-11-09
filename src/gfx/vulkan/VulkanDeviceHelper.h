@@ -6,9 +6,11 @@
 
 namespace mygfx {
 
-class VulkanHelper {
+class VulkanDeviceHelper {
 public:
-    VulkanHelper();
+    VulkanDeviceHelper();
+
+    bool create(const char* name, bool validation);
 
     uint32_t getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound = nullptr) const;
     uint32_t getQueueFamilyIndex(VkQueueFlags queueFlags) const;
@@ -19,6 +21,8 @@ public:
     bool tryAddExtension(const char* pExtensionName);
     bool extensionSupported(const char* extension);
     VkFormat getSupportedDepthFormat(bool checkSamplingSupport);
+
+    VmaAllocator getVmaAllocator() { return mVmaAllocator; }
 
     VkInstance instance { VK_NULL_HANDLE };
     VkDevice device { VK_NULL_HANDLE };
@@ -106,7 +110,8 @@ protected:
     };
 
     Appender featuresAppender;
-
+    
+    VmaAllocator mVmaAllocator = NULL;
 };
 
 }

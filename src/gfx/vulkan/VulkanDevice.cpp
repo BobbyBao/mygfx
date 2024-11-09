@@ -39,52 +39,15 @@ VulkanDevice::~VulkanDevice()
 
 bool VulkanDevice::create(const Settings& settings)
 {
-    volkInitialize();
-
-    // Vulkan instance
-    VkResult err = createInstance(settings.name, settings.validation);
-    if (err) {
-        tools::exitFatal("Could not create Vulkan instance : \n" + tools::errorString(err), err);
+    if (!VulkanDeviceHelper::create(settings.name, settings.validation)) {
         return false;
     }
-
-    volkLoadInstance(instance);
-
-    if (!selectPhysicalDevice()) {
-        return false;
-    }
-
-    getEnabledFeatures();
-    getEnabledExtensions();
-
-    VkResult res = createLogicalDevice(enabledFeatures, enabledDeviceExtensions);
-    if (res != VK_SUCCESS) {
-        tools::exitFatal("Could not create Vulkan device: \n" + tools::errorString(res), res);
-        return false;
-    }
-
-    // Get a graphics queue from the device
-    vkGetDeviceQueue(device, queueFamilyIndices.graphics, 0, &queue);
-    vkGetDeviceQueue(device, queueFamilyIndices.compute, 0, &computeQueue);
-    vkGetDeviceQueue(device, queueFamilyIndices.transfer, 0, &transferQueue);
 
     // Create synchronization objects
     VkSemaphoreCreateInfo semaphoreCreateInfo = initializers::semaphoreCreateInfo();
     // Create a semaphore used to synchronize image presentation
     // Ensures that the image is displayed before we start submitting new commands to the queue
     VK_CHECK_RESULT(vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &mPresentComplete));
-
-    VmaVulkanFunctions vulkanFunctions = {};
-    vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
-    vulkanFunctions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
-
-    VmaAllocatorCreateInfo allocatorInfo = {};
-    allocatorInfo.physicalDevice = physicalDevice;
-    allocatorInfo.device = device;
-    allocatorInfo.instance = instance;
-    allocatorInfo.flags = VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
-    allocatorInfo.pVulkanFunctions = &vulkanFunctions;
-    vmaCreateAllocator(&allocatorInfo, &mVmaAllocator);
 
     mDescriptorPoolManager.init();
 
