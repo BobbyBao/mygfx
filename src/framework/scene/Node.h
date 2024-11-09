@@ -22,6 +22,9 @@ public:
     void setActive(bool value);
     bool isActive() const { return mActive; }
     bool isActiveEffective() const { return mActive && mParentActive; }
+    
+    Node* getParent() const { return mParent; }
+    Scene* getScene() const { return mScene; }
 
     template <typename T>
     T* getComponent() const
@@ -42,6 +45,14 @@ public:
     }
 
     Component* getComponent(const std::type_info& typeInfo) const;
+    
+    template <typename T>
+    T* findComponent() const
+    {
+        return (T*)findComponent(typeid(T));
+    }
+
+    Component* findComponent(const std::type_info& typeInfo) const;
 
     template <typename T, typename... Args>
     T* addComponent(Args... args)
@@ -74,9 +85,6 @@ public:
     void removeChild(Node* child);
     void remove();
     void setParent(Node* parent);
-
-    Node* getParent() const { return mParent; }
-    Scene* getScene() const { return mScene; }
 
     PROPERTY_GET_1(vec3, Position)
     PROPERTY_GET_1(quat, Rotation)

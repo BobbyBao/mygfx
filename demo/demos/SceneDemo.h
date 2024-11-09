@@ -36,7 +36,6 @@ public:
         skybox->setCubeMap(Texture::createFromFile("textures/papermill/specular.dds", sampler));
         skybox->setIrrMap(Texture::createFromFile("textures/papermill/diffuse.dds", sampler));
 
-        mView->setEnvIntensity(0.75f);
     }
     
     void stop() override 
@@ -48,7 +47,19 @@ public:
     {
         mCameraController->update((float)delta);
     }
+    
+    Ref<Node> loadModel(const String& filePath)
+    {
+        ModelLoader modelLoader;
+        auto model = modelLoader.load(filePath);
+        float boundSize = length(modelLoader.getBoundingBox().size());
+        if (boundSize < 1.0f) {
+            model->setScale(vec3 { 1.0f / boundSize });
+        }
 
+        return mScene->instantiate(model);
+
+    }
 };
 
 }

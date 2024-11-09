@@ -204,7 +204,6 @@ void ModelLoader::loadNode(Node* parent, cgltf_node& node, float globalscale)
             float3 posMin {};
             float3 posMax {};
             bool hasSkin = false;
-            auto material = primitive.material ? mMaterials[primitive.material - mGltfModel->materials] : mMaterials.back();
 
             Vector<Ref<HwBuffer>> vbs;
             FormatList formats;
@@ -561,9 +560,6 @@ void ModelLoader::loadMaterials()
         }
     }
 
-    if (mMaterials.empty()) {
-        // mMaterials.emplace_back(getDefaultMaterial(nullptr));
-    }
 }
 
 void getDefines(cgltf_material& mat, DefineList& defineList)
@@ -688,13 +684,17 @@ Texture* ModelLoader::getTexture(size_t index)
     return nullptr;
 }
 
-Ref<Material> ModelLoader::getDefaultMaterial(const DefineList* marcos)
+Ref<Material> ModelLoader::getDefaultMaterial(const DefineList* pMacros)
 {
     DefineList macros;
     macros.add("HAS_TEXCOORD_0_VEC2", 1)
         .add("HAS_NORMAL_VEC3", 2)
         .add("MATERIAL_METALLICROUGHNESS")
         .add("USE_IBL");
+
+    if (pMacros) {
+        macros += *pMacros;
+    }
 
     auto defaultShader = ShaderEffect::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
     defaultShader->getMainPass()->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT });

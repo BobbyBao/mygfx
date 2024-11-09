@@ -24,9 +24,8 @@ void InstanceRenderable::cloneProcess(Object* destObj)
 
     InstanceRenderable* dest = (InstanceRenderable*)destObj;
     dest->mMaterial = mMaterial;
-    dest->mInstanceData = mInstanceData;
-
-    updateRenderable();
+    dest->mInstanceData = mInstanceData;    
+    dest->updateInstanceBuffers();
 }
 
 void InstanceRenderable::setInstanceData(Vector<Vector<InstanceData>>&& instanceData)

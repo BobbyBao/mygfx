@@ -26,6 +26,23 @@ Component* Node::getComponent(const std::type_info& typeInfo) const
     return nullptr;
 }
 
+Component* Node::findComponent(const std::type_info& typeInfo) const
+{
+    for (auto& c : mComponents) {
+        if (typeInfo == typeid(*c)) {
+            return c.get();
+        }
+    }
+    
+    for (auto& child : mChildren) {
+        if (auto c = child->findComponent(typeInfo)) {
+            return c;
+        }        
+    }
+
+    return nullptr;
+}
+
 void Node::addComponent(Component* component)
 {
     mComponents.emplace_back(component);
