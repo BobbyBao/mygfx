@@ -50,7 +50,7 @@ void Shader::setName(const std::string_view& name)
 {
     NamedObject::setName(name);
 
-    passID = PassID(name);
+    passID = PassName(name);
 }
 
 void Shader::loadShader(const String& vs, const String& fs, const DefineList* macros)

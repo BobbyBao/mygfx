@@ -25,7 +25,7 @@ Shader* ShaderEffect::getShader(const String& name)
     return nullptr;
 }
 
-Shader* ShaderEffect::getShader(const PassID& pass)
+Shader* ShaderEffect::getShader(const PassName& pass)
 {
     return mShaderPasses[pass.index];
 }

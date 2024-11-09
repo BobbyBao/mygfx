@@ -1,6 +1,6 @@
 #pragma once
 #include "core/Maths.h"
-#include "PassID.h"
+#include "PassName.h"
 
 namespace mygfx {
 
@@ -8,7 +8,7 @@ static constexpr uint32_t MAX_RENDER_QUEUE_COUNT = 32;
 
 
 struct RenderingContext {
-    PassID pass;
+    PassName pass;
     uint32_t perView = 0;
 };
 

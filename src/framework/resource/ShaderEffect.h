@@ -5,7 +5,7 @@
 namespace mygfx {
 
 class Shader;
-struct PassID;
+struct PassName;
 class DefineList;
 
 class ShaderEffect : public Resource {
@@ -17,7 +17,7 @@ public:
     Shader* getMainPass() { return mShaderPasses[0]; }
 
     Shader* getShader(const String& name);
-    Shader* getShader(const PassID& pass);
+    Shader* getShader(const PassName& pass);
     
     void add(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
     void add(const String& csCode, const DefineList* marcos = nullptr);
