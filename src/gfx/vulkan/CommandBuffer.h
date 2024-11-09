@@ -140,7 +140,7 @@ inline void CommandBuffer::setVertexInput(HwVertexInput* vertexInput) const VULK
     if (mVertexInput != vkVertexInput) {
         mVertexInput = vkVertexInput;
 
-        g_vkCmdSetVertexInputEXT(cmd, (uint32_t)vkVertexInput->bindingDescriptions.size(), vkVertexInput->bindingDescriptions.data(),
+        vkCmdSetVertexInputEXT(cmd, (uint32_t)vkVertexInput->bindingDescriptions.size(), vkVertexInput->bindingDescriptions.data(),
             (uint32_t)vkVertexInput->attributeDescriptions.size(), vkVertexInput->attributeDescriptions.data());
     }
 }
@@ -150,7 +150,7 @@ inline void CommandBuffer::setPrimitiveTopology(PrimitiveTopology primitiveTopol
     if (mPrimitiveState.primitiveTopology != primitiveTopology) {
         mPrimitiveState.primitiveTopology = primitiveTopology;
 
-        g_vkCmdSetPrimitiveTopologyEXT(cmd, (VkPrimitiveTopology)primitiveTopology);
+        vkCmdSetPrimitiveTopologyEXT(cmd, (VkPrimitiveTopology)primitiveTopology);
     }
 }
 
@@ -158,7 +158,7 @@ inline void CommandBuffer::setPrimitiveRestartEnable(bool restartEnable) const V
 {
     if (mPrimitiveState.restartEnable != restartEnable) {
         mPrimitiveState.restartEnable = restartEnable;
-        g_vkCmdSetPrimitiveRestartEnableEXT(cmd, restartEnable);
+        vkCmdSetPrimitiveRestartEnableEXT(cmd, restartEnable);
     }
 }
 
@@ -169,7 +169,7 @@ inline void CommandBuffer::bindShaderProgram(HwProgram* program) const VULKAN_NO
         mProgram = vkProgram;
 
 #if HAS_SHADER_OBJECT_EXT
-        g_vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);    
+        vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);    
 #else
         bindPipeline(vkProgram);
 #endif

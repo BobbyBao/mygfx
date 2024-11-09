@@ -183,7 +183,7 @@ VulkanProgram::~VulkanProgram()
 {
 #if HAS_SHADER_OBJECT_EXT
     for (uint32_t i = 0; i < stageCount; i++) {
-        g_vkDestroyShaderEXT(gfx().device, shaders[i], nullptr);
+        vkDestroyShaderEXT(gfx().device, shaders[i], nullptr);
     }
 #else
     if (pipeline) {
@@ -283,7 +283,7 @@ bool VulkanProgram::createShaders()
         }
     }
 
-    VkResult result = g_vkCreateShadersEXT(gfx().device, stageCount, shaderCreateInfos, nullptr, shaders);
+    VkResult result = vkCreateShadersEXT(gfx().device, stageCount, shaderCreateInfos, nullptr, shaders);
     // If the function returns e.g. VK_ERROR_INCOMPATIBLE_SHADER_BINARY_EXT, the binary file is no longer (or not at all) compatible with the current implementation
     if (result == VK_SUCCESS) {
 

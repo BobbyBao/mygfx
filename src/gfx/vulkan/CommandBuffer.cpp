@@ -161,7 +161,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
     }
 
     // Begin dynamic rendering
-    g_vkCmdBeginRenderingKHR(cmd, &renderingInfo);
+    vkCmdBeginRenderingKHR(cmd, &renderingInfo);
 
     setViewportAndScissor(renderInfo.viewport.left, renderInfo.viewport.top,
         std::min(renderInfo.viewport.width, pVkRT->width),
@@ -173,7 +173,7 @@ void CommandBuffer::beginRendering(HwRenderTarget* pRT, const RenderPassInfo& re
 void CommandBuffer::endRendering(HwRenderTarget* pRT) const VULKAN_NOEXCEPT
 {
     // End dynamic rendering
-    g_vkCmdEndRenderingKHR(cmd);
+    vkCmdEndRenderingKHR(cmd);
 
     VulkanRenderTarget* pVkRT = (VulkanRenderTarget*)pRT;
     if (pVkRT->isSwapchain) {
@@ -209,29 +209,29 @@ void CommandBuffer::endRendering(HwRenderTarget* pRT) const VULKAN_NOEXCEPT
 
 void CommandBuffer::resetState() const VULKAN_NOEXCEPT
 {
-    g_vkCmdSetCullModeEXT(cmd, VK_CULL_MODE_BACK_BIT);
-    g_vkCmdSetFrontFaceEXT(cmd, VK_FRONT_FACE_COUNTER_CLOCKWISE);
-    g_vkCmdSetDepthTestEnableEXT(cmd, VK_TRUE);
-    g_vkCmdSetDepthWriteEnableEXT(cmd, VK_TRUE);
-    g_vkCmdSetDepthCompareOpEXT(cmd, INVERTED_DEPTH ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL);
-    g_vkCmdSetPrimitiveTopologyEXT(cmd, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    g_vkCmdSetRasterizerDiscardEnableEXT(cmd, VK_FALSE);
-    g_vkCmdSetPolygonModeEXT(cmd, VK_POLYGON_MODE_FILL);
-    g_vkCmdSetRasterizationSamplesEXT(cmd, VK_SAMPLE_COUNT_1_BIT);
-    g_vkCmdSetAlphaToCoverageEnableEXT(cmd, VK_FALSE);
-    g_vkCmdSetDepthBiasEnableEXT(cmd, VK_FALSE);
-    g_vkCmdSetStencilTestEnableEXT(cmd, VK_FALSE);
-    g_vkCmdSetPrimitiveRestartEnableEXT(cmd, VK_FALSE);
+    vkCmdSetCullModeEXT(cmd, VK_CULL_MODE_BACK_BIT);
+    vkCmdSetFrontFaceEXT(cmd, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+    vkCmdSetDepthTestEnableEXT(cmd, VK_TRUE);
+    vkCmdSetDepthWriteEnableEXT(cmd, VK_TRUE);
+    vkCmdSetDepthCompareOpEXT(cmd, INVERTED_DEPTH ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL);
+    vkCmdSetPrimitiveTopologyEXT(cmd, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    vkCmdSetRasterizerDiscardEnableEXT(cmd, VK_FALSE);
+    vkCmdSetPolygonModeEXT(cmd, VK_POLYGON_MODE_FILL);
+    vkCmdSetRasterizationSamplesEXT(cmd, VK_SAMPLE_COUNT_1_BIT);
+    vkCmdSetAlphaToCoverageEnableEXT(cmd, VK_FALSE);
+    vkCmdSetDepthBiasEnableEXT(cmd, VK_FALSE);
+    vkCmdSetStencilTestEnableEXT(cmd, VK_FALSE);
+    vkCmdSetPrimitiveRestartEnableEXT(cmd, VK_FALSE);
 
     const uint32_t sampleMask = 0xFF;
-    g_vkCmdSetSampleMaskEXT(cmd, VK_SAMPLE_COUNT_1_BIT, &sampleMask);
+    vkCmdSetSampleMaskEXT(cmd, VK_SAMPLE_COUNT_1_BIT, &sampleMask);
 
     const VkBool32 colorBlendEnables = false;
     const VkColorComponentFlags colorBlendComponentFlags = 0xf;
     const VkColorBlendEquationEXT colorBlendEquation {};
-    g_vkCmdSetColorBlendEnableEXT(cmd, 0, 1, &colorBlendEnables);
-    g_vkCmdSetColorBlendEquationEXT(cmd, 0, 1, &colorBlendEquation);
-    g_vkCmdSetColorWriteMaskEXT(cmd, 0, 1, &colorBlendComponentFlags);
+    vkCmdSetColorBlendEnableEXT(cmd, 0, 1, &colorBlendEnables);
+    vkCmdSetColorBlendEquationEXT(cmd, 0, 1, &colorBlendEquation);
+    vkCmdSetColorWriteMaskEXT(cmd, 0, 1, &colorBlendComponentFlags);
 
     mProgram = nullptr;
     mVertexInput = nullptr;
@@ -265,8 +265,8 @@ void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t
     scissor.offset.x = topX;
     scissor.offset.y = topY;
 
-    g_vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
-    g_vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
+    vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
+    vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
 
     //vkCmdSetViewport(cmd, 0, 1, &viewport);
     //vkCmdSetScissor(cmd, 0, 1, &scissor);
@@ -275,13 +275,13 @@ void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t
 void CommandBuffer::setViewport(uint32_t viewportCount, const VkViewport* pViewports) const VULKAN_NOEXCEPT
 {
     //vkCmdSetViewport(cmd, 0, viewportCount, pViewports);
-    g_vkCmdSetViewportWithCountEXT(cmd, viewportCount, reinterpret_cast<const VkViewport*>(pViewports));
+    vkCmdSetViewportWithCountEXT(cmd, viewportCount, reinterpret_cast<const VkViewport*>(pViewports));
 }
 
 void CommandBuffer::setScissor(uint32_t scissorCount, const VkRect2D* pScissors) const VULKAN_NOEXCEPT
 {
     //vkCmdSetScissor(cmd, 0, scissorCount, pScissors);
-    g_vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
+    vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
 }
 
 void CommandBuffer::bindDescriptorSets(HwDescriptorSet* const* ds, uint32_t setCount, const uint32_t* offsets, uint32_t offsetCount) const VULKAN_NOEXCEPT
@@ -309,17 +309,17 @@ void CommandBuffer::bindRasterState(const RasterState* rasterState) const VULKAN
 
     mRasterState = *rasterState;
 
-    g_vkCmdSetPolygonModeEXT(cmd, (VkPolygonMode)rasterState->polygonMode);
-    g_vkCmdSetCullModeEXT(cmd, (VkCullModeFlags)rasterState->cullMode);
-    g_vkCmdSetFrontFaceEXT(cmd, (VkFrontFace)rasterState->frontFace);
-    g_vkCmdSetRasterizerDiscardEnableEXT(cmd, rasterState->rasterizerDiscardEnable);
-    g_vkCmdSetRasterizationSamplesEXT(cmd, (VkSampleCountFlagBits)rasterState->rasterizationSamples);
+    vkCmdSetPolygonModeEXT(cmd, (VkPolygonMode)rasterState->polygonMode);
+    vkCmdSetCullModeEXT(cmd, (VkCullModeFlags)rasterState->cullMode);
+    vkCmdSetFrontFaceEXT(cmd, (VkFrontFace)rasterState->frontFace);
+    vkCmdSetRasterizerDiscardEnableEXT(cmd, rasterState->rasterizerDiscardEnable);
+    vkCmdSetRasterizationSamplesEXT(cmd, (VkSampleCountFlagBits)rasterState->rasterizationSamples);
 
     const uint32_t sampleMask = 0xFF;
-    g_vkCmdSetSampleMaskEXT(cmd, VK_SAMPLE_COUNT_1_BIT, &sampleMask);
+    vkCmdSetSampleMaskEXT(cmd, VK_SAMPLE_COUNT_1_BIT, &sampleMask);
 
-    g_vkCmdSetAlphaToCoverageEnableEXT(cmd, rasterState->alphaToCoverageEnable);
-    g_vkCmdSetDepthBiasEnableEXT(cmd, rasterState->depthBiasEnable);
+    vkCmdSetAlphaToCoverageEnableEXT(cmd, rasterState->alphaToCoverageEnable);
+    vkCmdSetDepthBiasEnableEXT(cmd, rasterState->depthBiasEnable);
 }
 
 void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) const VULKAN_NOEXCEPT
@@ -341,9 +341,9 @@ void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) 
         .alphaBlendOp = (VkBlendOp)colorBlendState->alphaBlendOp,
     };
 
-    g_vkCmdSetColorBlendEnableEXT(cmd, 0, 1, &colorBlendEnables);
-    g_vkCmdSetColorBlendEquationEXT(cmd, 0, 1, &colorBlendEquation);
-    g_vkCmdSetColorWriteMaskEXT(cmd, 0, 1, &colorBlendComponentFlags);
+    vkCmdSetColorBlendEnableEXT(cmd, 0, 1, &colorBlendEnables);
+    vkCmdSetColorBlendEquationEXT(cmd, 0, 1, &colorBlendEquation);
+    vkCmdSetColorWriteMaskEXT(cmd, 0, 1, &colorBlendComponentFlags);
 }
 
 VkCompareOp convertComparisonFunc(const CompareOp func)
@@ -380,9 +380,9 @@ void CommandBuffer::bindDepthState(const DepthState* depthState) const VULKAN_NO
 
     mDepthState = *depthState;
 
-    g_vkCmdSetDepthTestEnableEXT(cmd, depthState->depthTestEnable);
-    g_vkCmdSetDepthWriteEnableEXT(cmd, depthState->depthWriteEnable);
-    g_vkCmdSetDepthCompareOpEXT(cmd, convertComparisonFunc(depthState->depthCompareOp));
+    vkCmdSetDepthTestEnableEXT(cmd, depthState->depthTestEnable);
+    vkCmdSetDepthWriteEnableEXT(cmd, depthState->depthWriteEnable);
+    vkCmdSetDepthCompareOpEXT(cmd, convertComparisonFunc(depthState->depthCompareOp));
 }
 
 void CommandBuffer::bindStencilState(const StencilState* stencilState) const VULKAN_NOEXCEPT
@@ -393,7 +393,7 @@ void CommandBuffer::bindStencilState(const StencilState* stencilState) const VUL
 
     mStencilState = *stencilState;
 
-    g_vkCmdSetStencilTestEnableEXT(cmd, stencilState->stencilTestEnable);
+    vkCmdSetStencilTestEnableEXT(cmd, stencilState->stencilTestEnable);
 }
 
 void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const VULKAN_NOEXCEPT

@@ -10,42 +10,6 @@ namespace mygfx {
 static VkPhysicalDeviceBufferDeviceAddressFeatures BufferDeviceAddressFeatures = {};
 static VkPhysicalDeviceDescriptorIndexingFeatures DescriptorIndexingFeatures = {};
 
-PFN_vkSetDebugUtilsObjectNameEXT g_vkSetDebugUtilsObjectNameEXT = nullptr;
-
-#if HAS_SHADER_OBJECT_EXT
-PFN_vkCreateShadersEXT g_vkCreateShadersEXT { VK_NULL_HANDLE };
-PFN_vkDestroyShaderEXT g_vkDestroyShaderEXT { VK_NULL_HANDLE };
-PFN_vkCmdBindShadersEXT g_vkCmdBindShadersEXT { VK_NULL_HANDLE };
-PFN_vkGetShaderBinaryDataEXT g_vkGetShaderBinaryDataEXT { VK_NULL_HANDLE };
-#endif
-// VK_EXT_shader_objects requires render passes to be dynamic
-PFN_vkCmdBeginRenderingKHR g_vkCmdBeginRenderingKHR { VK_NULL_HANDLE };
-PFN_vkCmdEndRenderingKHR g_vkCmdEndRenderingKHR { VK_NULL_HANDLE };
-
-// With VK_EXT_shader_object pipeline state must be set at command buffer creation using these functions
-PFN_vkCmdSetAlphaToCoverageEnableEXT g_vkCmdSetAlphaToCoverageEnableEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetColorBlendEnableEXT g_vkCmdSetColorBlendEnableEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetColorBlendEquationEXT g_vkCmdSetColorBlendEquationEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetColorWriteMaskEXT g_vkCmdSetColorWriteMaskEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetCullModeEXT g_vkCmdSetCullModeEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetDepthBiasEnableEXT g_vkCmdSetDepthBiasEnableEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetDepthCompareOpEXT g_vkCmdSetDepthCompareOpEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetDepthTestEnableEXT g_vkCmdSetDepthTestEnableEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetDepthWriteEnableEXT g_vkCmdSetDepthWriteEnableEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetFrontFaceEXT g_vkCmdSetFrontFaceEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetPolygonModeEXT g_vkCmdSetPolygonModeEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetPrimitiveRestartEnableEXT g_vkCmdSetPrimitiveRestartEnableEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetPrimitiveTopologyEXT g_vkCmdSetPrimitiveTopologyEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetRasterizationSamplesEXT g_vkCmdSetRasterizationSamplesEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetRasterizerDiscardEnableEXT g_vkCmdSetRasterizerDiscardEnableEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetSampleMaskEXT g_vkCmdSetSampleMaskEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetScissorWithCountEXT g_vkCmdSetScissorWithCountEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetStencilTestEnableEXT g_vkCmdSetStencilTestEnableEXT { VK_NULL_HANDLE };
-PFN_vkCmdSetViewportWithCountEXT g_vkCmdSetViewportWithCountEXT { VK_NULL_HANDLE };
-
-// VK_EXT_vertex_input_dynamic_state
-PFN_vkCmdSetVertexInputEXT g_vkCmdSetVertexInputEXT { VK_NULL_HANDLE };
-
 VulkanHelper::VulkanHelper()
 {
 #if HAS_SHADER_OBJECT_EXT
@@ -53,7 +17,7 @@ VulkanHelper::VulkanHelper()
 #endif
     enabledDeviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
     enabledDeviceExtensions.push_back(VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME);
-    
+
     enabledDeviceExtensions.push_back(VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME);
 
     // With VK_EXT_shader_object all baked pipeline state is set dynamically at command buffer creation, so we need to enable additional extensions
@@ -277,7 +241,7 @@ void VulkanHelper::getEnabledFeatures()
     if (tryAddExtension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME)) {
         featuresAppender.AppendNext(&BufferDeviceAddressFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES);
     }
-    
+
     if (tryAddExtension(VK_EXT_NESTED_COMMAND_BUFFER_EXTENSION_NAME)) {
         static VkPhysicalDeviceNestedCommandBufferFeaturesEXT features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_NESTED_COMMAND_BUFFER_FEATURES_EXT,
@@ -321,7 +285,6 @@ void VulkanHelper::getEnabledFeatures()
         };
         featuresAppender.AppendNext(&features);
     }
-
 }
 
 void VulkanHelper::getEnabledExtensions()
@@ -435,7 +398,8 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
             VkDeviceQueueCreateInfo queueInfo {};
             queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             queueInfo.queueFamilyIndex = queueFamilyIndices.transfer;
-            queueInfo.queueCount = std::min(8u, queueFamilyProperties[queueFamilyIndices.transfer].queueCount);;
+            queueInfo.queueCount = std::min(8u, queueFamilyProperties[queueFamilyIndices.transfer].queueCount);
+            ;
             queueInfo.pQueuePriorities = copyQueuePriorities;
             queueCreateInfos.push_back(queueInfo);
         }
@@ -498,53 +462,18 @@ VkResult VulkanHelper::createLogicalDevice(VkPhysicalDeviceFeatures enabledFeatu
         return result;
     }
 
-    GET_DEVICE_PROC_ADDR(vkSetDebugUtilsObjectNameEXT);
-    
-#if HAS_SHADER_OBJECT_EXT
-    g_vkCreateShadersEXT = reinterpret_cast<PFN_vkCreateShadersEXT>(vkGetDeviceProcAddr(device, "vkCreateShadersEXT"));
-    g_vkDestroyShaderEXT = reinterpret_cast<PFN_vkDestroyShaderEXT>(vkGetDeviceProcAddr(device, "vkDestroyShaderEXT"));
-    g_vkCmdBindShadersEXT = reinterpret_cast<PFN_vkCmdBindShadersEXT>(vkGetDeviceProcAddr(device, "vkCmdBindShadersEXT"));
-    g_vkGetShaderBinaryDataEXT = reinterpret_cast<PFN_vkGetShaderBinaryDataEXT>(vkGetDeviceProcAddr(device, "vkGetShaderBinaryDataEXT"));
-#endif
-
-    g_vkCmdBeginRenderingKHR = reinterpret_cast<PFN_vkCmdBeginRenderingKHR>(vkGetDeviceProcAddr(device, "vkCmdBeginRenderingKHR"));
-    g_vkCmdEndRenderingKHR = reinterpret_cast<PFN_vkCmdEndRenderingKHR>(vkGetDeviceProcAddr(device, "vkCmdEndRenderingKHR"));
-
-    g_vkCmdSetAlphaToCoverageEnableEXT = reinterpret_cast<PFN_vkCmdSetAlphaToCoverageEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetAlphaToCoverageEnableEXT"));
-    g_vkCmdSetColorBlendEnableEXT = reinterpret_cast<PFN_vkCmdSetColorBlendEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetColorBlendEnableEXT"));
-
-    GET_DEVICE_PROC_ADDR(vkCmdSetColorBlendEquationEXT)
-
-    g_vkCmdSetColorWriteMaskEXT = reinterpret_cast<PFN_vkCmdSetColorWriteMaskEXT>(vkGetDeviceProcAddr(device, "vkCmdSetColorWriteMaskEXT"));
-    g_vkCmdSetCullModeEXT = reinterpret_cast<PFN_vkCmdSetCullModeEXT>(vkGetDeviceProcAddr(device, "vkCmdSetCullModeEXT"));
-    g_vkCmdSetDepthBiasEnableEXT = reinterpret_cast<PFN_vkCmdSetDepthBiasEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetDepthBiasEnableEXT"));
-    g_vkCmdSetDepthCompareOpEXT = reinterpret_cast<PFN_vkCmdSetDepthCompareOpEXT>(vkGetDeviceProcAddr(device, "vkCmdSetDepthCompareOpEXT"));
-    g_vkCmdSetDepthTestEnableEXT = reinterpret_cast<PFN_vkCmdSetDepthTestEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetDepthTestEnableEXT"));
-    g_vkCmdSetDepthWriteEnableEXT = reinterpret_cast<PFN_vkCmdSetDepthWriteEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetDepthWriteEnableEXT"));
-    g_vkCmdSetFrontFaceEXT = reinterpret_cast<PFN_vkCmdSetFrontFaceEXT>(vkGetDeviceProcAddr(device, "vkCmdSetFrontFaceEXT"));
-    g_vkCmdSetPolygonModeEXT = reinterpret_cast<PFN_vkCmdSetPolygonModeEXT>(vkGetDeviceProcAddr(device, "vkCmdSetPolygonModeEXT"));
-    g_vkCmdSetPrimitiveRestartEnableEXT = reinterpret_cast<PFN_vkCmdSetPrimitiveRestartEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetPrimitiveRestartEnableEXT"));
-    g_vkCmdSetPrimitiveTopologyEXT = reinterpret_cast<PFN_vkCmdSetPrimitiveTopologyEXT>(vkGetDeviceProcAddr(device, "vkCmdSetPrimitiveTopologyEXT"));
-    g_vkCmdSetRasterizationSamplesEXT = reinterpret_cast<PFN_vkCmdSetRasterizationSamplesEXT>(vkGetDeviceProcAddr(device, "vkCmdSetRasterizationSamplesEXT"));
-    g_vkCmdSetRasterizerDiscardEnableEXT = reinterpret_cast<PFN_vkCmdSetRasterizerDiscardEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetRasterizerDiscardEnableEXT"));
-    g_vkCmdSetSampleMaskEXT = reinterpret_cast<PFN_vkCmdSetSampleMaskEXT>(vkGetDeviceProcAddr(device, "vkCmdSetSampleMaskEXT"));
-    g_vkCmdSetScissorWithCountEXT = reinterpret_cast<PFN_vkCmdSetScissorWithCountEXT>(vkGetDeviceProcAddr(device, "vkCmdSetScissorWithCountEXT"));
-    g_vkCmdSetStencilTestEnableEXT = reinterpret_cast<PFN_vkCmdSetStencilTestEnableEXT>(vkGetDeviceProcAddr(device, "vkCmdSetStencilTestEnableEXT"));
-    g_vkCmdSetVertexInputEXT = reinterpret_cast<PFN_vkCmdSetVertexInputEXT>(vkGetDeviceProcAddr(device, "vkCmdSetVertexInputEXT"));
-    g_vkCmdSetViewportWithCountEXT = reinterpret_cast<PFN_vkCmdSetViewportWithCountEXT>(vkGetDeviceProcAddr(device, "vkCmdSetViewportWithCountEXT"));
- 
     return result;
 }
 
 void VulkanHelper::setResourceName(VkObjectType objectType, uint64_t handle, const char* name)
 {
-    if (g_vkSetDebugUtilsObjectNameEXT && handle && name) {
+    if (vkSetDebugUtilsObjectNameEXT && handle && name) {
         VkDebugUtilsObjectNameInfoEXT nameInfo = {};
         nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
         nameInfo.objectType = objectType;
         nameInfo.objectHandle = handle;
         nameInfo.pObjectName = name;
-        g_vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
+        vkSetDebugUtilsObjectNameEXT(device, &nameInfo);
     }
 }
 
