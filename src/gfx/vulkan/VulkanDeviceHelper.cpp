@@ -1,6 +1,6 @@
 #include "VulkanDeviceHelper.h"
-#include "VulkanTools.h"
 #include "VulkanDebug.h"
+#include "VulkanTools.h"
 #include "utils/Log.h"
 
 namespace mygfx {
@@ -39,7 +39,7 @@ VulkanDeviceHelper::VulkanDeviceHelper()
 }
 
 bool VulkanDeviceHelper::create(const char* name, bool validation)
-{    
+{
     volkInitialize();
 
     // Vulkan instance
@@ -68,7 +68,7 @@ bool VulkanDeviceHelper::create(const char* name, bool validation)
     vkGetDeviceQueue(device, queueFamilyIndices.graphics, 0, &queue);
     vkGetDeviceQueue(device, queueFamilyIndices.compute, 0, &computeQueue);
     vkGetDeviceQueue(device, queueFamilyIndices.transfer, 0, &transferQueue);
-    
+
     VmaVulkanFunctions vulkanFunctions = {};
     vulkanFunctions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
     vulkanFunctions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
@@ -89,7 +89,14 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     appInfo.pApplicationName = name;
     appInfo.pEngineName = name;
+
+#if VK_VERSION == VK_1_1
+    appInfo.apiVersion = VK_API_VERSION_1_1;
+#elif VK_VERSION == VK_1_2
     appInfo.apiVersion = VK_API_VERSION_1_2;
+#elif VK_VERSION == VK_1_3
+    appInfo.apiVersion = VK_API_VERSION_1_3;
+#endif
 
     std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
 
@@ -564,6 +571,20 @@ VkFormat VulkanDeviceHelper::getSupportedDepthFormat(bool checkSamplingSupport)
         }
     }
     throw std::runtime_error("Could not find a matching depth format");
+}
+
+void VulkanDeviceHelper::destroy()
+{
+    vmaDestroyAllocator(mVmaAllocator);
+    mVmaAllocator = NULL;
+
+    if (device) {
+        vkDestroyDevice(device, nullptr);
+    }
+
+    debug::freeDebugCallback(instance);
+
+    vkDestroyInstance(instance, nullptr);
 }
 
 }

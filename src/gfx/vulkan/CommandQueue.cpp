@@ -179,8 +179,12 @@ void CommandQueue::wait(uint64_t waitValue) const
     waitInfo.semaphoreCount = 1;
     waitInfo.pSemaphores = &mSemaphore;
     waitInfo.pValues = &waitValue;
-    VkResult res = vkWaitSemaphores(gfx().device, &waitInfo, std::numeric_limits<uint64_t>::max());
 
+#if VK_VERSION == VK_1_1
+    VkResult res = vkWaitSemaphoresKHR(gfx().device, &waitInfo, std::numeric_limits<uint64_t>::max());
+#else
+    VkResult res = vkWaitSemaphores(gfx().device, &waitInfo, std::numeric_limits<uint64_t>::max());
+#endif
     // LOG_DEBUG("                         vkWaitSemaphores : {}, {}", (uint64_t)m_Queue, std::this_thread::get_id()._Get_underlying_id());
     // Assert(ASSERT_WARNING, res == VK_SUCCESS, "Failed to wait on the queue semaphore.");
 }

@@ -6,7 +6,15 @@
 
 #include <vma/vk_mem_alloc.h>
 
-#ifdef VK_EXT_shader_object
+#define VK_1_1 1
+#define VK_1_2 2
+#define VK_1_3 3
+
+#define VK_VERSION 2
+
+#define HAS_DYNAMIC_RENDERING
+
+#if defined (VK_EXT_shader_object) && defined(HAS_DYNAMIC_RENDERING)
 #define HAS_SHADER_OBJECT_EXT 1
 #else
 #define HAS_SHADER_OBJECT_EXT 0

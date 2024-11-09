@@ -42,7 +42,6 @@ VulkanBuffer::VulkanBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t 
     if ((usage & BufferUsage::SHADER_DEVICE_ADDRESS) != BufferUsage::NONE) {
         flags |= VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
     }
-    
 
     VkBufferCreateInfo bufferInfo = { VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO };
     bufferInfo.size = size;
@@ -86,7 +85,12 @@ VulkanBuffer::VulkanBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t 
         info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;
         info.pNext = nullptr;
         info.buffer = buffer;
+
+#if VK_VERSION == VK_1_1
+        deviceAddress = vkGetBufferDeviceAddressKHR(gfx().device, &info);
+#else
         deviceAddress = vkGetBufferDeviceAddress(gfx().device, &info);
+#endif
     }
 }
 

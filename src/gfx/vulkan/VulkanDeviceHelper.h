@@ -9,8 +9,10 @@ namespace mygfx {
 class VulkanDeviceHelper {
 public:
     VulkanDeviceHelper();
+    virtual ~VulkanDeviceHelper() { }
 
     bool create(const char* name, bool validation);
+    void destroy();
 
     uint32_t getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound = nullptr) const;
     uint32_t getQueueFamilyIndex(VkQueueFlags queueFlags) const;

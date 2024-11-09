@@ -175,20 +175,12 @@ void VulkanDevice::destroy()
     mStagePool->terminate();
     delete mStagePool;
 
-    vmaDestroyAllocator(mVmaAllocator);
-    mVmaAllocator = NULL;
-
     mCommandQueues[0].release();
     mCommandQueues[1].release();
     mCommandQueues[2].release();
 
-    if (device) {
-        vkDestroyDevice(device, nullptr);
-    }
+    VulkanDeviceHelper::destroy();
 
-    debug::freeDebugCallback(instance);
-
-    vkDestroyInstance(instance, nullptr);
 }
 
 bool VulkanDevice::allocConstantBuffer(uint32_t size, void** pData, BufferInfo* pOut)
