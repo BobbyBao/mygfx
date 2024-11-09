@@ -12,7 +12,7 @@ struct PrimitiveState {
     auto operator<=>(PrimitiveState const&) const = default;
 };
 
-// static_assert(sizeof(PrimitiveState) == 1);
+static_assert(sizeof(PrimitiveState) == 1);
 
 struct RasterState {
     PolygonMode polygonMode : 2 = PolygonMode::FILL;
@@ -46,19 +46,15 @@ enum class BlendMode : uint8_t {
 };
 
 struct ColorBlendState {
-
-    uint32_t colorBlendEnable : 1 = false;
-
+    BlendOp colorBlendOp : 3 = BlendOp::ADD;
+    BlendOp alphaBlendOp : 3 = BlendOp::ADD;
     BlendFactor srcColorBlendFactor : 5 = BlendFactor::ONE;
     BlendFactor dstColorBlendFactor : 5 = BlendFactor::ONE;
-    BlendOp colorBlendOp : 3 = BlendOp::ADD;
-
     BlendFactor srcAlphaBlendFactor : 5 = BlendFactor::ONE;
     BlendFactor dstAlphaBlendFactor : 5 = BlendFactor::ONE;
-    BlendOp alphaBlendOp : 3 = BlendOp::ADD;
-
     ColorComponent colorWrite : 4 = ColorComponent::RGBA;
-    uint32_t reserve : 1 = 0;
+    uint16_t colorBlendEnable : 1 = false;
+    uint16_t reserve : 1 = 0;
 
     static ColorBlendState get(BlendMode blendMode);
 
@@ -71,7 +67,7 @@ struct DepthState {
     bool depthTestEnable : 1 = true;
     bool depthWriteEnable : 1 = true;
     CompareOp depthCompareOp : 4 = CompareOp::LESS_OR_EQUAL;
-    bool depthBoundsTestEnable : 1 = false;    
+    bool depthBoundsTestEnable : 1 = false;
     uint8_t reserve : 1 = 0;
 
     auto operator<=>(DepthState const&) const = default;
@@ -97,16 +93,38 @@ struct StencilState {
     auto operator<=>(StencilState const&) const = default;
 };
 
+enum BlendOverlap : uint16_t {
+    UNCORRELATED = 0,
+    DISJOINT = 1,
+    CONJOINT = 2,
+};
+
+struct ColorBlendAdvanced {
+    BlendOp advancedBlendOp : 3;
+    uint16_t srcPremultiplied : 1 = 0;
+    uint16_t dstPremultiplied: 1 = 0;
+    uint16_t clampResults : 1 = 0;
+    BlendOverlap blendOverlap : 3;
+    uint16_t reserve : 1 = 0;
+};
+
+class AdvancedState : public HwObject {
+public:
+    StencilState stencilState {};
+    uint8_t colorBlendCount = 0;
+    ColorBlendAdvanced colorBlendState[8];
+};
+
 class HwVertexInput;
 class HwProgram;
 
 struct PipelineState {
-    HwProgram* program;
+    HwProgram* program { nullptr };
     PrimitiveState primitiveState {};
     DepthState depthState {};
     RasterState rasterState {};
     ColorBlendState colorBlendState {};
-    StencilState* stencilState {};
+    AdvancedState* advanceState { nullptr };
 };
 
 }

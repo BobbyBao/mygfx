@@ -86,7 +86,7 @@ enum class FrontFace : uint8_t {
     CLOCKWISE = 1,
 };
 
-enum class BlendFactor : uint32_t {
+enum class BlendFactor : uint16_t {
     ZERO = 0,
     ONE = 1,
     SRC_COLOR = 2,
@@ -108,7 +108,7 @@ enum class BlendFactor : uint32_t {
     ONE_MINUS_SRC1_ALPHA = 18,
 };
 
-enum class BlendOp : uint32_t {
+enum class BlendOp : uint16_t {
     ADD = 0,
     SUBTRACT = 1,
     REVERSE_SUBTRACT = 2,
@@ -198,7 +198,7 @@ enum SamplerType : uint8_t {
     COUNT,
 };
 
-enum class ColorComponent : uint32_t {
+enum class ColorComponent : uint16_t {
     R = 0x00000001,
     G = 0x00000002,
     B = 0x00000004,
@@ -490,6 +490,23 @@ struct Offset3D {
     int32_t x;
     int32_t y;
     int32_t z;
+};
+
+class HwObject : public RefCounted {
+public:
+#ifdef _MSVC_
+    void* operator new(std::size_t size);
+    void* operator new(std::size_t size, void* p);
+    void operator delete(void* ptr, std::size_t size);
+    void* operator new[](std::size_t size, int num) = delete;
+    void operator delete[](void* ptr, int num) = delete;
+#endif
+    static void gc(bool force = false);
+
+protected:
+    void deleteThis() override;
+
+    friend class GraphicsDevice;
 };
 
 }

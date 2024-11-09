@@ -268,19 +268,19 @@ void CommandBuffer::setViewportAndScissor(uint32_t topX, uint32_t topY, uint32_t
     vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
     vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
 
-    //vkCmdSetViewport(cmd, 0, 1, &viewport);
-    //vkCmdSetScissor(cmd, 0, 1, &scissor);
+    // vkCmdSetViewport(cmd, 0, 1, &viewport);
+    // vkCmdSetScissor(cmd, 0, 1, &scissor);
 }
 
 void CommandBuffer::setViewport(uint32_t viewportCount, const VkViewport* pViewports) const VULKAN_NOEXCEPT
 {
-    //vkCmdSetViewport(cmd, 0, viewportCount, pViewports);
+    // vkCmdSetViewport(cmd, 0, viewportCount, pViewports);
     vkCmdSetViewportWithCountEXT(cmd, viewportCount, reinterpret_cast<const VkViewport*>(pViewports));
 }
 
 void CommandBuffer::setScissor(uint32_t scissorCount, const VkRect2D* pScissors) const VULKAN_NOEXCEPT
 {
-    //vkCmdSetScissor(cmd, 0, scissorCount, pScissors);
+    // vkCmdSetScissor(cmd, 0, scissorCount, pScissors);
     vkCmdSetScissorWithCountEXT(cmd, scissorCount, reinterpret_cast<const VkRect2D*>(pScissors));
 }
 
@@ -410,7 +410,23 @@ void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const 
     bindRasterState(&pipelineState->rasterState);
     bindDepthState(&pipelineState->depthState);
     bindColorBlendState(&pipelineState->colorBlendState);
-    bindStencilState(pipelineState->stencilState);
+
+    if (pipelineState->advanceState) {
+
+        bindStencilState(&pipelineState->advanceState->stencilState);
+        for (uint32_t i = 0; i < pipelineState->advanceState->colorBlendCount; i++) {
+            auto& colorBlend = pipelineState->advanceState->colorBlendState[i];
+            VkColorBlendAdvancedEXT colorBlendAdvanced = {
+                .advancedBlendOp = (VkBlendOp)colorBlend.advancedBlendOp,
+                .srcPremultiplied = colorBlend.srcPremultiplied,
+                .dstPremultiplied = colorBlend.dstPremultiplied,
+                .blendOverlap = (VkBlendOverlapEXT)colorBlend.blendOverlap,
+                .clampResults = colorBlend.clampResults,
+            };
+
+            vkCmdSetColorBlendAdvancedEXT(cmd, i, 1, &colorBlendAdvanced);
+        }
+    }
 }
 
 void CommandBuffer::bindPipeline(VulkanProgram* vkProgram) const VULKAN_NOEXCEPT

@@ -104,14 +104,14 @@ constexpr static BlendOp sAlphaBlendOp[] = {
 ColorBlendState ColorBlendState::get(BlendMode blendMode)
 {
     ColorBlendState blendState {
-        .colorBlendEnable = blendEnable[(int)blendMode],
+        .colorBlendOp = sColorBlendOp[(int)blendMode],
+        .alphaBlendOp = sAlphaBlendOp[(int)blendMode],
         .srcColorBlendFactor = sColorSrcBlend[(int)blendMode],
         .dstColorBlendFactor = sColorDestBlend[(int)blendMode],
-        .colorBlendOp = sColorBlendOp[(int)blendMode],
         .srcAlphaBlendFactor = sAlphaSrcBlend[(int)blendMode],
         .dstAlphaBlendFactor = sAlphaDestBlend[(int)blendMode],
-        .alphaBlendOp = sAlphaBlendOp[(int)blendMode],
-        .colorWrite = ColorComponent::RGBA
+        .colorWrite = ColorComponent::RGBA,
+        .colorBlendEnable = blendEnable[(int)blendMode],
     };
     return blendState;
 }
