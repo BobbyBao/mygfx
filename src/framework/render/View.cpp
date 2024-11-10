@@ -1,5 +1,6 @@
 #include "View.h"
 #include "Framework.h"
+#include "RenderGraph.h"
 
 namespace mygfx {
 
@@ -89,11 +90,16 @@ void View::render(GraphicsApi& cmd)
 {
     uint32_t perView = gfxApi().allocConstant(mFrameUniforms);
 
-    RenderingContext ctx{
-        .perView = perView
+    RenderingContext ctx {
+        .perView = perView,
+        .renderQueue = mRenderQueue
     };
 
-    mRenderQueue.draw(cmd, ctx);
+    if (mRenderGraph == nullptr) {
+        mRenderGraph = RenderGraph::createDefault();
+    }
+
+    mRenderGraph->draw(cmd, ctx);
 }
 
 }

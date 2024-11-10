@@ -10,6 +10,7 @@ static constexpr uint32_t MAX_RENDER_QUEUE_COUNT = 32;
 struct RenderingContext {
     PassName pass;
     uint32_t perView = 0;
+    struct RenderQueue& renderQueue;
 };
 
 struct ObjectUniforms {

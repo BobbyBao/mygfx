@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Fwd.h"
+#include "Core/Object.h"
 #include "core/Maths.h"
 #include "utils/RefCounted.h"
 #include "GraphicsDefs.h"
@@ -10,6 +10,7 @@ namespace mygfx {
 class Scene;
 class Camera;
 class Texture;
+class RenderGraph;
 
 struct FrameUniforms {
     mat4 viewMatrix;
@@ -45,7 +46,7 @@ struct FrameUniforms {
     mat3x4 envRotation = identity<mat3x4>();
 };
 
-class View : public utils::RefCounted {
+class View : public Object {
 public:
     View(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa);
     View(HwSwapchain* swapChain);
@@ -57,6 +58,8 @@ public:
     {
         mFrameUniforms.envIntensity = envIntensity;
     }
+    
+    PROPERTY_GET_SET(RenderGraph*, RenderGraph)
 
     Texture* getRenderTexture() { return mRenderTexture; }
 
@@ -71,11 +74,10 @@ protected:
     Ref<HwRenderTarget> mRenderTarget;
     Ref<Scene> mScene;
     Ref<Camera> mCamera;
-    FrameUniforms mFrameUniforms;
-    
+    Ref<RenderGraph> mRenderGraph;
+    FrameUniforms mFrameUniforms;    
     RenderQueue mRenderQueue;
 
-    //Ref<HwRenderQueue> mRenderQueue = nullptr;
 };
 
 }
