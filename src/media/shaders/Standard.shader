@@ -19,8 +19,8 @@ Shader "test"
             MATERIAL_METALLICROUGHNESS = ""
         }
 
-        VertexShader = "shaders/primitive.vert"
-        PixelShader = "shaders/pbr.frag"
+        VertexShader = "glsl/primitive.vert"
+        PixelShader = "glsl/pbr.frag"
 
     }
 

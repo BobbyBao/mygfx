@@ -14,10 +14,6 @@ namespace {
 
     bool getIncludeFilePath(const String& fileName, Path& outPath)
     {
-        if (sShaderPath.empty()) {
-            sShaderPath.push_back(FileSystem::convertPath("shaders"));
-        }
-
         for (auto& path : sShaderPath) {
             Path p = path / fileName;
             if (std::filesystem::exists(p)) {
@@ -28,6 +24,12 @@ namespace {
 
         return false;
     }
+}
+
+void ShaderCompiler::init()
+{
+    sShaderPath.push_back(FileSystem::convertPath("shaders"));
+    sShaderPath.push_back(FileSystem::convertPath("shaders/glsl"));
 }
 
 class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface {
@@ -177,7 +179,7 @@ String generateSource(ShaderSourceType sourceType, const ShaderStage shader_type
             code = shaderCode.substr(offset, shaderCode.size() - offset);
             shaderCode = shaderCode.substr(0, offset) + "\n";
         } else {
-         //   shaderCode = "";
+            //   shaderCode = "";
         }
 
     } else if (sourceType == ShaderSourceType::HLSL) {
@@ -213,12 +215,12 @@ Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceTyp
 
     Ref<HwShaderModule> sm;
     ByteArray SpvData;
-    #if false
+#if false
     String shader = generateSource(sourceType, shader_type, shaderCode, shaderCompilerParams, pDefines);
     if (!compileToSpirv(sourceType, shader_type, shaderName, shader.c_str(), pShaderEntryPoint, shaderCompilerParams, pDefines, SpvData)) {
         return nullptr;
     }
-    #else
+#else
     DefineList defines;
     if (shader_type == ShaderStage::VERTEX) {
         defines.add("SHADER_STAGE_VERTEX");
@@ -228,7 +230,7 @@ Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceTyp
         defines.add("SHADER_STAGE_COMPUTE");
     }
 
-    if (LINEAR_COLOR_OUTPUT){
+    if (LINEAR_COLOR_OUTPUT) {
         defines.add("LINEAR_OUTPUT");
     }
 
@@ -239,7 +241,7 @@ Ref<HwShaderModule> ShaderCompiler::compileFromString(ShaderSourceType sourceTyp
     if (!compileToSpirv(sourceType, shader_type, shaderName, shaderCode.c_str(), pShaderEntryPoint, shaderCompilerParams, &defines, SpvData)) {
         return nullptr;
     }
-    #endif
+#endif
 
     assert(SpvData.size() != 0);
     sm = device().createShaderModule(shader_type, SpvData, ShaderCodeType::SPIRV, pShaderEntryPoint);
@@ -264,7 +266,7 @@ Ref<HwShaderModule> ShaderCompiler::compileFromFile(ShaderStage shader_type, con
     auto res = compileFromString(sourceType, shader_type, pFilename, pShaderCode, pShaderEntryPoint, shaderCompilerParams, pDefines);
     if (res) {
         return res;
-    }   
+    }
 
     return nullptr;
 }
