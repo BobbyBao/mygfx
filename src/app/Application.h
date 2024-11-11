@@ -20,6 +20,7 @@ public:
 protected:
     bool createWindow(void** window, void** windowInstance) override;
     void onStart() override;
+    void onDestroy() override;
     void processEvent() override;
     void onPreUpdate(double delta) override;
     void onPostDraw(GraphicsApi& cmd) override;

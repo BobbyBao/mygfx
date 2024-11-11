@@ -18,6 +18,7 @@ namespace mygfx {
 
 using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 using Clock = std::chrono::high_resolution_clock;
+class System;
 
 class Framework : public Object {
 public:
@@ -37,6 +38,16 @@ public:
     virtual void updateFrame();
     void quit() { mQuit = true; }
     void destroy();
+
+    template <typename T, typename... Args>
+    T* registerSystem(Args... args)
+    {
+        T* sys = new T(std::forward<Args>(args)...);
+        registerSystem(sys);
+        return sys;
+    }
+
+    void registerSystem(System* sys);
 
     Ref<View> createView(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa);
     Ref<View> createView(HwSwapchain* swapChain);
@@ -61,6 +72,8 @@ protected:
     Settings mSettings;
     uint32_t mWidth = 1920;
     uint32_t mHeight = 1080;
+    Vector<Ref<System>> mSystems;
+    bool mInitialized = false;
     std::unique_ptr<GraphicsApi> mGraphicsApi;
     Ref<HwSwapchain> mSwapchain;
     HashSet<Ref<View>> mViews;

@@ -55,8 +55,8 @@ bool VulkanDeviceHelper::create(const char* name, bool validation)
         return false;
     }
 
-    getEnabledFeatures();
     getEnabledExtensions();
+    getEnabledFeatures();
 
     VkResult res = createLogicalDevice(enabledFeatures, enabledDeviceExtensions);
     if (res != VK_SUCCESS) {
@@ -344,6 +344,14 @@ void VulkanDeviceHelper::getEnabledFeatures()
 
 void VulkanDeviceHelper::getEnabledExtensions()
 {
+    for (auto it = enabledDeviceExtensions.begin(); it != enabledDeviceExtensions.end();) {
+        if (!extensionSupported(*it)) {
+            it = enabledDeviceExtensions.erase(it);
+        } else {
+            ++it;
+        }
+        
+    }
 }
 
 uint32_t VulkanDeviceHelper::getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound) const

@@ -1,4 +1,6 @@
 #include "Framework.h"
+#include "core/System.h"
+#include "resource/ShaderCompiler.h"
 #include "vulkan/VulkanDevice.h"
 
 namespace mygfx {
@@ -7,6 +9,8 @@ Framework::Framework()
     : mTitle("mygfx")
 {
     msInstance = this;
+
+    registerSystem<ShaderCompiler>();
 }
 
 Framework::~Framework()
@@ -30,17 +34,22 @@ bool Framework::init()
     }
 
     mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice);
+    Texture::staticInit();
+
+    for (auto& sys : mSystems) {
+        sys->init();
+    }
+
+    mInitialized = true;
 
     SwapChainDesc desc {
-        .windowInstance = windowInstance,
-        .window = window,
         .width = mWidth,
         .height = mHeight,
+        .windowInstance = windowInstance,
+        .window = window,
     };
 
     mSwapchain = mGraphicsApi->createSwapchain(desc);
-
-    Texture::staticInit();
 
     onStart();
 
@@ -54,6 +63,15 @@ bool Framework::init()
 bool Framework::createWindow(void** window, void** windowInstance)
 {
     return false;
+}
+
+void Framework::registerSystem(System* sys)
+{
+    mSystems.emplace_back(sys);
+
+    if (mInitialized) {
+        sys->init();
+    }
 }
 
 Ref<View> Framework::createView(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa)
@@ -167,8 +185,14 @@ void Framework::updateFrame()
 void Framework::destroy()
 {
     onDestroy();
-    
+
     mViews.clear();
+
+    for (auto it = mSystems.rbegin(); it != mSystems.rend(); ++it) {
+        (*it)->shutdown();
+    }
+
+    mSystems.clear();
 
     Texture::staticDeinit();
 

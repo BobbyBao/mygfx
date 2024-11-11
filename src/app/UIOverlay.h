@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/SharedPtr.h"
+#include "core/System.h"
 
 #include <imgui/imgui.h>
 
@@ -13,12 +13,12 @@ class GraphicsApi;
 class Shader;
 class Texture;
 
-class UIOverlay : public utils::RefCounted {
+class UIOverlay : public TSystem<UIOverlay> {
 public:
     UIOverlay(SDL_Window* wnd);
     ~UIOverlay();
 
-    void init();
+    void init() override;
     bool handleEvent(const SDL_Event& event);
     void update();
     void draw(GraphicsApi& cmd);

@@ -8,14 +8,22 @@ namespace mygfx {
 class ParseError : public std::exception {
 public:
     explicit ParseError(const std::string& _Message)
-        : std::exception(_Message.c_str())
+        : mMessage(_Message)
     {
     }
 
     explicit ParseError(const char* _Message)
-        : std::exception(_Message)
+        : mMessage(_Message)
     {
     }
+    
+    _NODISCARD char const* what() const override
+    {
+        return mMessage.c_str();
+    }
+
+private:
+    String mMessage;
 };
 
 static ParseError parseError(const std::string_view& source, size_t at, const std::string_view& expected)

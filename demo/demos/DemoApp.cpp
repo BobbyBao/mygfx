@@ -124,4 +124,6 @@ void DemoApp::onDestroy()
     }
 
     ShaderLibs::clean();
+
+    Application::onDestroy();
 }

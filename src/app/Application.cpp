@@ -1,7 +1,7 @@
 #include "Application.h"
+#include "core/FileSystem.h"
 #include "resource/Material.h"
 #include "resource/Texture.h"
-#include "core/FileSystem.h"
 #include "vulkan/VulkanDevice.h"
 
 #ifdef _WIN32
@@ -22,7 +22,7 @@ void* getNativeWindow(SDL_Window* sdlWindow)
 {
 #if defined(WIN32) && !defined(__WINRT__)
     return (HWND)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-#else// /*defined(__APPLE__) && */defined(SDL_VIDEO_DRIVER_COCOA)
+#else // /*defined(__APPLE__) && */defined(SDL_VIDEO_DRIVER_COCOA)
     return (void*)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
 #endif
     return nullptr;
@@ -134,7 +134,7 @@ bool Application::createWindow(void** window, void** windowInstance)
     if (!mSdlWindow) {
         return false;
     }
-
+    
     *window = getNativeWindow(mSdlWindow);
     *windowInstance = nullptr;
 #if defined(WIN32)
@@ -146,8 +146,12 @@ bool Application::createWindow(void** window, void** windowInstance)
 
 void Application::onStart()
 {
-    mUI = new UIOverlay(mSdlWindow);
-    mUI->init();
+    mUI = registerSystem<UIOverlay>(mSdlWindow);
+}
+
+void Application::onDestroy()
+{
+    mUI.reset();
 }
 
 void Application::processEvent()
