@@ -4,6 +4,7 @@
 
 #include <array>
 
+#include "../utils/algorithm.h"
 #include <vma/vk_mem_alloc.h>
 
 #define VK_1_1 1
@@ -14,7 +15,7 @@
 
 #define HAS_DYNAMIC_RENDERING
 
-#if defined (VK_EXT_shader_object) && defined(HAS_DYNAMIC_RENDERING)
+#if defined(VK_EXT_shader_object) && defined(HAS_DYNAMIC_RENDERING)
 #define HAS_SHADER_OBJECT_EXT 1
 #else
 #define HAS_SHADER_OBJECT_EXT 0
@@ -49,12 +50,17 @@ struct AttachmentFormats {
 
     void calculateHash()
     {
-        mHash = std::_Hash_array_representation(attachmentFormats, 10);
+        size_t hash = 0;
+        for (uint32_t i = 0; i < colorAttachmentCount; i++) {
+            utils::hash_combine(hash, attachmentFormats[i]);
+        }
+
+        utils::hash_combine(hash, attachmentFormats[8], attachmentFormats[9]);
+        mHash = hash;
     }
 
 private:
     size_t mHash = 0;
 };
-
 
 }

@@ -21,9 +21,10 @@
 
 #include <type_traits>      // for std::enable_if
 
-#include <limits.h>
+#include <limits>
 #include <stddef.h>
 #include <stdint.h>
+#include <assert.h>
 
 namespace utils {
 
