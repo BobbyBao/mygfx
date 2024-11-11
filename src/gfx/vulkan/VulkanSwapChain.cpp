@@ -10,7 +10,7 @@ VulkanSwapChain::VulkanSwapChain() = default;
 
 VulkanSwapChain::VulkanSwapChain(const SwapChainDesc& desc)
 {
-    this->desc = desc;
+    this->desc = desc;    
     initSurface();
 }
 
@@ -21,6 +21,11 @@ VulkanSwapChain::~VulkanSwapChain()
 
 void VulkanSwapChain::initSurface()
 {
+    if (desc.surface) {
+        mSurface = (VkSurfaceKHR)desc.surface;
+        selectSurfaceFormat();
+        return;
+    }
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
     initSurface(desc.windowInstance, desc.window);
@@ -35,108 +40,12 @@ void VulkanSwapChain::initSurface()
 #elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
     initSurface(desc.window);
 #endif
+
+    selectSurfaceFormat();
 }
 
-void VulkanSwapChain::recreate(const SwapChainDesc* pDesc)
+void VulkanSwapChain::selectSurfaceFormat()
 {
-    if (pDesc) {
-        this->desc = *pDesc;
-    }
-
-    create(&this->desc.width, &this->desc.height, this->desc.vsync, this->desc.fullscreen);
-
-    setupDepthStencil();
-}
-
-/** @brief Creates the platform specific surface abstraction of the native platform window used for presentation */
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
-void VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-void VulkanSwapChain::initSurface(ANativeWindow* window)
-#elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
-void VulkanSwapChain::initSurface(IDirectFB* dfb, IDirectFBSurface* window)
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-void VulkanSwapChain::initSurface(wl_display* display, wl_surface* window)
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-void VulkanSwapChain::initSurface(xcb_connection_t* connection, xcb_window_t window)
-#elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
-void VulkanSwapChain::initSurface(void* view)
-#elif (defined(_DIRECT2DISPLAY) || defined(VK_USE_PLATFORM_HEADLESS_EXT))
-void VulkanSwapChain::initSurface(uint32_t width, uint32_t height)
-#elif defined(VK_USE_PLATFORM_SCREEN_QNX)
-void VulkanSwapChain::initSurface(screen_context_t screen_context, screen_window_t screen_window)
-#endif
-{
-    VkResult err = VK_SUCCESS;
-    auto instance = gfx().instance;
-    // Create the os-specific surface
-#if defined(VK_USE_PLATFORM_WIN32_KHR)
-    VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.hinstance = (HINSTANCE)platformHandle;
-    surfaceCreateInfo.hwnd = (HWND)platformWindow;
-    err = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-    VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.window = window;
-    err = vkCreateAndroidSurfaceKHR(instance, &surfaceCreateInfo, NULL, &surface);
-#elif defined(VK_USE_PLATFORM_IOS_MVK)
-    VkIOSSurfaceCreateInfoMVK surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK;
-    surfaceCreateInfo.pNext = NULL;
-    surfaceCreateInfo.flags = 0;
-    surfaceCreateInfo.pView = view;
-    err = vkCreateIOSSurfaceMVK(instance, &surfaceCreateInfo, nullptr, &surface);
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-    VkMacOSSurfaceCreateInfoMVK surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
-    surfaceCreateInfo.pNext = NULL;
-    surfaceCreateInfo.flags = 0;
-    surfaceCreateInfo.pView = view;
-    err = vkCreateMacOSSurfaceMVK(instance, &surfaceCreateInfo, NULL, &surface);
-#elif defined(_DIRECT2DISPLAY)
-    createDirect2DisplaySurface(width, height);
-#elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
-    VkDirectFBSurfaceCreateInfoEXT surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_DIRECTFB_SURFACE_CREATE_INFO_EXT;
-    surfaceCreateInfo.dfb = dfb;
-    surfaceCreateInfo.surface = window;
-    err = vkCreateDirectFBSurfaceEXT(instance, &surfaceCreateInfo, nullptr, &surface);
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-    VkWaylandSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.display = display;
-    surfaceCreateInfo.surface = window;
-    err = vkCreateWaylandSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    surfaceCreateInfo.connection = connection;
-    surfaceCreateInfo.window = window;
-    err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &surface);
-#elif defined(VK_USE_PLATFORM_HEADLESS_EXT)
-    VkHeadlessSurfaceCreateInfoEXT surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT;
-    PFN_vkCreateHeadlessSurfaceEXT fpCreateHeadlessSurfaceEXT = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(instance, "vkCreateHeadlessSurfaceEXT");
-    if (!fpCreateHeadlessSurfaceEXT) {
-        tools::exitFatal("Could not fetch function pointer for the headless extension!", -1);
-    }
-    err = fpCreateHeadlessSurfaceEXT(instance, &surfaceCreateInfo, nullptr, &surface);
-#elif defined(VK_USE_PLATFORM_SCREEN_QNX)
-    VkScreenSurfaceCreateInfoQNX surfaceCreateInfo = {};
-    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_SCREEN_SURFACE_CREATE_INFO_QNX;
-    surfaceCreateInfo.pNext = NULL;
-    surfaceCreateInfo.flags = 0;
-    surfaceCreateInfo.context = screen_context;
-    surfaceCreateInfo.window = screen_window;
-    err = vkCreateScreenSurfaceQNX(instance, &surfaceCreateInfo, NULL, &surface);
-#endif
-
-    if (err != VK_SUCCESS) {
-        tools::exitFatal("Could not create surface!", err);
-    }
-
     // Get available queue family properties
     uint32_t queueCount;
     vkGetPhysicalDeviceQueueFamilyProperties(gfx().physicalDevice, &queueCount, NULL);
@@ -150,7 +59,7 @@ void VulkanSwapChain::initSurface(screen_context_t screen_context, screen_window
     // Will be used to present the swap chain images to the windowing system
     std::vector<VkBool32> supportsPresent(queueCount);
     for (uint32_t i = 0; i < queueCount; i++) {
-        vkGetPhysicalDeviceSurfaceSupportKHR(gfx().physicalDevice, i, surface, &supportsPresent[i]);
+        vkGetPhysicalDeviceSurfaceSupportKHR(gfx().physicalDevice, i, mSurface, &supportsPresent[i]);
     }
 
     // Search for a graphics and a present queue in the array of queue
@@ -194,11 +103,11 @@ void VulkanSwapChain::initSurface(screen_context_t screen_context, screen_window
 
     // Get list of supported surface formats
     uint32_t formatCount;
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gfx().physicalDevice, surface, &formatCount, NULL));
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gfx().physicalDevice, mSurface, &formatCount, NULL));
     assert(formatCount > 0);
 
     std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gfx().physicalDevice, surface, &formatCount, surfaceFormats.data()));
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(gfx().physicalDevice, mSurface, &formatCount, surfaceFormats.data()));
 
     // We want to get a format that best suits our needs, so we try to get one from a set of preferred formats
     // Initialize the format to the first one returned by the implementation in case we can't find one of the preffered formats
@@ -221,6 +130,109 @@ void VulkanSwapChain::initSurface(screen_context_t screen_context, screen_window
     colorSpace = selectedFormat.colorSpace;
 }
 
+void VulkanSwapChain::recreate(const SwapChainDesc* pDesc)
+{
+    if (pDesc) {
+        this->desc = *pDesc;
+    }
+
+    create(&this->desc.width, &this->desc.height, this->desc.vsync, this->desc.fullscreen);
+
+    setupDepthStencil();
+}
+
+/** @brief Creates the platform specific surface abstraction of the native platform window used for presentation */
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+bool VulkanSwapChain::initSurface(void* platformHandle, void* platformWindow)
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+bool VulkanSwapChain::initSurface(ANativeWindow* window)
+#elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
+bool VulkanSwapChain::initSurface(IDirectFB* dfb, IDirectFBSurface* window)
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+bool VulkanSwapChain::initSurface(wl_display* display, wl_surface* window)
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+bool VulkanSwapChain::initSurface(xcb_connection_t* connection, xcb_window_t window)
+#elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+bool VulkanSwapChain::initSurface(void* view)
+#elif (defined(_DIRECT2DISPLAY) || defined(VK_USE_PLATFORM_HEADLESS_EXT))
+bool VulkanSwapChain::initSurface(uint32_t width, uint32_t height)
+#elif defined(VK_USE_PLATFORM_SCREEN_QNX)
+bool VulkanSwapChain::initSurface(screen_context_t screen_context, screen_window_t screen_window)
+#endif
+{
+    VkResult err = VK_SUCCESS;
+    auto instance = gfx().instance;
+    // Create the os-specific surface
+#if defined(VK_USE_PLATFORM_WIN32_KHR)
+    VkWin32SurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.hinstance = (HINSTANCE)platformHandle;
+    surfaceCreateInfo.hwnd = (HWND)platformWindow;
+    err = vkCreateWin32SurfaceKHR(instance, &surfaceCreateInfo, nullptr, &mSurface);
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+    VkAndroidSurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.window = window;
+    err = vkCreateAndroidSurfaceKHR(instance, &surfaceCreateInfo, NULL, &mSurface);
+#elif defined(VK_USE_PLATFORM_IOS_MVK)
+    VkIOSSurfaceCreateInfoMVK surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_IOS_SURFACE_CREATE_INFO_MVK;
+    surfaceCreateInfo.pNext = NULL;
+    surfaceCreateInfo.flags = 0;
+    surfaceCreateInfo.pView = view;
+    err = vkCreateIOSSurfaceMVK(instance, &surfaceCreateInfo, nullptr, &mSurface);
+#elif defined(VK_USE_PLATFORM_MACOS_MVK)
+    VkMacOSSurfaceCreateInfoMVK surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_MACOS_SURFACE_CREATE_INFO_MVK;
+    surfaceCreateInfo.pNext = NULL;
+    surfaceCreateInfo.flags = 0;
+    surfaceCreateInfo.pView = view;
+    err = vkCreateMacOSSurfaceMVK(instance, &surfaceCreateInfo, NULL, &mSurface);
+#elif defined(_DIRECT2DISPLAY)
+    createDirect2DisplaySurface(width, height);
+#elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
+    VkDirectFBSurfaceCreateInfoEXT surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_DIRECTFB_SURFACE_CREATE_INFO_EXT;
+    surfaceCreateInfo.dfb = dfb;
+    surfaceCreateInfo.surface = window;
+    err = vkCreateDirectFBSurfaceEXT(instance, &surfaceCreateInfo, nullptr, &mSurface);
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    VkWaylandSurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.display = display;
+    surfaceCreateInfo.surface = window;
+    err = vkCreateWaylandSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &mSurface);
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+    VkXcbSurfaceCreateInfoKHR surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    surfaceCreateInfo.connection = connection;
+    surfaceCreateInfo.window = window;
+    err = vkCreateXcbSurfaceKHR(instance, &surfaceCreateInfo, nullptr, &mSurface);
+#elif defined(VK_USE_PLATFORM_HEADLESS_EXT)
+    VkHeadlessSurfaceCreateInfoEXT surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_HEADLESS_SURFACE_CREATE_INFO_EXT;
+    PFN_vkCreateHeadlessSurfaceEXT fpCreateHeadlessSurfaceEXT = (PFN_vkCreateHeadlessSurfaceEXT)vkGetInstanceProcAddr(instance, "vkCreateHeadlessSurfaceEXT");
+    if (!fpCreateHeadlessSurfaceEXT) {
+        tools::exitFatal("Could not fetch function pointer for the headless extension!", -1);
+    }
+    err = fpCreateHeadlessSurfaceEXT(instance, &surfaceCreateInfo, nullptr, &mSurface);
+#elif defined(VK_USE_PLATFORM_SCREEN_QNX)
+    VkScreenSurfaceCreateInfoQNX surfaceCreateInfo = {};
+    surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_SCREEN_SURFACE_CREATE_INFO_QNX;
+    surfaceCreateInfo.pNext = NULL;
+    surfaceCreateInfo.flags = 0;
+    surfaceCreateInfo.context = screen_context;
+    surfaceCreateInfo.window = screen_window;
+    err = vkCreateScreenSurfaceQNX(instance, &surfaceCreateInfo, NULL, &mSurface);
+#endif
+
+    if (err != VK_SUCCESS) {
+        tools::exitFatal("Could not create surface!", err);
+        return false;
+    }
+    return true;
+}
+
 /**
  * Create the swapchain and get its images with given width and height
  *
@@ -235,15 +247,15 @@ void VulkanSwapChain::create(uint32_t* width, uint32_t* height, bool vsync, bool
 
     // Get physical device surface properties and formats
     VkSurfaceCapabilitiesKHR surfCaps;
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gfx().physicalDevice, surface, &surfCaps));
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(gfx().physicalDevice, mSurface, &surfCaps));
 
     // Get available present modes
     uint32_t presentModeCount;
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gfx().physicalDevice, surface, &presentModeCount, NULL));
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gfx().physicalDevice, mSurface, &presentModeCount, NULL));
     assert(presentModeCount > 0);
 
     std::vector<VkPresentModeKHR> presentModes(presentModeCount);
-    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gfx().physicalDevice, surface, &presentModeCount, presentModes.data()));
+    VK_CHECK_RESULT(vkGetPhysicalDeviceSurfacePresentModesKHR(gfx().physicalDevice, mSurface, &presentModeCount, presentModes.data()));
 
     VkExtent2D swapchainExtent = {};
     // If width (and height) equals the special value 0xFFFFFFFF, the size of the surface will be set by the swapchain
@@ -322,7 +334,7 @@ void VulkanSwapChain::create(uint32_t* width, uint32_t* height, bool vsync, bool
 
     VkSwapchainCreateInfoKHR swapchainCI = {};
     swapchainCI.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    swapchainCI.surface = surface;
+    swapchainCI.surface = mSurface;
     swapchainCI.minImageCount = desiredNumberOfSwapchainImages;
     swapchainCI.imageFormat = colorFormat;
     swapchainCI.imageColorSpace = colorSpace;
@@ -458,12 +470,12 @@ void VulkanSwapChain::cleanup()
         renderTarget.reset();
     }
 
-    if (surface != VK_NULL_HANDLE) {
+    if (mSurface != VK_NULL_HANDLE) {
         vkDestroySwapchainKHR(gfx().device, swapChain, nullptr);
-        vkDestroySurfaceKHR(gfx().instance, surface, nullptr);
+        vkDestroySurfaceKHR(gfx().instance, mSurface, nullptr);
     }
 
-    surface = VK_NULL_HANDLE;
+    mSurface = VK_NULL_HANDLE;
     swapChain = VK_NULL_HANDLE;
 }
 

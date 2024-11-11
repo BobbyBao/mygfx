@@ -19,6 +19,7 @@ public:
     void handleEvent(const SDL_Event& e);
 protected:
     bool createWindow(void** window, void** windowInstance) override;
+    void onInit() override;
     void onStart() override;
     void onDestroy() override;
     void processEvent() override;

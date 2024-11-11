@@ -19,6 +19,7 @@ namespace mygfx {
 using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
 using Clock = std::chrono::high_resolution_clock;
 class System;
+class VulkanDevice;
 
 class Framework : public Object {
 public:
@@ -58,6 +59,7 @@ public:
 protected:
     virtual bool createWindow(void** window, void** windowInstance);
     virtual void onResized(int w, int h);
+    virtual void onInit();
     virtual void onStart();
     virtual void onDestroy();
     virtual void onPreUpdate(double delta);
@@ -72,8 +74,11 @@ protected:
     Settings mSettings;
     uint32_t mWidth = 1920;
     uint32_t mHeight = 1080;
+    void* mWindow = nullptr;
+    void* mHInstance = nullptr;
     Vector<Ref<System>> mSystems;
     bool mInitialized = false;
+    VulkanDevice* mDevice = nullptr;
     std::unique_ptr<GraphicsApi> mGraphicsApi;
     Ref<HwSwapchain> mSwapchain;
     HashSet<Ref<View>> mViews;

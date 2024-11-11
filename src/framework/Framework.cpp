@@ -18,53 +18,6 @@ Framework::~Framework()
     msInstance = nullptr;
 }
 
-bool Framework::init()
-{
-    void* window = nullptr;
-    void* windowInstance = nullptr;
-    if (!createWindow(&window, &windowInstance)) {
-        return false;
-    }
-
-    mSettings.name = mTitle.c_str();
-
-    auto mDevice = new VulkanDevice();
-    if (!mDevice->create(mSettings)) {
-        return false;
-    }
-
-    mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice);
-    Texture::staticInit();
-
-    for (auto& sys : mSystems) {
-        sys->init();
-    }
-
-    mInitialized = true;
-
-    SwapChainDesc desc {
-        .width = mWidth,
-        .height = mHeight,
-        .windowInstance = windowInstance,
-        .window = window,
-    };
-
-    mSwapchain = mGraphicsApi->createSwapchain(desc);
-
-    onStart();
-
-    mStartTime = Clock::now();
-    mLastTimestamp = mStartTime;
-    mTimePrevEnd = mLastTimestamp;
-    mPrepared = true;
-    return true;
-}
-
-bool Framework::createWindow(void** window, void** windowInstance)
-{
-    return false;
-}
-
 void Framework::registerSystem(System* sys)
 {
     mSystems.emplace_back(sys);
@@ -87,6 +40,45 @@ Ref<View> Framework::createView(HwSwapchain* swapChain)
 void Framework::destroyView(const Ref<View>& view)
 {
     mViews.erase(view);
+}
+
+bool Framework::init()
+{
+    if (!createWindow(&mWindow, &mHInstance)) {
+        return false;
+    }
+
+    mSettings.name = mTitle.c_str();
+
+    mDevice = new VulkanDevice();
+    if (!mDevice->create(mSettings)) {
+        return false;
+    }
+
+    mGraphicsApi = std::make_unique<GraphicsApi>(*mDevice);
+
+    Texture::staticInit();
+
+    for (auto& sys : mSystems) {
+        sys->init();
+    }
+
+    onInit();
+
+    mInitialized = true;
+
+    onStart();
+
+    mStartTime = Clock::now();
+    mLastTimestamp = mStartTime;
+    mTimePrevEnd = mLastTimestamp;
+    mPrepared = true;
+    return true;
+}
+
+bool Framework::createWindow(void** window, void** windowInstance)
+{
+    return false;
 }
 
 void Framework::run()
@@ -113,6 +105,50 @@ void Framework::windowResize(int w, int h)
     mHeight = h;
 
     onResized(w, h);
+}
+
+void Framework::onResized(int w, int h)
+{
+}
+
+void Framework::onInit()
+{
+}
+
+void Framework::onStart()
+{
+    SwapChainDesc desc {
+        .width = mWidth,
+        .height = mHeight,
+        .windowInstance = mHInstance,
+        .window = mWindow,
+    };
+
+    mSwapchain = mGraphicsApi->createSwapchain(desc);
+}
+
+void Framework::onDestroy()
+{
+}
+
+void Framework::onPreUpdate(double delta)
+{
+}
+
+void Framework::onUpdate(double delta)
+{
+}
+
+void Framework::onPreDraw(GraphicsApi& cmd)
+{
+}
+
+void Framework::onDraw(GraphicsApi& cmd)
+{
+}
+
+void Framework::onPostDraw(GraphicsApi& cmd)
+{
 }
 
 void Framework::processEvent()
@@ -199,36 +235,5 @@ void Framework::destroy()
     mGraphicsApi.reset();
 }
 
-void Framework::onResized(int w, int h)
-{
-}
-
-void Framework::onStart()
-{
-}
-
-void Framework::onDestroy()
-{
-}
-
-void Framework::onPreUpdate(double delta)
-{
-}
-
-void Framework::onUpdate(double delta)
-{
-}
-
-void Framework::onPreDraw(GraphicsApi& cmd)
-{
-}
-
-void Framework::onDraw(GraphicsApi& cmd)
-{
-}
-
-void Framework::onPostDraw(GraphicsApi& cmd)
-{
-}
 
 }

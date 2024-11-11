@@ -142,14 +142,15 @@ struct RenderPassInfo {
 };
 
 struct SwapChainDesc {
-    void* windowInstance;
-    void* window;
     uint32_t width = 1280;
     uint32_t height = 720;
     Format colorFormat = Format::R8G8B8A8_SNORM;
     Format depthFormat = Format::UNDEFINED;
     bool fullscreen = false;
     bool vsync = false;
+    void* windowInstance = nullptr;
+    void* window = nullptr;
+    void* surface = nullptr;
 };
 
 class HwSwapchain : public HwObject {

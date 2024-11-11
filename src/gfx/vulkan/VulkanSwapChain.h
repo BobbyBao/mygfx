@@ -28,24 +28,24 @@ public:
 	void recreate(const SwapChainDesc* pDesc = nullptr);
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-	void initSurface(void* platformHandle, void* platformWindow);
+	bool initSurface(void* platformHandle, void* platformWindow);
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	void initSurface(ANativeWindow* window);
+	bool initSurface(ANativeWindow* window);
 #elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
-	void initSurface(IDirectFB* dfb, IDirectFBSurface* window);
+	bool initSurface(IDirectFB* dfb, IDirectFBSurface* window);
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-	void initSurface(wl_display* display, wl_surface* window);
+	bool initSurface(wl_display* display, wl_surface* window);
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
-	void initSurface(xcb_connection_t* connection, xcb_window_t window);
+	bool initSurface(xcb_connection_t* connection, xcb_window_t window);
 #elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
-	void initSurface(void* view);
+	bool initSurface(void* view);
 #elif (defined(_DIRECT2DISPLAY) || defined(VK_USE_PLATFORM_HEADLESS_EXT))
-	void initSurface(uint32_t width, uint32_t height);
+	bool initSurface(uint32_t width, uint32_t height);
 #if defined(_DIRECT2DISPLAY)
-	void createDirect2DisplaySurface(uint32_t width, uint32_t height);
+	bool createDirect2DisplaySurface(uint32_t width, uint32_t height);
 #endif
 #elif defined(VK_USE_PLATFORM_SCREEN_QNX)
-	void initSurface(screen_context_t screen_context, screen_window_t screen_window);
+	bool initSurface(screen_context_t screen_context, screen_window_t screen_window);
 #endif
 	void create(uint32_t* width, uint32_t* height, bool vsync = false, bool fullscreen = false);
 
@@ -63,10 +63,11 @@ public:
 	Format depthFormat;
     Vector<Ref<VulkanTexture>> colorTextures;
 	Ref<VulkanTexture> depthTexture;
-private: 	
+private:
+    void selectSurfaceFormat();
 	void setupDepthStencil();
 
-	VkSurfaceKHR surface;
+	VkSurfaceKHR mSurface = VK_NULL_HANDLE;
 };
 
 }

@@ -16,6 +16,8 @@
 #include "imgui/ImGui.h"
 #include <filesystem>
 
+#include <SDL3/SDL_vulkan.h>
+
 namespace mygfx {
 
 void* getNativeWindow(SDL_Window* sdlWindow)
@@ -144,8 +146,27 @@ bool Application::createWindow(void** window, void** windowInstance)
     return true;
 }
 
+void Application::onInit()
+{
+}
+
 void Application::onStart()
 {
+    VkSurfaceKHR surface = nullptr;
+    if (!SDL_Vulkan_CreateSurface(mSdlWindow, mDevice->instance, nullptr, &surface)) {
+        return;
+    }
+
+    SwapChainDesc desc {
+        .width = mWidth,
+        .height = mHeight,
+        .windowInstance = mHInstance,
+        .window = window,
+        .surface = surface,
+    };
+
+    mSwapchain = mGraphicsApi->createSwapchain(desc);
+
     mUI = registerSystem<UIOverlay>(mSdlWindow);
 }
 

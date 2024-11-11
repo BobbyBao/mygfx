@@ -98,31 +98,6 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
     appInfo.apiVersion = VK_API_VERSION_1_3;
 #endif
 
-    std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
-
-    // Enable surface extensions depending on os
-#if defined(_WIN32)
-    instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-    instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#elif defined(_DIRECT2DISPLAY)
-    instanceExtensions.push_back(VK_KHR_DISPLAY_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
-    instanceExtensions.push_back(VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-    instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-    instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_IOS_MVK)
-    instanceExtensions.push_back(VK_MVK_IOS_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-    instanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_HEADLESS_EXT)
-    instanceExtensions.push_back(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_SCREEN_QNX)
-    instanceExtensions.push_back(VK_QNX_SCREEN_SURFACE_EXTENSION_NAME);
-#endif
-
     // Get extensions supported by the instance and store for later use
     uint32_t extCount = 0;
     vkEnumerateInstanceExtensionProperties(nullptr, &extCount, nullptr);
@@ -135,21 +110,55 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
         }
     }
 
+    std::vector<const char*> instanceExtensions = { VK_KHR_SURFACE_EXTENSION_NAME };
+
+    auto supportInstanceExtension = [this](const char* ext) -> bool {
+        return std::find(supportedInstanceExtensions.begin(), supportedInstanceExtensions.end(), ext) != supportedInstanceExtensions.end();
+    };
+
+    auto tryAddInstanceExtension = [supportInstanceExtension, &instanceExtensions, this](const char* ext) -> bool {
+        if (supportInstanceExtension(ext)) {
+            instanceExtensions.push_back(ext);
+            return true;
+        } else {
+            LOG_WARNING("Enabled instance extension \"{}\" is not present at instance level", ext);
+            return false;
+        }
+    };
+
+    // Enable surface extensions depending on os
+#if defined(_WIN32)
+    tryAddInstanceExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+    tryAddInstanceExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
+#elif defined(_DIRECT2DISPLAY)
+    tryAddInstanceExtension(VK_KHR_DISPLAY_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
+    tryAddInstanceExtension(VK_EXT_DIRECTFB_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+    tryAddInstanceExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+    tryAddInstanceExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_IOS_MVK)
+    tryAddInstanceExtension(VK_MVK_IOS_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_MACOS_MVK)
+    tryAddInstanceExtension(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_HEADLESS_EXT)
+    tryAddInstanceExtension(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_SCREEN_QNX)
+    tryAddInstanceExtension(VK_QNX_SCREEN_SURFACE_EXTENSION_NAME);
+#endif
+
 #if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
     // SRS - When running on iOS/macOS with MoltenVK, enable VK_KHR_get_physical_device_properties2 if not already enabled by the example (required by VK_KHR_portability_subset)
-    if (std::find(enabledInstanceExtensions.begin(), enabledInstanceExtensions.end(), VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME) == enabledInstanceExtensions.end()) {
-        enabledInstanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-    }
+    tryAddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);    
 #endif
 
     // Enabled requested instance extensions
     if (enabledInstanceExtensions.size() > 0) {
         for (const char* enabledExtension : enabledInstanceExtensions) {
             // Output message if requested extension is not available
-            if (std::find(supportedInstanceExtensions.begin(), supportedInstanceExtensions.end(), enabledExtension) == supportedInstanceExtensions.end()) {
-                std::cerr << "Enabled instance extension \"" << enabledExtension << "\" is not present at instance level\n";
-            }
-            instanceExtensions.push_back(enabledExtension);
+            tryAddInstanceExtension(enabledExtension);
         }
     }
 
@@ -167,14 +176,13 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
 
 #if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK)) && defined(VK_KHR_portability_enumeration)
     // SRS - When running on iOS/macOS with MoltenVK and VK_KHR_portability_enumeration is defined and supported by the instance, enable the extension and the flag
-    if (std::find(supportedInstanceExtensions.begin(), supportedInstanceExtensions.end(), VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME) != supportedInstanceExtensions.end()) {
-        instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    if (tryAddInstanceExtension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
         instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     }
 #endif
 
     // Enable the debug utils extension if available (e.g. when debugging tools are present)
-    if (validation || std::find(supportedInstanceExtensions.begin(), supportedInstanceExtensions.end(), VK_EXT_DEBUG_UTILS_EXTENSION_NAME) != supportedInstanceExtensions.end()) {
+    if (validation || supportInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
         instanceExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
@@ -247,9 +255,6 @@ bool VulkanDeviceHelper::selectPhysicalDevice()
     }
 
     // GPU selection
-
-    // Select physical device to be used for the Vulkan example
-    // Defaults to the first device unless specified by command line
     uint32_t selectedDevice = 0;
 
     physicalDevice = physicalDevices[selectedDevice];
@@ -350,7 +355,6 @@ void VulkanDeviceHelper::getEnabledExtensions()
         } else {
             ++it;
         }
-        
     }
 }
 
