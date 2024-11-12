@@ -3,8 +3,9 @@
 #include "Application.h"
 #include "ShaderLibs.h"
 #include "core/Maths.h"
+#if _WIN32
 #include <concurrencpp/concurrencpp.h>
-
+#endif
 namespace mygfx::demo {
 
 using namespace math;
@@ -36,21 +37,25 @@ struct DemoDesc {
 
 #define DEF_DEMO(TYPE, NAME) \
     inline static DemoDesc s_##TYPE(NAME, []() { return new TYPE(); });
-
+#if _WIN32
 using namespace concurrencpp;
 
 template <typename T>
 using Result = concurrencpp::result<T>;
-
-class DemoApp : public Application, public concurrencpp::runtime {
+#endif
+class DemoApp : public Application
+#if _WIN32
+        , public concurrencpp::runtime
+#endif
+                {
 public:
     DemoApp(int argc = 0, char** argv = nullptr);
 
     void setDemo(int index);
     void setDemo(Demo* demo);
-
+#if _WIN32
     const std::shared_ptr<concurrencpp::manual_executor>& getMainExecutor() const { return mMainExecutor; }
-
+#endif
     static DemoApp* get() { return (DemoApp*)msInstance; }
 protected:
     void onStart() override;
@@ -59,8 +64,9 @@ protected:
     void onUpdate(double delta) override;
     void onPreDraw(GraphicsApi& cmd) override;
     void onDraw(GraphicsApi& cmd) override;
-
+#if _WIN32
     std::shared_ptr<concurrencpp::manual_executor> mMainExecutor;
+#endif
     int mActiveDemoIndex = -1;
     Ref<Demo> mActiveDemo;
 };

@@ -18,6 +18,7 @@
 #include <deque>
 #include <exception>
 #include <future>
+#include "VulkanObjects.h"
 
 namespace mygfx {
 
@@ -127,5 +128,13 @@ protected:
 };
 
 VulkanDevice& gfx();
+
+template <class T>
+void VkHandleBase<T>::setResourceName(const char* name)
+{
+    if (name) {
+        gfx().setResourceName(VkObject2Type<T>::objectType, (uint32_t)handle_, name);
+    }
+}
 
 } // namespace mygfx

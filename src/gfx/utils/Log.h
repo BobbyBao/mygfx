@@ -25,10 +25,8 @@ public:
     template <typename... Args>
     static void logMessageF(LogLevel level, std::string_view fmt, Args&&... args)
     {
-#ifdef _MSVC_
         std::string str = std::vformat(fmt, std::make_format_args(args...));
         write(level, str.c_str());
-#endif
     }
 
     static void logMessageF(LogLevel level, std::string_view str)

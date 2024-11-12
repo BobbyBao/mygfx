@@ -17,7 +17,7 @@ public:
     {
     }
     
-    _NODISCARD char const* what() const override
+    char const* what() const noexcept override
     {
         return mMessage.c_str();
     }
@@ -197,11 +197,13 @@ private:
 
         if (isFloat) {
             double dv;
-            std::from_chars(n.data(), n.data() + n.length(), dv);
+            char* end;
+            dv = std::strtod(n.data(), &end);
             return dv;
         } else {
-            int iv;
-            std::from_chars(n.data(), n.data() + n.length(), iv);
+            int64_t iv;
+            char* end;
+            iv = std::strtoll(n.data(), &end, 0);
             return iv;
         }
     }

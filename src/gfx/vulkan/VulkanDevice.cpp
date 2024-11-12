@@ -56,10 +56,10 @@ bool VulkanDevice::create(const Settings& settings)
     mTextureSet = new DescriptorTable(DescriptorType::COMBINED_IMAGE_SAMPLER | DescriptorType::STORAGE_IMAGE);
     // mImageSet = new DescriptorTable(DescriptorType::StorageImage);
     // mBufferSet = new DescriptorTable(DescriptorType::StorageBuffer);
-
+    LOG_DEBUG("QueueFamilyIndex: {}, {}, {}", queueFamilyIndices.graphics, queueFamilyIndices.compute, queueFamilyIndices.transfer);
     mCommandQueues[0].init(CommandQueueType::Graphics, queueFamilyIndices.graphics, 0, 3, "");
     mCommandQueues[1].init(CommandQueueType::Compute, queueFamilyIndices.compute, 0, 3, "");
-    mCommandQueues[2].init(CommandQueueType::Copy, queueFamilyIndices.transfer, copyQueueFamilyProperties().queueCount > 0 ? 1 : 0, 3, "");
+    mCommandQueues[2].init(CommandQueueType::Copy, queueFamilyIndices.transfer, copyQueueFamilyProperties().queueCount > 1 ? 1 : 0, 3, "");
 
     SamplerHandle::init();
 

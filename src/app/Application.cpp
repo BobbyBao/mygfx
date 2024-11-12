@@ -161,7 +161,7 @@ void Application::onStart()
         .width = mWidth,
         .height = mHeight,
         .windowInstance = mHInstance,
-        .window = window,
+        .window = mWindow,
         .surface = surface,
     };
 

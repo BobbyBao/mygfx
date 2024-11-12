@@ -2,6 +2,7 @@
 #include "VulkanDebug.h"
 #include "VulkanTools.h"
 #include "utils/Log.h"
+#include <vulkan/vulkan_beta.h>
 
 namespace mygfx {
 
@@ -36,6 +37,15 @@ VulkanDeviceHelper::VulkanDeviceHelper()
     enabledDeviceExtensions.push_back(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
 
     enabledDeviceExtensions.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+
+#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+    // SRS - When running on iOS/macOS with MoltenVK and VK_KHR_portability_subset is defined and supported by the device, enable the extension
+    enabledDeviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
+
+    setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", true);
+
+#endif
+
 }
 
 bool VulkanDeviceHelper::create(const char* name, bool validation)
@@ -504,18 +514,10 @@ VkResult VulkanDeviceHelper::createLogicalDevice(VkPhysicalDeviceFeatures enable
         deviceCreateInfo.pNext = &physicalDeviceFeatures2;
     }
 
-#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK)) && defined(VK_KHR_portability_subset)
-    // SRS - When running on iOS/macOS with MoltenVK and VK_KHR_portability_subset is defined and supported by the device, enable the extension
-    if (extensionSupported(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME)) {
-        deviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
-    }
-#endif
-
     if (deviceExtensions.size() > 0) {
+        LOG_DEBUG("Enabled device extensions:");
         for (const char* enabledExtension : deviceExtensions) {
-            if (!extensionSupported(enabledExtension)) {
-                std::cerr << "Enabled device extension \"" << enabledExtension << "\" is not present at device level\n";
-            }
+            LOG_DEBUG(enabledExtension);
         }
 
         deviceCreateInfo.enabledExtensionCount = (uint32_t)deviceExtensions.size();

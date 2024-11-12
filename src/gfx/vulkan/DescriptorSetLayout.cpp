@@ -154,7 +154,7 @@ void DescriptorSetLayout::create() const
         mDescriptorResourceCounts.fill(0);
     }
 
-    vkCreateDescriptorSetLayout(gfx().device, &layoutInfo, nullptr, &handle_);
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gfx().device, &layoutInfo, nullptr, &handle_));
 
     for (auto& binding : dsLayoutbindings_) {
         mDescriptorResourceCounts[(int)binding.descriptorType] += binding.descriptorCount;

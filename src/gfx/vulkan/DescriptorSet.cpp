@@ -89,7 +89,7 @@ void DescriptorSet::create()
         allocInfo.pNext = &variableDescriptorCountAllocInfo;
     }
 
-    auto res = vkAllocateDescriptorSets(gfx().device, &allocInfo, &handle_);
+    VK_CHECK_RESULT(vkAllocateDescriptorSets(gfx().device, &allocInfo, &handle_));
 }
 
 void DescriptorSet::destroy()
@@ -426,7 +426,7 @@ void DescriptorSet::bind(uint32_t dstBinding, uint32_t size)
 
     if (layoutBinding->descriptorType != DescriptorType::UNIFORM_BUFFER_DYNAMIC
         && layoutBinding->descriptorType != DescriptorType::STORAGE_BUFFER_DYNAMIC) {
-        LOG_ERROR("DescriptorType must be DescriptorType::UNIFORM_BUFFER_DYNAMIC or DescriptorType::STORAGE_BUFFER_DYNAMIC.", layoutBinding->descriptorType);
+        LOG_ERROR("DescriptorType must be DescriptorType::UNIFORM_BUFFER_DYNAMIC or DescriptorType::STORAGE_BUFFER_DYNAMIC.", (int)layoutBinding->descriptorType);
         return;
     }
 

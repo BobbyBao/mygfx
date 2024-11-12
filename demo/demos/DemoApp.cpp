@@ -19,7 +19,9 @@ DemoDesc::DemoDesc(const char* name, const std::function<Demo*()>& creator)
 DemoApp::DemoApp(int argc, char** argv)
     : Application(argc, argv)
 {
+#if _WIN32
     mMainExecutor = make_manual_executor();
+#endif
 }
 
 void DemoApp::onStart()
@@ -96,8 +98,9 @@ void DemoApp::onGUI()
 
 void DemoApp::onUpdate(double delta)
 {
+#if _WIN32
     mMainExecutor->loop_once();
-
+#endif
     if (mActiveDemo) {
         mActiveDemo->update(delta);
     }

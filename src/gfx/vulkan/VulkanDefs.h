@@ -11,7 +11,7 @@
 #define VK_1_2 2
 #define VK_1_3 3
 
-#define VK_VERSION 2
+#define VK_VERSION 3
 
 #define HAS_DYNAMIC_RENDERING
 

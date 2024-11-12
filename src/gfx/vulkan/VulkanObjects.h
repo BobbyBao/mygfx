@@ -35,15 +35,7 @@ public:
         return handle_ == VK_NULL_HANDLE;
     }
 
-    void setResourceName(const char* name)
-    {
-        extern class VulkanDevice& gfx();
-
-        if (name) {
-            gfx().setResourceName(VkObject2Type<T>::objectType, (uint32_t)handle_, name);
-        }
-    }
-
+    void setResourceName(const char* name);
 protected:
     T handle_ = nullptr;
 };
