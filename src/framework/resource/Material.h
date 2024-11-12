@@ -18,10 +18,10 @@ using ShaderParameter = std::variant<int, float, vec2, vec3, vec4, Ref<Texture>>
 class Material : public Resource {
 public:
     Material();
-    Material(ShaderEffect* shader, const String& materialUniformName);
+    Material(ShaderEffect* shader);
     ~Material();
 
-    void setShader(ShaderEffect* shader, const String& materialUniformName);
+    void setShader(ShaderEffect* shader);
 
     void setShaderParameter(const String& name, int v);
     void setShaderParameter(const String& name, float v);
@@ -47,7 +47,6 @@ protected:
     void update();
     Ref<ShaderEffect> mShaderFX;
     PipelineState mPipelineState;
-    String mMaterialUniformName;
     Ref<ShaderResourceInfo> mShaderResourceInfo;
     ByteArray mMaterialData;
     HashMap<String, ShaderParameter> mShaderParameters;

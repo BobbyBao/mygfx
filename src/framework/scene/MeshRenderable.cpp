@@ -50,7 +50,7 @@ Ref<Node> MeshRenderable::createCube(float size)
     auto shader = ShaderEffect::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
     shader->getMainPass()->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT });
 
-    auto material = new Material(shader, "MaterialUniforms");
+    auto material = new Material(shader);
     mesh->setMaterial(material);
     material->setShaderParameter("u_BaseColorFactor", vec4 { 1.0f, 1.0f, 1.0f, 1.0f });
     material->setShaderParameter("u_MetallicFactor", 0.0f);

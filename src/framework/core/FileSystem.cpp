@@ -7,7 +7,7 @@ static Path sBasePath;
 
 void FileSystem::setBasePath(const Path& path)
 {
-    sBasePath = path;
+    sBasePath = absolute(path);
 }
 
 const Path& FileSystem::getBasePath()

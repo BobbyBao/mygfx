@@ -17,9 +17,9 @@ ShaderEffect::~ShaderEffect()
 
 Shader* ShaderEffect::getShader(const String& name)
 {
-    for (auto& shader : mShaders) {
-        if (shader->getName() == name) {
-            return shader;
+    for (auto& shader : mShaderPasses) {
+        if (shader.second->getName() == name) {
+            return shader.second;
         }
     }
     return nullptr;
@@ -27,7 +27,13 @@ Shader* ShaderEffect::getShader(const String& name)
 
 Shader* ShaderEffect::getShader(const PassName& pass)
 {
-    return mShaderPasses[pass.index];
+    for (auto& shader : mShaderPasses) {
+        if (shader.first == pass) {
+            return shader.second;
+        }
+    }
+
+    return nullptr;
 }
 
 void ShaderEffect::add(const String& vsCode, const String& fsCode, const DefineList* marcos)
@@ -42,8 +48,7 @@ void ShaderEffect::add(const String& csCode, const DefineList* marcos)
 
 void ShaderEffect::add(Shader* shader)
 {
-    mShaders.emplace_back(shader);
-    mShaderPasses[shader->passID.index] = shader;
+    mShaderPasses.emplace_back(shader->getName(), shader);
 }
 
 static bool loadShader(Shader* shader, const ConfigValue& shaderNode)
@@ -136,7 +141,7 @@ static bool loadShader(Shader* shader, const ConfigValue& shaderNode)
         else
             LOG_ERROR("Illegal BlendMode :{}", str);
     }
-    
+
     bool depthTest = true;
     bool depthWrite = true;
     if (auto node = shaderNode.find("DepthTest")) {
@@ -157,6 +162,8 @@ static bool loadShader(Shader* shader, const ConfigValue& shaderNode)
 
     if (auto stencilState = shaderNode.find("StencilState")) {
     }
+
+    shader->init();
     return true;
 }
 
@@ -166,7 +173,6 @@ static Ref<Shader> loadShader(const ConfigValue& shaderNode)
     if (!loadShader(shader, shaderNode)) {
         return nullptr;
     }
-
     shader->setName(shaderNode.name);
     return shader;
 }

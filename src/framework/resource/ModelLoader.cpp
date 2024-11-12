@@ -620,7 +620,7 @@ Material* ModelLoader::getMaterial(size_t index, bool skined, const DefineList* 
 
     auto defaultShader = mShader ? mShader : ShaderEffect::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &defineList);
 
-    Material* material = new Material(defaultShader, "MaterialUniforms");
+    Material* material = new Material(defaultShader);
 
     if (mat.has_pbr_metallic_roughness) {
         auto& baseColorFactor = mat.pbr_metallic_roughness.base_color_factor;
@@ -699,7 +699,7 @@ Ref<Material> ModelLoader::getDefaultMaterial(const DefineList* pMacros)
     auto defaultShader = ShaderEffect::fromFile("shaders/primitive.vert", "shaders/pbr.frag", &macros);
     defaultShader->getMainPass()->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END, Format::R32G32_SFLOAT, Format::END, Format::R32G32B32_SFLOAT });
 
-    Ref<Material> material(new Material(defaultShader, "MaterialUniforms"));
+    Ref<Material> material(new Material(defaultShader));
     material->setShaderParameter("u_BaseColorFactor", vec4 { 1.0f, 1.0f, 1.0f, 1.0f });
     material->setShaderParameter("u_MetallicFactor", 0.0f);
     material->setShaderParameter("u_RoughnessFactor", 0.5f);

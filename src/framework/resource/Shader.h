@@ -13,10 +13,13 @@ class Shader : public NamedObject {
 public:
     Shader();
     ~Shader();
+    
 
     Shader(const String& vsCode, const String& fsCode, const DefineList* marcos = nullptr);
     Shader(const String& csCode, const DefineList* marcos = nullptr);
     
+    void init();
+
     void setName(const std::string_view& name) override;
 
     void loadShader(const String& vs, const String& fs, const DefineList* marcos = nullptr);
@@ -45,7 +48,6 @@ public:
     static Ref<Shader> fromFile(const String& vs, const String& fs, const DefineList* marcos = nullptr);
 
 protected:
-    void init();
     std::vector<Ref<HwShaderModule>> mShaderModules;
     Ref<HwVertexInput> mVertexInput;
     Ref<HwProgram> mProgram;

@@ -55,7 +55,11 @@ void Shader::setName(const std::string_view& name)
 
 void Shader::loadShader(const String& vs, const String& fs, const DefineList* macros)
 {
-    Path vsPath(vs);
+    Path vsPath;
+    if (!ShaderCompiler::getShaderFilePath(vs, vsPath)) {
+        return;
+    }
+
     auto vsSource = FileSystem::readAllText(vsPath);
     if (vsSource.empty()) {
         return;
@@ -63,7 +67,11 @@ void Shader::loadShader(const String& vs, const String& fs, const DefineList* ma
 
     addShader(ShaderStage::VERTEX, vs, vsSource, ShaderSourceType::GLSL, "", "", macros);
 
-    Path fsPath(fs);
+    Path fsPath;
+    if (!ShaderCompiler::getShaderFilePath(fs, fsPath)) {
+        return;
+    }
+
     auto psSource = FileSystem::readAllText(fsPath);
     if (psSource.empty()) {
         return;

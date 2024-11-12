@@ -12,24 +12,26 @@ namespace {
     std::unordered_map<String, String> sIncludeFiles;
     Vector<Path> sShaderPath;
 
-    bool getIncludeFilePath(const String& fileName, Path& outPath)
-    {
-        for (auto& path : sShaderPath) {
-            Path p = path / fileName;
-            if (std::filesystem::exists(p)) {
-                outPath = p;
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
 
 void ShaderCompiler::init()
 {
     sShaderPath.push_back(FileSystem::convertPath("shaders"));
     sShaderPath.push_back(FileSystem::convertPath("shaders/glsl"));
+    sShaderPath.push_back(FileSystem::getBasePath());
+}
+
+bool ShaderCompiler::getShaderFilePath(const String& fileName, Path& outPath)
+{
+    for (auto& path : sShaderPath) {
+        Path p = path / fileName;
+        if (std::filesystem::exists(p)) {
+            outPath = p;
+            return true;
+        }
+    }
+
+    return false;
 }
 
 class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface {
@@ -53,7 +55,7 @@ public:
         }
 
         Path fullPath;
-        if (getIncludeFilePath(fileName, fullPath)) {
+        if (ShaderCompiler::getShaderFilePath(fileName, fullPath)) {
             String content = FileSystem::readAllText(fullPath);
             ret->content = content.data();
             ret->content_length = content.length();
