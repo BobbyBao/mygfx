@@ -16,7 +16,7 @@
 #define HAS_DYNAMIC_RENDERING
 
 #if defined(VK_EXT_shader_object) && defined(HAS_DYNAMIC_RENDERING)
-#define HAS_SHADER_OBJECT_EXT 1
+#define HAS_SHADER_OBJECT_EXT 0
 #else
 #define HAS_SHADER_OBJECT_EXT 0
 #endif

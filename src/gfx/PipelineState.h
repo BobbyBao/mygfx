@@ -120,10 +120,15 @@ class HwProgram;
 
 struct PipelineState {
     HwProgram* program { nullptr };
-    PrimitiveState primitiveState {};
-    DepthState depthState {};
-    RasterState rasterState {};
-    ColorBlendState colorBlendState {};
+    union {
+        struct {
+            PrimitiveState primitiveState {};
+            DepthState depthState {};
+            RasterState rasterState {};
+            ColorBlendState colorBlendState {};
+        };
+        uint64_t dynamicStateHash;
+    };
     AdvancedState* advanceState { nullptr };
 };
 

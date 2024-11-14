@@ -13,11 +13,6 @@ IF(UNIX AND NOT APPLE)
 	set(LINUX TRUE)
 ENDIF()
 
-include_directories("$ENV{VULKAN_SDK}/Include")
-link_directories("$ENV{VULKAN_SDK}/Lib")
-
-message(STATUS $ENV{VULKAN_SDK})
-
 IF(WIN32)
 	IF (NOT Vulkan_FOUND)
 		find_library(Vulkan_LIBRARY NAMES vulkan-1 vulkan PATHS ${CMAKE_SOURCE_DIR}/libs/vulkan)
@@ -74,16 +69,33 @@ ELSEIF(LINUX)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_XCB_KHR")
 	ENDIF(USE_D2D_WSI)
 ELSEIF(APPLE)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_MACOS_MVK -DVK_EXAMPLE_XCODE_GENERATED")
-
-	find_path(Vulkan_INCLUDE_DIR
-			NAMES vulkan/vulkan.h
-			PATHS
-			"$ENV{VULKAN_SDK}/include")
-	find_library(Vulkan_LIBRARY
-			NAMES vulkan
-			PATHS
-			"$ENV{VULKAN_SDK}/lib")
+	IF (CMAKE_GENERATOR MATCHES "Xcode")
+		# Suppress regeneration for Xcode since environment variables will be lost if not set in Xcode locations/custom paths
+		set(CMAKE_SUPPRESS_REGENERATION ON)
+		set(CMAKE_XCODE_GENERATE_SCHEME ON)
+		IF (Vulkan_FOUND)
+			# If the Vulkan loader was found and its environment variables are defined, make them available within Xcode schemes
+			IF (DEFINED ENV{VK_ADD_LAYER_PATH})
+				set(CMAKE_XCODE_SCHEME_ENVIRONMENT "${CMAKE_XCODE_SCHEME_ENVIRONMENT};VK_ADD_LAYER_PATH=$ENV{VK_ADD_LAYER_PATH}")
+			ENDIF()
+			IF (DEFINED ENV{VK_ICD_FILENAMES})
+				set(CMAKE_XCODE_SCHEME_ENVIRONMENT "${CMAKE_XCODE_SCHEME_ENVIRONMENT};VK_ICD_FILENAMES=$ENV{VK_ICD_FILENAMES}")
+			ENDIF()
+			IF (DEFINED ENV{VK_DRIVER_FILES})
+				set(CMAKE_XCODE_SCHEME_ENVIRONMENT "${CMAKE_XCODE_SCHEME_ENVIRONMENT};VK_DRIVER_FILES=$ENV{VK_DRIVER_FILES}")
+			ENDIF()
+		ENDIF()
+	ENDIF()
+	IF (NOT Vulkan_FOUND)
+		# If the Vulkan loader was not found, then look for libMoltenVK.dylib in the Vulkan SDK and legacy MoltenVK locations
+		set(CMAKE_FIND_FRAMEWORK NEVER)
+		find_library(Vulkan_LIBRARY NAMES MoltenVK HINTS "$ENV{VULKAN_SDK}/lib" "$ENV{VULKAN_SDK}/dylib/macOS" REQUIRED)
+		IF (Vulkan_LIBRARY)
+			set(Vulkan_FOUND ON)
+			MESSAGE(STATUS "Using MoltenVK Vulkan Portability library")
+		ENDIF()
+	ENDIF()
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_METAL_EXT -DVK_EXAMPLE_XCODE_GENERATED")
 
 ENDIF(WIN32)
 
@@ -91,6 +103,11 @@ ENDIF(WIN32)
 IF (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
 ENDIF()
+
+#include_directories("$ENV{VULKAN_SDK}/Include")
+#link_directories("$ENV{VULKAN_SDK}/Lib")
+
+message(STATUS $ENV{VULKAN_SDK})
 
 IF(WIN32)
 	link_libraries(shaderc_combined.lib spirv-cross-core.lib spirv-cross-glsl.lib)

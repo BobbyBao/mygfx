@@ -59,7 +59,7 @@ PoolInfo& DescriptorPoolManager::createNewPool(const DescriptorResourceCounts& c
     std::vector<VkDescriptorPoolSize> sizes; //[DESCRIPTOR_TYPE_COUNT];
     for (int i = 0; i < DESCRIPTOR_TYPE_COUNT; i++) {
         if (counts[i] > 0) {
-            sizes.push_back({ descriptorTypes[i], counts[i] });
+            sizes.push_back({ descriptorTypes[i], counts[i] * totalSets });
         }
     }
 

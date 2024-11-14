@@ -11,6 +11,7 @@ namespace mygfx {
 
 static VkPhysicalDeviceBufferDeviceAddressFeatures BufferDeviceAddressFeatures = {};
 static VkPhysicalDeviceDescriptorIndexingFeatures DescriptorIndexingFeatures = {};
+static VkPhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties = {};
 
 VulkanDeviceHelper::VulkanDeviceHelper()
 {
@@ -38,11 +39,11 @@ VulkanDeviceHelper::VulkanDeviceHelper()
 
     enabledDeviceExtensions.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
 
-#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT))
     // SRS - When running on iOS/macOS with MoltenVK and VK_KHR_portability_subset is defined and supported by the device, enable the extension
     enabledDeviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
 
-    setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", true);
+    setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", 1);
 
 #endif
 
@@ -153,13 +154,15 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
     tryAddInstanceExtension(VK_MVK_IOS_SURFACE_EXTENSION_NAME);
 #elif defined(VK_USE_PLATFORM_MACOS_MVK)
     tryAddInstanceExtension(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
+    tryAddInstanceExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
 #elif defined(VK_USE_PLATFORM_HEADLESS_EXT)
     tryAddInstanceExtension(VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME);
 #elif defined(VK_USE_PLATFORM_SCREEN_QNX)
     tryAddInstanceExtension(VK_QNX_SCREEN_SURFACE_EXTENSION_NAME);
 #endif
 
-#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT))
     // SRS - When running on iOS/macOS with MoltenVK, enable VK_KHR_get_physical_device_properties2 if not already enabled by the example (required by VK_KHR_portability_subset)
     tryAddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);    
 #endif
@@ -184,7 +187,7 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
         instanceCreateInfo.pNext = &debugUtilsMessengerCI;
     }
 
-#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK)) && defined(VK_KHR_portability_enumeration)
+#if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT)) && defined(VK_KHR_portability_enumeration)
     // SRS - When running on iOS/macOS with MoltenVK and VK_KHR_portability_enumeration is defined and supported by the instance, enable the extension and the flag
     if (tryAddInstanceExtension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME)) {
         instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
@@ -295,12 +298,43 @@ bool VulkanDeviceHelper::selectPhysicalDevice()
 void VulkanDeviceHelper::getEnabledFeatures()
 {
 #if HAS_SHADER_OBJECT_EXT
+    enabledShaderObjectFeaturesEXT.shaderObject = true;
     featuresAppender.AppendNext(&enabledShaderObjectFeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_OBJECT_FEATURES_EXT);
 #endif
     featuresAppender.AppendNext(&enabledDynamicRenderingFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR);
 
     if (tryAddExtension(VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME)) {
+
+        DescriptorIndexingFeatures.shaderInputAttachmentArrayDynamicIndexing = true;
+        DescriptorIndexingFeatures.shaderUniformTexelBufferArrayDynamicIndexing = true;
+        DescriptorIndexingFeatures.shaderStorageTexelBufferArrayDynamicIndexing = true;
+        DescriptorIndexingFeatures.shaderUniformBufferArrayNonUniformIndexing = true;
+        DescriptorIndexingFeatures.shaderSampledImageArrayNonUniformIndexing = true;
+        DescriptorIndexingFeatures.shaderStorageBufferArrayNonUniformIndexing = true;
+        DescriptorIndexingFeatures.shaderStorageImageArrayNonUniformIndexing = true;
+
+        DescriptorIndexingFeatures.shaderInputAttachmentArrayNonUniformIndexing = true;
+        DescriptorIndexingFeatures.shaderUniformTexelBufferArrayNonUniformIndexing = true;
+        DescriptorIndexingFeatures.shaderStorageTexelBufferArrayNonUniformIndexing = true;
+        DescriptorIndexingFeatures.descriptorBindingUniformBufferUpdateAfterBind = true;
+
+        DescriptorIndexingFeatures.descriptorBindingSampledImageUpdateAfterBind = true;
+        DescriptorIndexingFeatures.descriptorBindingStorageImageUpdateAfterBind = true;
+        DescriptorIndexingFeatures.descriptorBindingStorageBufferUpdateAfterBind = true;
+
+        DescriptorIndexingFeatures.descriptorBindingUniformTexelBufferUpdateAfterBind = true;
+
+        DescriptorIndexingFeatures.descriptorBindingStorageTexelBufferUpdateAfterBind = true;
+        DescriptorIndexingFeatures.descriptorBindingUpdateUnusedWhilePending = true;
+        DescriptorIndexingFeatures.descriptorBindingPartiallyBound = true;
+        DescriptorIndexingFeatures.descriptorBindingVariableDescriptorCount = true;
         featuresAppender.AppendNext(&DescriptorIndexingFeatures, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES);
+
+        VkPhysicalDeviceProperties2 device_properties;
+        descriptorIndexingProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT;
+        device_properties.sType              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+        device_properties.pNext              = &descriptorIndexingProperties;
+        vkGetPhysicalDeviceProperties2KHR(physicalDevice, &device_properties);
     }
 
     // VK_KHR_timeline_semaphore was promoted to 1.2, so no need to query the extension
@@ -334,6 +368,7 @@ void VulkanDeviceHelper::getEnabledFeatures()
         static VkPhysicalDeviceExtendedDynamicState2FeaturesEXT features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT,
             .extendedDynamicState2 = VK_TRUE,
+            .extendedDynamicState2LogicOp = VK_TRUE,
             .extendedDynamicState2PatchControlPoints = VK_TRUE
         };
         featuresAppender.AppendNext(&features);
@@ -342,8 +377,36 @@ void VulkanDeviceHelper::getEnabledFeatures()
     if (tryAddExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME)) {
         static VkPhysicalDeviceExtendedDynamicState3FeaturesEXT features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
-            .extendedDynamicState3DepthClampEnable = VK_TRUE,
-            .extendedDynamicState3PolygonMode = VK_TRUE
+            .extendedDynamicState3DepthClampEnable= VK_TRUE,
+            .extendedDynamicState3PolygonMode= VK_TRUE,
+            .extendedDynamicState3RasterizationSamples= VK_TRUE,
+            .extendedDynamicState3SampleMask= VK_TRUE,
+            .extendedDynamicState3AlphaToCoverageEnable= VK_TRUE,
+            .extendedDynamicState3AlphaToOneEnable= VK_TRUE,
+            .extendedDynamicState3LogicOpEnable= VK_TRUE,
+            .extendedDynamicState3ColorBlendEnable= VK_TRUE,
+            .extendedDynamicState3ColorBlendEquation= VK_TRUE,
+            .extendedDynamicState3ColorWriteMask= VK_TRUE,
+            .extendedDynamicState3RasterizationStream= VK_TRUE,
+            .extendedDynamicState3ConservativeRasterizationMode= VK_TRUE,
+            .extendedDynamicState3ExtraPrimitiveOverestimationSize= VK_TRUE,
+            .extendedDynamicState3DepthClipEnable= VK_TRUE,
+            .extendedDynamicState3SampleLocationsEnable= VK_TRUE,
+            .extendedDynamicState3ColorBlendAdvanced= VK_TRUE,
+            .extendedDynamicState3ProvokingVertexMode= VK_TRUE,
+            .extendedDynamicState3LineRasterizationMode= VK_TRUE,
+            .extendedDynamicState3LineStippleEnable= VK_TRUE,
+            .extendedDynamicState3DepthClipNegativeOneToOne= VK_TRUE,
+            .extendedDynamicState3ViewportWScalingEnable= VK_TRUE,
+            .extendedDynamicState3ViewportSwizzle= VK_TRUE,
+            .extendedDynamicState3CoverageToColorEnable= VK_TRUE,
+            .extendedDynamicState3CoverageToColorLocation= VK_TRUE,
+            .extendedDynamicState3CoverageModulationMode= VK_TRUE,
+            .extendedDynamicState3CoverageModulationTableEnable= VK_TRUE,
+            .extendedDynamicState3CoverageModulationTable= VK_TRUE,
+            .extendedDynamicState3CoverageReductionMode= VK_TRUE,
+            .extendedDynamicState3RepresentativeFragmentTestEnable= VK_TRUE,
+            .extendedDynamicState3ShadingRateImageEnable= VK_TRUE,
         };
         featuresAppender.AppendNext(&features);
     }
