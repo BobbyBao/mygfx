@@ -216,13 +216,18 @@ void CommandBuffer::resetState() const VULKAN_NOEXCEPT
     vkCmdSetDepthCompareOpEXT(cmd, INVERTED_DEPTH ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL);
     vkCmdSetPrimitiveTopologyEXT(cmd, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     vkCmdSetRasterizerDiscardEnableEXT(cmd, VK_FALSE);
+
+#if HAS_DYNAMIC_STATE3
     vkCmdSetPolygonModeEXT(cmd, VK_POLYGON_MODE_FILL);
     vkCmdSetRasterizationSamplesEXT(cmd, VK_SAMPLE_COUNT_1_BIT);
     vkCmdSetAlphaToCoverageEnableEXT(cmd, VK_FALSE);
+#endif
+
     vkCmdSetDepthBiasEnableEXT(cmd, VK_FALSE);
     vkCmdSetStencilTestEnableEXT(cmd, VK_FALSE);
     vkCmdSetPrimitiveRestartEnableEXT(cmd, VK_FALSE);
 
+#if HAS_DYNAMIC_STATE3
     const uint32_t sampleMask = 0xFF;
     vkCmdSetSampleMaskEXT(cmd, VK_SAMPLE_COUNT_1_BIT, &sampleMask);
 
@@ -232,7 +237,7 @@ void CommandBuffer::resetState() const VULKAN_NOEXCEPT
     vkCmdSetColorBlendEnableEXT(cmd, 0, 1, &colorBlendEnables);
     vkCmdSetColorBlendEquationEXT(cmd, 0, 1, &colorBlendEquation);
     vkCmdSetColorWriteMaskEXT(cmd, 0, 1, &colorBlendComponentFlags);
-
+#endif
     mProgram = nullptr;
     mVertexInput = nullptr;
     mPrimitiveState = {};
@@ -309,17 +314,21 @@ void CommandBuffer::bindRasterState(const RasterState* rasterState) const VULKAN
 
     mRasterState = *rasterState;
 
-    vkCmdSetPolygonModeEXT(cmd, (VkPolygonMode)rasterState->polygonMode);
     vkCmdSetCullModeEXT(cmd, (VkCullModeFlags)rasterState->cullMode);
     vkCmdSetFrontFaceEXT(cmd, (VkFrontFace)rasterState->frontFace);
     vkCmdSetRasterizerDiscardEnableEXT(cmd, rasterState->rasterizerDiscardEnable);
+    vkCmdSetDepthBiasEnableEXT(cmd, rasterState->depthBiasEnable);
+
+#if HAS_DYNAMIC_STATE3
+    vkCmdSetPolygonModeEXT(cmd, (VkPolygonMode)rasterState->polygonMode);
     vkCmdSetRasterizationSamplesEXT(cmd, (VkSampleCountFlagBits)rasterState->rasterizationSamples);
 
     const uint32_t sampleMask = 0xFF;
     vkCmdSetSampleMaskEXT(cmd, VK_SAMPLE_COUNT_1_BIT, &sampleMask);
 
     vkCmdSetAlphaToCoverageEnableEXT(cmd, rasterState->alphaToCoverageEnable);
-    vkCmdSetDepthBiasEnableEXT(cmd, rasterState->depthBiasEnable);
+#endif
+
 }
 
 void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) const VULKAN_NOEXCEPT
@@ -329,7 +338,7 @@ void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) 
     }
 
     mColorBlendState = *colorBlendState;
-
+#if HAS_DYNAMIC_STATE3
     const VkBool32 colorBlendEnables = colorBlendState->colorBlendEnable;
     const VkColorComponentFlags colorBlendComponentFlags = (VkColorComponentFlags)colorBlendState->colorWrite;
     const VkColorBlendEquationEXT colorBlendEquation {
@@ -344,6 +353,7 @@ void CommandBuffer::bindColorBlendState(const ColorBlendState* colorBlendState) 
     vkCmdSetColorBlendEnableEXT(cmd, 0, 1, &colorBlendEnables);
     vkCmdSetColorBlendEquationEXT(cmd, 0, 1, &colorBlendEquation);
     vkCmdSetColorWriteMaskEXT(cmd, 0, 1, &colorBlendComponentFlags);
+#endif
 }
 
 VkCompareOp convertComparisonFunc(const CompareOp func)
@@ -401,8 +411,6 @@ void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const 
     setPrimitiveTopology(pipelineState->primitiveState.primitiveTopology);
     setPrimitiveRestartEnable(pipelineState->primitiveState.restartEnable);
 
-    bindShaderProgram(pipelineState->program);
-
     if (pipelineState->program->vertexInput) {
         setVertexInput(pipelineState->program->vertexInput);
     }
@@ -412,7 +420,7 @@ void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const 
     bindColorBlendState(&pipelineState->colorBlendState);
 
     if (pipelineState->advanceState) {
-
+#if HAS_DYNAMIC_STATE3
         bindStencilState(&pipelineState->advanceState->stencilState);
         for (uint32_t i = 0; i < pipelineState->advanceState->colorBlendCount; i++) {
             auto& colorBlend = pipelineState->advanceState->colorBlendState[i];
@@ -426,10 +434,18 @@ void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const 
 
             vkCmdSetColorBlendAdvancedEXT(cmd, i, 1, &colorBlendAdvanced);
         }
+#endif
     }
+
+    bindShaderProgram(pipelineState->program);
+
+#if !HAS_SHADER_OBJECT_EXT
+    bindPipeline((VulkanProgram*)pipelineState->program, pipelineState);
+#endif
+
 }
 
-void CommandBuffer::bindPipeline(VulkanProgram* vkProgram) const VULKAN_NOEXCEPT
+void CommandBuffer::bindPipeline(VulkanProgram* vkProgram, const PipelineState* pipelineState) const VULKAN_NOEXCEPT
 {
 #if !HAS_SHADER_OBJECT_EXT
     extern VulkanDevice& gfx();
@@ -437,7 +453,7 @@ void CommandBuffer::bindPipeline(VulkanProgram* vkProgram) const VULKAN_NOEXCEPT
         auto pipeline = vkProgram->getComputePipeline();
         vkCmdBindPipeline(cmd, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);
     } else {
-        auto pipeline = vkProgram->getGraphicsPipeline(gfx().mAttachmentFormats);
+        auto pipeline = vkProgram->getGraphicsPipeline(gfx().mAttachmentFormats, pipelineState);
         vkCmdBindPipeline(cmd, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     }
 #endif

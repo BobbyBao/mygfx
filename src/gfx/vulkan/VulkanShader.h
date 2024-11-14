@@ -51,7 +51,7 @@ public:
 #if HAS_SHADER_OBJECT_EXT
     VkShaderEXT shaders[MAX_SHADER_STAGE] {};
 #else
-    VkPipeline getGraphicsPipeline(const AttachmentFormats& attachmentFormats);
+    VkPipeline getGraphicsPipeline(const AttachmentFormats& attachmentFormats, const struct PipelineState* pipelineState);
     VkPipeline getComputePipeline();
     VkPipeline pipeline = VK_NULL_HANDLE;
     size_t attachmentFormatsHash = 0;

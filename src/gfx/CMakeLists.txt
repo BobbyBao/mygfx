@@ -110,7 +110,7 @@ ENDIF()
 message(STATUS $ENV{VULKAN_SDK})
 
 IF(WIN32)
-	link_libraries(shaderc_combined.lib spirv-cross-core.lib spirv-cross-glsl.lib)
+	link_libraries(spirv-cross-core.lib spirv-cross-glsl.lib)
 ELSE(WIN32)
 	link_libraries(libspirv-cross-core.a libspirv-cross-glsl.a )
 ENDIF(WIN32)

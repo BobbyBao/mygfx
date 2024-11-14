@@ -314,9 +314,26 @@ bool VulkanProgram::createShaders()
 
 #if !HAS_SHADER_OBJECT_EXT
 
-thread_local std::unordered_map<VulkanProgram*, std::pair<VkPipeline, size_t>> sPipelineCache;
+class PipelineCahce : public std::unordered_map<VulkanProgram*, std::pair<VkPipeline, size_t>> {
+public:
+    inline static std::unordered_set<PipelineCahce*> sPipelineCaches;
+    inline static std::mutex sLock;
+    PipelineCahce() {
+        std::unique_lock locker(sLock);
+        sPipelineCaches.insert(this);
+    }
 
-VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmentFormats)
+    ~PipelineCahce()
+    {
+        std::unique_lock locker(sLock);
+        sPipelineCaches.erase(this);
+    }
+
+};
+
+thread_local PipelineCahce sPipelineCache;
+
+VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmentFormats, const PipelineState* pipelineState)
 {
     if (ThreadUtils::isThisThread(gfx().renderThreadID)) {
         if (attachmentFormats.getHash() == attachmentFormatsHash) {
@@ -348,6 +365,31 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     }
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = initializers::pipelineVertexInputStateCreateInfo();
+#if !HAS_DYNAMIC_STATE3
+    VulkanVertexInput* vertexInput = (VulkanVertexInput*)pipelineState->program->vertexInput;
+    VkVertexInputAttributeDescription vertexInputAttributeDescription[16];
+    VkVertexInputBindingDescription vertexInputBindingDescription[16];
+    for (auto i = 0; i < vertexInput->attributeDescriptions.size(); i++) {
+        vertexInputAttributeDescription[i] = {
+            .location = vertexInput->attributeDescriptions[i].location,
+            .binding = vertexInput->attributeDescriptions[i].binding,
+            .format = vertexInput->attributeDescriptions[i].format,
+            .offset = vertexInput->attributeDescriptions[i].offset
+        };
+    }
+    for (auto i = 0; i < vertexInput->bindingDescriptions.size(); i++) {
+        vertexInputBindingDescription[i] = { 
+            .binding = vertexInput->bindingDescriptions[i].binding,
+            .stride = vertexInput->bindingDescriptions[i].stride,
+            .inputRate = vertexInput->bindingDescriptions[i].inputRate
+        };
+    }
+    vertexInputState.pVertexAttributeDescriptions = vertexInputAttributeDescription;
+    vertexInputState.pVertexBindingDescriptions = vertexInputBindingDescription;
+    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)vertexInput->attributeDescriptions.size();
+    vertexInputState.vertexBindingDescriptionCount = (uint32_t)vertexInput->bindingDescriptions.size();
+#endif
+
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = initializers::pipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, false);
     VkPipelineTessellationStateCreateInfo tessellationState = initializers::pipelineTessellationStateCreateInfo(3);
     VkPipelineViewportStateCreateInfo viewportState = initializers::pipelineViewportStateCreateInfo(0, 0);
@@ -355,39 +397,59 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     VkPipelineMultisampleStateCreateInfo multisampleState = initializers::pipelineMultisampleStateCreateInfo(VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT);
     VkPipelineDepthStencilStateCreateInfo depthStencilState = initializers::pipelineDepthStencilStateCreateInfo(true, true, INVERTED_DEPTH ? VK_COMPARE_OP_GREATER_OR_EQUAL : VK_COMPARE_OP_LESS_OR_EQUAL);
     auto colorBlendAttachmentState = initializers::pipelineColorBlendAttachmentState(VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT, false);
+
+#if !HAS_DYNAMIC_STATE3
+    colorBlendAttachmentState.blendEnable = pipelineState->colorBlendState.colorBlendEnable;
+    colorBlendAttachmentState.colorBlendOp = (VkBlendOp)pipelineState->colorBlendState.colorBlendOp;
+    colorBlendAttachmentState.alphaBlendOp = (VkBlendOp)pipelineState->colorBlendState.alphaBlendOp;
+    colorBlendAttachmentState.srcColorBlendFactor = (VkBlendFactor)pipelineState->colorBlendState.srcColorBlendFactor;
+    colorBlendAttachmentState.dstColorBlendFactor = (VkBlendFactor)pipelineState->colorBlendState.dstColorBlendFactor;
+    colorBlendAttachmentState.srcAlphaBlendFactor = (VkBlendFactor)pipelineState->colorBlendState.srcAlphaBlendFactor;
+    colorBlendAttachmentState.dstAlphaBlendFactor = (VkBlendFactor)pipelineState->colorBlendState.dstAlphaBlendFactor;
+    colorBlendAttachmentState.colorWriteMask = (VkColorComponentFlags)pipelineState->colorBlendState.colorWrite;
+#endif
+
     VkPipelineColorBlendStateCreateInfo colorBlendState = initializers::pipelineColorBlendStateCreateInfo(1, &colorBlendAttachmentState);
 
     std::vector<VkDynamicState> dynamic_state_enables = {
-        //VK_DYNAMIC_STATE_VIEWPORT,
-        //VK_DYNAMIC_STATE_SCISSOR,
-        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
-        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
+        // VK_DYNAMIC_STATE_VIEWPORT,
+        // VK_DYNAMIC_STATE_SCISSOR,
 
         VK_DYNAMIC_STATE_CULL_MODE,
         VK_DYNAMIC_STATE_FRONT_FACE,
+        VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY,
+
+        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
+        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
 
         VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE,
         VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE,
         VK_DYNAMIC_STATE_DEPTH_COMPARE_OP,
+
+        VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT,
+
+        //============================
+
         VK_DYNAMIC_STATE_DEPTH_BIAS_ENABLE,
 
-        VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY,
         VK_DYNAMIC_STATE_PRIMITIVE_RESTART_ENABLE,
         VK_DYNAMIC_STATE_RASTERIZER_DISCARD_ENABLE_EXT,
+
+    //============================
+#if HAS_DYNAMIC_STATE3
 
         VK_DYNAMIC_STATE_POLYGON_MODE_EXT,
         VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT,
         VK_DYNAMIC_STATE_SAMPLE_MASK_EXT,
 
         VK_DYNAMIC_STATE_ALPHA_TO_COVERAGE_ENABLE_EXT,
-        VK_DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT,
 
         VK_DYNAMIC_STATE_COLOR_BLEND_ENABLE_EXT,
         VK_DYNAMIC_STATE_COLOR_BLEND_EQUATION_EXT,
         VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT,
 
         VK_DYNAMIC_STATE_VERTEX_INPUT_EXT
-
+#endif
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState = initializers::pipelineDynamicStateCreateInfo(dynamic_state_enables);

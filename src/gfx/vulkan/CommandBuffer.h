@@ -67,7 +67,7 @@ public:
     void setPrimitiveRestartEnable(bool restartEnable) const VULKAN_NOEXCEPT;
 
     void bindShaderProgram(HwProgram* program) const VULKAN_NOEXCEPT;
-    void bindPipeline(VulkanProgram* vkProgram) const VULKAN_NOEXCEPT;
+    void bindPipeline(VulkanProgram* vkProgram, const PipelineState* pipelineState) const VULKAN_NOEXCEPT;
     void bindRasterState(const RasterState* rasterState) const VULKAN_NOEXCEPT;
     void bindColorBlendState(const ColorBlendState* colorBlendState) const VULKAN_NOEXCEPT;
     void bindDepthState(const DepthState* depthState) const VULKAN_NOEXCEPT;
@@ -139,9 +139,10 @@ inline void CommandBuffer::setVertexInput(HwVertexInput* vertexInput) const VULK
     VulkanVertexInput* vkVertexInput = (VulkanVertexInput*)vertexInput;
     if (mVertexInput != vkVertexInput) {
         mVertexInput = vkVertexInput;
-
+#if HAS_DYNAMIC_STATE3
         vkCmdSetVertexInputEXT(cmd, (uint32_t)vkVertexInput->bindingDescriptions.size(), vkVertexInput->bindingDescriptions.data(),
             (uint32_t)vkVertexInput->attributeDescriptions.size(), vkVertexInput->attributeDescriptions.data());
+#endif
     }
 }
 
@@ -158,7 +159,9 @@ inline void CommandBuffer::setPrimitiveRestartEnable(bool restartEnable) const V
 {
     if (mPrimitiveState.restartEnable != restartEnable) {
         mPrimitiveState.restartEnable = restartEnable;
+#if HAS_DYNAMIC_STATE3
         vkCmdSetPrimitiveRestartEnableEXT(cmd, restartEnable);
+#endif
     }
 }
 
@@ -170,8 +173,6 @@ inline void CommandBuffer::bindShaderProgram(HwProgram* program) const VULKAN_NO
 
 #if HAS_SHADER_OBJECT_EXT
         vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);    
-#else
-        bindPipeline(vkProgram);
 #endif
     }
 }
