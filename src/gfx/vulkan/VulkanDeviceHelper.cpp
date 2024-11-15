@@ -4,6 +4,11 @@
 #include "utils/Log.h"
 #include <vulkan/vulkan_beta.h>
 
+#if USE_VOLK
+#define VOLK_IMPLEMENTATION
+#include "Volk/volk.h"
+#endif
+
 namespace mygfx {
 
 #define GET_INSTANCE_PROC_ADDR(name) g_##name = (PFN_##name)vkGetInstanceProcAddr(devide, #name);
@@ -46,13 +51,13 @@ VulkanDeviceHelper::VulkanDeviceHelper()
     setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", 1);
 
 #endif
-
 }
 
 bool VulkanDeviceHelper::create(const char* name, bool validation)
 {
+#if USE_VOLK
     volkInitialize();
-
+#endif
     // Vulkan instance
     VkResult err = createInstance(name, validation);
     if (err) {
@@ -60,7 +65,9 @@ bool VulkanDeviceHelper::create(const char* name, bool validation)
         return false;
     }
 
+#if USE_VOLK
     volkLoadInstance(instance);
+#endif
 
     if (!selectPhysicalDevice()) {
         return false;
@@ -74,6 +81,32 @@ bool VulkanDeviceHelper::create(const char* name, bool validation)
         tools::exitFatal("Could not create Vulkan device: \n" + tools::errorString(res), res);
         return false;
     }
+
+#define VK_FUNCTION(NAME) \
+    NAME = (PFN_##NAME)vkGetDeviceProcAddr(device, #NAME)
+
+    VK_FUNCTION(vkSetDebugUtilsObjectNameEXT);
+
+    VK_FUNCTION(vkCmdBeginRenderingKHR);
+    VK_FUNCTION(vkCmdEndRenderingKHR);
+
+    VK_FUNCTION(vkCmdSetCullModeEXT);
+    VK_FUNCTION(vkCmdSetFrontFaceEXT);
+    VK_FUNCTION(vkCmdSetPrimitiveTopologyEXT);
+
+    VK_FUNCTION(vkCmdSetViewportWithCountEXT);
+    VK_FUNCTION(vkCmdSetScissorWithCountEXT);
+
+    VK_FUNCTION(vkCmdSetDepthTestEnableEXT);
+    VK_FUNCTION(vkCmdSetDepthWriteEnableEXT);
+    VK_FUNCTION(vkCmdSetDepthCompareOpEXT);
+    VK_FUNCTION(vkCmdSetDepthBiasEnableEXT);
+
+    VK_FUNCTION(vkCmdSetStencilTestEnableEXT);
+    VK_FUNCTION(vkCmdSetRasterizerDiscardEnableEXT);
+    VK_FUNCTION(vkCmdSetPrimitiveRestartEnableEXT);
+
+#undef VK_FUNCTION
 
     // Get a graphics queue from the device
     vkGetDeviceQueue(device, queueFamilyIndices.graphics, 0, &queue);
@@ -164,7 +197,7 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
 
 #if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT))
     // SRS - When running on iOS/macOS with MoltenVK, enable VK_KHR_get_physical_device_properties2 if not already enabled by the example (required by VK_KHR_portability_subset)
-    tryAddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);    
+    tryAddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 #endif
 
     // Enabled requested instance extensions
@@ -236,6 +269,11 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
     }
 
     if (VK_SUCCESS == result) {
+
+#if !USE_VOLK
+        vkGetPhysicalDeviceProperties2KHR = (PFN_vkGetPhysicalDeviceProperties2KHR)vkGetInstanceProcAddr(instance, "vkGetPhysicalDeviceProperties2KHR");
+#endif
+
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
         android::loadVulkanFunctions(instance);
 #endif
@@ -332,8 +370,8 @@ void VulkanDeviceHelper::getEnabledFeatures()
 
         VkPhysicalDeviceProperties2 device_properties;
         descriptorIndexingProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES_EXT;
-        device_properties.sType              = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
-        device_properties.pNext              = &descriptorIndexingProperties;
+        device_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
+        device_properties.pNext = &descriptorIndexingProperties;
         vkGetPhysicalDeviceProperties2KHR(physicalDevice, &device_properties);
     }
 
@@ -377,36 +415,36 @@ void VulkanDeviceHelper::getEnabledFeatures()
     if (tryAddExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME)) {
         static VkPhysicalDeviceExtendedDynamicState3FeaturesEXT features = {
             .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT,
-            .extendedDynamicState3DepthClampEnable= VK_TRUE,
-            .extendedDynamicState3PolygonMode= VK_TRUE,
-            .extendedDynamicState3RasterizationSamples= VK_TRUE,
-            .extendedDynamicState3SampleMask= VK_TRUE,
-            .extendedDynamicState3AlphaToCoverageEnable= VK_TRUE,
-            .extendedDynamicState3AlphaToOneEnable= VK_TRUE,
-            .extendedDynamicState3LogicOpEnable= VK_TRUE,
-            .extendedDynamicState3ColorBlendEnable= VK_TRUE,
-            .extendedDynamicState3ColorBlendEquation= VK_TRUE,
-            .extendedDynamicState3ColorWriteMask= VK_TRUE,
-            .extendedDynamicState3RasterizationStream= VK_TRUE,
-            .extendedDynamicState3ConservativeRasterizationMode= VK_TRUE,
-            .extendedDynamicState3ExtraPrimitiveOverestimationSize= VK_TRUE,
-            .extendedDynamicState3DepthClipEnable= VK_TRUE,
-            .extendedDynamicState3SampleLocationsEnable= VK_TRUE,
-            .extendedDynamicState3ColorBlendAdvanced= VK_TRUE,
-            .extendedDynamicState3ProvokingVertexMode= VK_TRUE,
-            .extendedDynamicState3LineRasterizationMode= VK_TRUE,
-            .extendedDynamicState3LineStippleEnable= VK_TRUE,
-            .extendedDynamicState3DepthClipNegativeOneToOne= VK_TRUE,
-            .extendedDynamicState3ViewportWScalingEnable= VK_TRUE,
-            .extendedDynamicState3ViewportSwizzle= VK_TRUE,
-            .extendedDynamicState3CoverageToColorEnable= VK_TRUE,
-            .extendedDynamicState3CoverageToColorLocation= VK_TRUE,
-            .extendedDynamicState3CoverageModulationMode= VK_TRUE,
-            .extendedDynamicState3CoverageModulationTableEnable= VK_TRUE,
-            .extendedDynamicState3CoverageModulationTable= VK_TRUE,
-            .extendedDynamicState3CoverageReductionMode= VK_TRUE,
-            .extendedDynamicState3RepresentativeFragmentTestEnable= VK_TRUE,
-            .extendedDynamicState3ShadingRateImageEnable= VK_TRUE,
+            .extendedDynamicState3DepthClampEnable = VK_TRUE,
+            .extendedDynamicState3PolygonMode = VK_TRUE,
+            .extendedDynamicState3RasterizationSamples = VK_TRUE,
+            .extendedDynamicState3SampleMask = VK_TRUE,
+            .extendedDynamicState3AlphaToCoverageEnable = VK_TRUE,
+            .extendedDynamicState3AlphaToOneEnable = VK_TRUE,
+            .extendedDynamicState3LogicOpEnable = VK_TRUE,
+            .extendedDynamicState3ColorBlendEnable = VK_TRUE,
+            .extendedDynamicState3ColorBlendEquation = VK_TRUE,
+            .extendedDynamicState3ColorWriteMask = VK_TRUE,
+            .extendedDynamicState3RasterizationStream = VK_TRUE,
+            .extendedDynamicState3ConservativeRasterizationMode = VK_TRUE,
+            .extendedDynamicState3ExtraPrimitiveOverestimationSize = VK_TRUE,
+            .extendedDynamicState3DepthClipEnable = VK_TRUE,
+            .extendedDynamicState3SampleLocationsEnable = VK_TRUE,
+            .extendedDynamicState3ColorBlendAdvanced = VK_TRUE,
+            .extendedDynamicState3ProvokingVertexMode = VK_TRUE,
+            .extendedDynamicState3LineRasterizationMode = VK_TRUE,
+            .extendedDynamicState3LineStippleEnable = VK_TRUE,
+            .extendedDynamicState3DepthClipNegativeOneToOne = VK_TRUE,
+            .extendedDynamicState3ViewportWScalingEnable = VK_TRUE,
+            .extendedDynamicState3ViewportSwizzle = VK_TRUE,
+            .extendedDynamicState3CoverageToColorEnable = VK_TRUE,
+            .extendedDynamicState3CoverageToColorLocation = VK_TRUE,
+            .extendedDynamicState3CoverageModulationMode = VK_TRUE,
+            .extendedDynamicState3CoverageModulationTableEnable = VK_TRUE,
+            .extendedDynamicState3CoverageModulationTable = VK_TRUE,
+            .extendedDynamicState3CoverageReductionMode = VK_TRUE,
+            .extendedDynamicState3RepresentativeFragmentTestEnable = VK_TRUE,
+            .extendedDynamicState3ShadingRateImageEnable = VK_TRUE,
         };
         featuresAppender.AppendNext(&features);
     }

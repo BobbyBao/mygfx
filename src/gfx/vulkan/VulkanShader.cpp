@@ -367,27 +367,30 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     VkPipelineVertexInputStateCreateInfo vertexInputState = initializers::pipelineVertexInputStateCreateInfo();
 #if !HAS_DYNAMIC_STATE3
     VulkanVertexInput* vertexInput = (VulkanVertexInput*)pipelineState->program->vertexInput;
-    VkVertexInputAttributeDescription vertexInputAttributeDescription[16];
-    VkVertexInputBindingDescription vertexInputBindingDescription[16];
-    for (auto i = 0; i < vertexInput->attributeDescriptions.size(); i++) {
-        vertexInputAttributeDescription[i] = {
-            .location = vertexInput->attributeDescriptions[i].location,
-            .binding = vertexInput->attributeDescriptions[i].binding,
-            .format = vertexInput->attributeDescriptions[i].format,
-            .offset = vertexInput->attributeDescriptions[i].offset
-        };
+    if (vertexInput) {
+        VkVertexInputAttributeDescription vertexInputAttributeDescription[16];
+        VkVertexInputBindingDescription vertexInputBindingDescription[16];
+        for (auto i = 0; i < vertexInput->attributeDescriptions.size(); i++) {
+            vertexInputAttributeDescription[i] = {
+                .location = vertexInput->attributeDescriptions[i].location,
+                .binding = vertexInput->attributeDescriptions[i].binding,
+                .format = vertexInput->attributeDescriptions[i].format,
+                .offset = vertexInput->attributeDescriptions[i].offset
+            };
+        }
+        for (auto i = 0; i < vertexInput->bindingDescriptions.size(); i++) {
+            vertexInputBindingDescription[i] = { 
+                .binding = vertexInput->bindingDescriptions[i].binding,
+                .stride = vertexInput->bindingDescriptions[i].stride,
+                .inputRate = vertexInput->bindingDescriptions[i].inputRate
+            };
+        }
+        vertexInputState.pVertexAttributeDescriptions = vertexInputAttributeDescription;
+        vertexInputState.pVertexBindingDescriptions = vertexInputBindingDescription;
+        vertexInputState.vertexAttributeDescriptionCount = (uint32_t)vertexInput->attributeDescriptions.size();
+        vertexInputState.vertexBindingDescriptionCount = (uint32_t)vertexInput->bindingDescriptions.size();
     }
-    for (auto i = 0; i < vertexInput->bindingDescriptions.size(); i++) {
-        vertexInputBindingDescription[i] = { 
-            .binding = vertexInput->bindingDescriptions[i].binding,
-            .stride = vertexInput->bindingDescriptions[i].stride,
-            .inputRate = vertexInput->bindingDescriptions[i].inputRate
-        };
-    }
-    vertexInputState.pVertexAttributeDescriptions = vertexInputAttributeDescription;
-    vertexInputState.pVertexBindingDescriptions = vertexInputBindingDescription;
-    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)vertexInput->attributeDescriptions.size();
-    vertexInputState.vertexBindingDescriptionCount = (uint32_t)vertexInput->bindingDescriptions.size();
+
 #endif
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = initializers::pipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, false);

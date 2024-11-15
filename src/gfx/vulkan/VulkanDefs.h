@@ -1,6 +1,11 @@
 #pragma once
 
+#define USE_VOLK 0
+#if USE_VOLK
 #include "volk/volk.h"
+#else
+#include <vulkan/Vulkan.h>
+#endif
 
 #include <array>
 
@@ -66,5 +71,37 @@ struct AttachmentFormats {
 private:
     size_t mHash = 0;
 };
+
+inline PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR { VK_NULL_HANDLE };
+
+#if !USE_VOLK
+
+#define VK_FUNCTION(NAME) \
+    inline PFN_##NAME NAME { VK_NULL_HANDLE }
+
+VK_FUNCTION(vkSetDebugUtilsObjectNameEXT);
+
+VK_FUNCTION(vkCmdBeginRenderingKHR);
+VK_FUNCTION(vkCmdEndRenderingKHR);
+
+VK_FUNCTION(vkCmdSetCullModeEXT);
+VK_FUNCTION(vkCmdSetFrontFaceEXT);
+VK_FUNCTION(vkCmdSetPrimitiveTopologyEXT);
+
+VK_FUNCTION(vkCmdSetViewportWithCountEXT);
+VK_FUNCTION(vkCmdSetScissorWithCountEXT);
+
+VK_FUNCTION(vkCmdSetDepthTestEnableEXT);
+VK_FUNCTION(vkCmdSetDepthWriteEnableEXT);
+VK_FUNCTION(vkCmdSetDepthCompareOpEXT);
+VK_FUNCTION(vkCmdSetDepthBiasEnableEXT);
+
+VK_FUNCTION(vkCmdSetStencilTestEnableEXT);
+VK_FUNCTION(vkCmdSetRasterizerDiscardEnableEXT);
+VK_FUNCTION(vkCmdSetPrimitiveRestartEnableEXT);
+
+#undef VK_FUNCTION
+
+#endif
 
 }

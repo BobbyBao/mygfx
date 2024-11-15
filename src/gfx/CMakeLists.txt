@@ -108,11 +108,12 @@ ENDIF()
 #link_directories("$ENV{VULKAN_SDK}/Lib")
 
 message(STATUS $ENV{VULKAN_SDK})
+message(STATUS ${Vulkan_LIBRARY})
 
 IF(WIN32)
-	link_libraries(spirv-cross-core.lib spirv-cross-glsl.lib)
+	link_libraries(${Vulkan_LIBRARY} spirv-cross-core.lib spirv-cross-glsl.lib)
 ELSE(WIN32)
-	link_libraries(libspirv-cross-core.a libspirv-cross-glsl.a )
+	link_libraries(${Vulkan_LIBRARY} libspirv-cross-core.a libspirv-cross-glsl.a )
 ENDIF(WIN32)
 
 ucm_add_dirs("" TO _SRC RECURSIVE FILTER_POP 1)
