@@ -16,7 +16,6 @@ struct RenderList {
     void init();
     void clear();
     void draw(GraphicsApi& cmd, RenderingContext& ctx);
-    void drawIndirect(GraphicsApi& cmd, Primitive& primitive, RenderingContext& ctx, uint32_t perObject);
     Vector<Renderable*> renderables;
     Ref<HwRenderQueue> renderQueue;
 };
@@ -25,7 +24,7 @@ struct RenderQueue {
     void init();
     void clear();
     void addRenderable(Renderable* renderable);
-    void draw(GraphicsApi& cmd, RenderingContext& ctx);
+    void draw(GraphicsApi& cmd, RenderingContext& ctx, uint32_t renderableMask = 0xffffffff);
 
     std::array<RenderList, MAX_RENDER_QUEUE_COUNT> mRenderLists;
 };

@@ -18,7 +18,7 @@ static uint32_t padRow(uint32_t* rowBytes)
     return rowPadding;
 }
 
-TextureData TextureData::Texture2D(uint32_t w, uint32_t h, Format fmt, const MemoryBlock& data)
+TextureData TextureData::texture2D(uint32_t w, uint32_t h, Format fmt, const MemoryBlock& data)
 {
     return TextureData {
         .width = (uint16_t)w,
@@ -29,7 +29,7 @@ TextureData TextureData::Texture2D(uint32_t w, uint32_t h, Format fmt, const Mem
     };
 }
 
-TextureData TextureData::Texture2DArray(uint32_t w, uint32_t h, uint32_t layers, Format fmt)
+TextureData TextureData::texture2DArray(uint32_t w, uint32_t h, uint32_t layers, Format fmt)
 {
     return TextureData {
         .width = (uint16_t)w,
@@ -40,7 +40,7 @@ TextureData TextureData::Texture2DArray(uint32_t w, uint32_t h, uint32_t layers,
     };
 }
 
-TextureData TextureData::Texture3D(uint32_t w, uint32_t h, uint32_t depth, Format fmt)
+TextureData TextureData::texture3D(uint32_t w, uint32_t h, uint32_t depth, Format fmt)
 {
     return TextureData {
         .width = (uint16_t)w,
@@ -51,7 +51,7 @@ TextureData TextureData::Texture3D(uint32_t w, uint32_t h, uint32_t depth, Forma
     };
 }
 
-TextureData TextureData::TextureCube(uint32_t w, uint32_t h, uint32_t layers, Format fmt)
+TextureData TextureData::textureCube(uint32_t w, uint32_t h, uint32_t layers, Format fmt)
 {
     return TextureData {
         .width = (uint16_t)w,
@@ -63,7 +63,7 @@ TextureData TextureData::TextureCube(uint32_t w, uint32_t h, uint32_t layers, Fo
     };
 }
 
-TextureData TextureData::Texture2D(uint32_t w, uint32_t h, int channels, const MemoryBlock& data)
+TextureData TextureData::texture2D(uint32_t w, uint32_t h, int channels, const MemoryBlock& data)
 {
     Format fmt = Format::UNDEFINED;
     switch (channels) {

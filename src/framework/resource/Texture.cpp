@@ -100,7 +100,7 @@ Ref<Texture> Texture::createByColor(const char* name, const float4& color)
 {
     auto c = toUInt(color);
     MemoryBlock memoryBlock((uint8_t*)&c, 4);
-    auto textureData = TextureData::Texture2D(1, 1, Format::R8G8B8A8_UNORM, memoryBlock);
+    auto textureData = TextureData::texture2D(1, 1, Format::R8G8B8A8_UNORM, memoryBlock);
     textureData.usage = TextureUsage::SAMPLED | TextureUsage::TRANSFER_DST;
     textureData.name = name;
     auto tex = createFromData(textureData);
@@ -119,7 +119,7 @@ Vector<Ref<Texture>> Texture::createRandomColorTextures(int count)
 
 Ref<Texture> Texture::create2D(uint16_t width, uint16_t height, Format format, const MemoryBlock& memoryBlock, SamplerInfo samplerInfo)
 {
-    auto textureData = TextureData::Texture2D(width, height, format, memoryBlock);
+    auto textureData = TextureData::texture2D(width, height, format, memoryBlock);
     textureData.usage = TextureUsage::SAMPLED | TextureUsage::TRANSFER_DST;
     return createFromData(textureData, samplerInfo);
 }
@@ -163,7 +163,7 @@ Ref<Texture> Texture::createFromData(const Span<uint8_t>& content, const String&
 
 Ref<Texture> Texture::createRenderTexture(uint16_t width, uint16_t height, Format format, TextureUsage usage, SampleCount msaa)
 {
-    auto textureData = TextureData::Texture2D(width, height, format);
+    auto textureData = TextureData::texture2D(width, height, format);
     textureData.sampleCount = msaa;
     textureData.usage = TextureUsage::COLOR_ATTACHMENT | usage;
     return createFromData(textureData, SamplerInfo::create(Filter::NEAREST, SamplerAddressMode::CLAMP_TO_EDGE));
@@ -171,7 +171,7 @@ Ref<Texture> Texture::createRenderTexture(uint16_t width, uint16_t height, Forma
 
 Ref<Texture> Texture::createDepthStencil(uint16_t width, uint16_t height, Format format, TextureUsage usage, bool isShadowMap, SampleCount msaa)
 {
-    auto textureData = TextureData::Texture2D(width, height, format);
+    auto textureData = TextureData::texture2D(width, height, format);
     textureData.sampleCount = msaa;
     textureData.usage = TextureUsage::DEPTH_STENCIL_ATTACHMENT | usage;
 

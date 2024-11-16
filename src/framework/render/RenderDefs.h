@@ -17,7 +17,7 @@ struct ObjectUniforms {
     mat4 worldMatrix;
     mat3x4 normalMatrix;
     uint64_t transformBuffer = 0;
-    uint64_t normalBuffer = 0;
+    uint64_t skinningBuffer = 0;
 };
 
 

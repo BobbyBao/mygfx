@@ -13,7 +13,6 @@ class IndirectBuffer;
 
 struct Primitive {
     HwRenderPrimitive* renderPrimitive = nullptr;
-    IndirectBuffer* indirectBuffer = nullptr;
     Material* material = nullptr;
     uint32_t instanceCount = 1;
     uint32_t primitiveUniforms = INVALID_UNIFORM_OFFSET;
@@ -28,7 +27,7 @@ class Renderable : public Component {
 public:
     Renderable();
 
-    PROPERTY_GET_SET(uint32_t, RenderQueue)
+    PROPERTY_GET_SET(uint32_t, RenderableType)
     
     IRenderer* getRenderer() { return mRenderer; }
 
@@ -39,10 +38,16 @@ protected:
     void onAddToScene(Scene* scene) override;
     void onRemoveFromScene(Scene* scene) override;
     IRenderer* mRenderer = nullptr;
-    uint32_t mRenderQueue = 0;
+    uint32_t mRenderableType = 0;
     mutable Aabb mBoundingBox;
     mutable bool mSkinning : 1 = false;
     mutable bool mMorphing : 1 = false;
+};
+
+class CustomRenderable : public Renderable, public IRenderer {
+public:
+    CustomRenderable();
+
 };
 
 }

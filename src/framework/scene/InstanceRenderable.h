@@ -6,16 +6,6 @@ namespace mygfx {
 
 class Mesh;
 
-class IndirectBuffer : public RefCounted {
-public:
-    PROPERTY_GET(HwBuffer*, IndirectBuffer)
-
-    uint32_t drawCount = 0;
-
-private:
-    Ref<HwBuffer> mIndirectBuffer;
-};
-
 struct InstanceData {
     Vector3 position = zero<Vector3>();
     float scale = 1.0f;
@@ -36,6 +26,25 @@ protected:
 
     Vector<Vector<InstanceData>> mInstanceData;
     Vector<Ref<HwBuffer>> mInstanceBuffers;
+};
+
+class IndirectBuffer : public RefCounted {
+public:
+    PROPERTY_GET(HwBuffer*, IndirectBuffer)
+
+    uint32_t drawCount = 0;
+
+private:
+    Ref<HwBuffer> mIndirectBuffer;
+};
+
+class IndirectRenderable : public InstanceRenderable, public IRenderer {
+public:
+    IndirectRenderable();
+protected:
+    Object* createObject() override;
+    void cloneProcess(Object* destNode) override;
+    void draw(GraphicsApi& cmd, RenderingContext& ctx) override;
     Ref<IndirectBuffer> mIndirectBuffer;
 };
 

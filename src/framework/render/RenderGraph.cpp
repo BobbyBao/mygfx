@@ -3,6 +3,11 @@
 
 namespace mygfx {
 
+void RenderGraph::addPass(RenderPass* pass)
+{
+    mRenderPasses.emplace_back(pass);
+}
+
 void RenderGraph::draw(GraphicsApi& cmd, RenderingContext& ctx)
 {
     for (auto& pass : mRenderPasses) {

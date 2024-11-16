@@ -44,11 +44,11 @@ struct ImageFace {
 };
 
 struct TextureData {
-    static TextureData Texture2D(uint32_t w, uint32_t h, Format fmt, const MemoryBlock& data = {});
-    static TextureData Texture2D(uint32_t w, uint32_t h, int channels, const MemoryBlock& data = {});
-    static TextureData Texture2DArray(uint32_t w, uint32_t h, uint32_t layers, Format fmt);
-    static TextureData Texture3D(uint32_t w, uint32_t h, uint32_t depth, Format fmt);
-    static TextureData TextureCube(uint32_t w, uint32_t h, uint32_t layers, Format fmt);
+    static TextureData texture2D(uint32_t w, uint32_t h, Format fmt, const MemoryBlock& data = {});
+    static TextureData texture2D(uint32_t w, uint32_t h, int channels, const MemoryBlock& data = {});
+    static TextureData texture2DArray(uint32_t w, uint32_t h, uint32_t layers, Format fmt);
+    static TextureData texture3D(uint32_t w, uint32_t h, uint32_t depth, Format fmt);
+    static TextureData textureCube(uint32_t w, uint32_t h, uint32_t layers, Format fmt);
 
     inline uint8_t* data() { return (uint8_t*)dataBlock.data(); }
     inline const uint8_t* data() const { return (uint8_t*)dataBlock.data(); }

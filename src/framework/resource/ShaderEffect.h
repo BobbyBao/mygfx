@@ -33,4 +33,14 @@ private:
     String mMaterialUniformName = "MaterialUniforms";
 };
 
+inline Shader* ShaderEffect::getShader(const PassName& pass)
+{
+    for (auto& shader : mShaderPasses) {
+        if (shader.first == pass) {
+            return shader.second;
+        }
+    }
+
+    return nullptr;
+}
 }

@@ -444,13 +444,13 @@ struct Barrier {
     ResourceState destState;
     uint32_t subResource = 0xffffffff;
 
-    static Barrier Transition(const HwResource* pRes, ResourceState srcState, ResourceState dstState, uint32_t subResource = 0xffffffff)
+    static Barrier transition(const HwResource* pRes, ResourceState srcState, ResourceState dstState, uint32_t subResource = 0xffffffff)
     {
         Barrier barrier = { BarrierType::TRANSITION, pRes, srcState, dstState, subResource };
         return barrier;
     }
 
-    static Barrier UAV(const HwResource* pRes)
+    static Barrier uav(const HwResource* pRes)
     {
         Barrier barrier = { BarrierType::UAV, pRes, ResourceState::UNORDERED_ACCESS, ResourceState::UNORDERED_ACCESS };
         return barrier;

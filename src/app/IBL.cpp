@@ -20,7 +20,7 @@ void IBL::filter(Texture* hdr)
     renderInfo.viewport = { .left = 0, .top = 0, .width = IMAGE_SIZE, .height = IMAGE_SIZE };
 
     {
-        auto textureData = TextureData::TextureCube(IMAGE_SIZE, IMAGE_SIZE, 1, Format::R16G16B16A16_SFLOAT);
+        auto textureData = TextureData::textureCube(IMAGE_SIZE, IMAGE_SIZE, 1, Format::R16G16B16A16_SFLOAT);
         textureData.usage = TextureUsage::TRANSFER_DST | TextureUsage::SAMPLED;
         textureData.mipMapCount = Texture::maxLevelCount(IMAGE_SIZE);
 
@@ -77,7 +77,7 @@ void IBL::filter(Texture* hdr)
 		    Distribution distribution = Distribution::Lambertian;
 	    }pushConst;
 
-        auto textureData = TextureData::TextureCube(64, 64, 1, Format::R16G16B16A16_SFLOAT);
+        auto textureData = TextureData::textureCube(64, 64, 1, Format::R16G16B16A16_SFLOAT);
         textureData.usage = TextureUsage::COLOR_ATTACHMENT | TextureUsage::SAMPLED;
         mIrrMap = Texture::createFromData(textureData);
         mLUT = Texture::createRenderTexture(IMAGE_SIZE, IMAGE_SIZE, Format::R16G16B16A16_SFLOAT, TextureUsage::SAMPLED);

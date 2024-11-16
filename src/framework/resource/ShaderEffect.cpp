@@ -25,17 +25,6 @@ Shader* ShaderEffect::getShader(const String& name)
     return nullptr;
 }
 
-Shader* ShaderEffect::getShader(const PassName& pass)
-{
-    for (auto& shader : mShaderPasses) {
-        if (shader.first == pass) {
-            return shader.second;
-        }
-    }
-
-    return nullptr;
-}
-
 void ShaderEffect::add(const String& vsCode, const String& fsCode, const DefineList* marcos)
 {
     add(new Shader(vsCode, fsCode, marcos));
