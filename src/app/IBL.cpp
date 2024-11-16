@@ -48,7 +48,8 @@ void IBL::filter(Texture* hdr)
 
             pushConst.u_currentFace = i;
 
-            cmd.pushConstant(0, &pushConst, sizeof(pushConst));
+            cmd.pushConstant(0, pushConst);
+            cmd.bindUniforms({});
 
             cmd.draw(3, 1, 0, 0);
 
@@ -99,7 +100,8 @@ void IBL::filter(Texture* hdr)
 
         cmd.bindPipelineState(shader->pipelineState);
 
-        cmd.pushConstant(0, &pushConst, sizeof(pushConst));
+        cmd.pushConstant(0, pushConst);
+        cmd.bindUniforms({});
 
         cmd.draw(3, 1, 0, 0);
 

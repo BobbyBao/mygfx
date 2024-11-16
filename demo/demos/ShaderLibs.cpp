@@ -168,8 +168,8 @@ utils::Ref<Shader> ShaderLibs::getSimpleLightShader()
 	)";
 
     sLightShader = new Shader(vsCode, fsCode);
-    sLightShader->setVertexInput({ Format::R32G32B32_SFLOAT, Format::END,
-        Format::R32G32_SFLOAT, Format::END,
+    sLightShader->setVertexInput({ Format::R32G32B32_SFLOAT, {},
+        Format::R32G32_SFLOAT, {},
         Format::R32G32B32_SFLOAT });
     return sLightShader;
 }

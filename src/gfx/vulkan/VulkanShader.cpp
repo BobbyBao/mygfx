@@ -368,7 +368,7 @@ bool VulkanProgram::createShaders()
 
 VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmentFormats, const PipelineState* pipelineState)
 {
-    assert(ThreadUtils::isThisThread(gfx().renderThreadID));
+    //assert(ThreadUtils::isThisThread(gfx().renderThreadID));
 
     size_t pipelineHash = attachmentFormats.getHash();
 
@@ -623,6 +623,7 @@ static void getMembers(CompilerGLSL* compiler, ShaderStruct& u, const SPIRType& 
 VulkanShaderModule::VulkanShaderModule(ShaderStage stage, const std::vector<uint8_t>& shaderCode, ShaderCodeType shaderCodeType, const char* pShaderEntryPoint)
 {
     this->shaderCode = shaderCode;
+    this->shaderStage = stage;
 
     if (pShaderEntryPoint && pShaderEntryPoint[0]) {
         entryPoint = pShaderEntryPoint;

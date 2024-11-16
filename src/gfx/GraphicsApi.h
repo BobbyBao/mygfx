@@ -63,6 +63,24 @@ public:
         return *this;
     }
 
+    template <typename T>
+    void pushConstant(uint32_t index, const T& data)
+    {
+        T* p = allocatePod<T>();
+        *p = data;
+        pushConstant1(index, p, sizeof(T));
+    }
+
+    void bindDescriptorSets(const Span<HwDescriptorSet*>& ds, const Uniforms& uniforms)
+    {
+        auto p = allocate<HwDescriptorSet*>(ds.size());
+        for (uint32_t i = 0; i < ds.size(); i++) {
+            p[0] = ds[i];
+        }
+
+        bindDescriptorSets1(p, uniforms);
+    }
+
     template <typename V>
     void drawUserPrimitives(const Span<V>& vertices, uint32_t firstInstance = 0)
     {

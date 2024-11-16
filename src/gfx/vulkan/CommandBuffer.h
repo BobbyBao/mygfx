@@ -189,7 +189,7 @@ inline void CommandBuffer::pushConstant(uint32_t index, const void* data, uint32
     if (index < mProgram->pushConstants.size()) {
         auto& pushConst = mProgram->pushConstants[index];
         assert(size <= pushConst.size);
-        vkCmdPushConstants(cmd, mProgram->pipelineLayout, VK_SHADER_STAGE_ALL, pushConst.offset, size, data);
+        vkCmdPushConstants(cmd, mProgram->pipelineLayout, (VkShaderStageFlags)pushConst.stageFlags, pushConst.offset, size, data);
     }
 }
 

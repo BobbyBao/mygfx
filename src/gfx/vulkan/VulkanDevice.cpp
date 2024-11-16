@@ -501,12 +501,12 @@ void VulkanDevice::bindPipelineState(const PipelineState& pipelineState)
     mCurrentCmd->bindPipelineState(&pipelineState);
 }
 
-void VulkanDevice::pushConstant(uint32_t index, const void* data, uint32_t size)
+void VulkanDevice::pushConstant1(uint32_t index, const void* data, uint32_t size)
 {
     mCurrentCmd->pushConstant(index, data, size);
 }
 
-void VulkanDevice::bindDescriptorSets(const Span<HwDescriptorSet*>& ds, const Uniforms& uniforms)
+void VulkanDevice::bindDescriptorSets1(const Span<HwDescriptorSet*>& ds, const Uniforms& uniforms)
 {
     mCurrentCmd->bindDescriptorSets(ds.data(), (uint32_t)ds.size(), uniforms.data(), uniforms.size());
 }

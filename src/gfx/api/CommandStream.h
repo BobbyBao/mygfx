@@ -381,12 +381,19 @@ void* CommandStream::allocate(size_t size, size_t alignment) noexcept
 template <typename PodType, typename>
 PodType* CommandStream::allocatePod(size_t count, size_t alignment) noexcept
 {
+    if (count == 0) {
+        return nullptr;
+    }
     return static_cast<PodType*>(allocate(count * sizeof(PodType), alignment));
 }
 
 template <typename PodType, typename>
-Span<PodType> CommandStream::allocate(size_t count) noexcept {
-    return Span<PodType>{static_cast<PodType*>(allocate(count * sizeof(PodType), alignof(PodType))), count};
+Span<PodType> CommandStream::allocate(size_t count) noexcept
+{
+    if (count == 0) {
+        return {};
+    }
+    return Span<PodType> { static_cast<PodType*>(allocate(count * sizeof(PodType), alignof(PodType))), count };
 }
 
 } // namespace mygfx
