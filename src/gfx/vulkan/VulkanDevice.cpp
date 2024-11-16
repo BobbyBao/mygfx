@@ -659,6 +659,13 @@ void VulkanDevice::drawMultiThreaded(const std::vector<RenderCommand>& items, co
     uint32_t start = 0, end = 0;
 
     mSecondCmdBuffers.reserve(threadNum);
+    
+#if !HAS_SHADER_OBJECT_EXT
+    for (auto& prim : items) {
+        VulkanProgram* vkProgram = (VulkanProgram*)prim.pipelineState.program;
+        vkProgram->getGraphicsPipeline(mAttachmentFormats, &prim.pipelineState);
+    }
+#endif
 
     for (unsigned i = 0; i < threadNum && start < items.size(); ++i) {
         auto cmdList = mCommandQueues[(int)CommandQueueType::Graphics].getCommandBuffer(1, true);

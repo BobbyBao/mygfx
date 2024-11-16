@@ -119,13 +119,11 @@ class HwVertexInput;
 class HwProgram;
 
 struct PipelineState {
-    HwProgram* program { nullptr };
-
+    HwProgram* program { nullptr };   
     PrimitiveState primitiveState {};
     DepthState depthState {};
     RasterState rasterState {};
     ColorBlendState colorBlendState {};
-
     AdvancedState* advanceState { nullptr };
 };
 

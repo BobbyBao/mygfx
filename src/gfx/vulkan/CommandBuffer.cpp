@@ -437,15 +437,16 @@ void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const 
 #endif
     }
 
+#if HAS_SHADER_OBJECT_EXT
     bindShaderProgram(pipelineState->program);
-
-#if !HAS_SHADER_OBJECT_EXT
-    bindPipeline((VulkanProgram*)pipelineState->program, pipelineState);
+#else
+    mProgram = (VulkanProgram*)pipelineState->program;
+    bindGraphicsPipeline((VulkanProgram*)pipelineState->program, pipelineState);
 #endif
 
 }
 
-void CommandBuffer::bindPipeline(VulkanProgram* vkProgram, const PipelineState* pipelineState) const VULKAN_NOEXCEPT
+void CommandBuffer::bindGraphicsPipeline(VulkanProgram* vkProgram, const PipelineState* pipelineState) const VULKAN_NOEXCEPT
 {
 #if !HAS_SHADER_OBJECT_EXT
     extern VulkanDevice& gfx();
@@ -456,6 +457,16 @@ void CommandBuffer::bindPipeline(VulkanProgram* vkProgram, const PipelineState* 
         auto pipeline = vkProgram->getGraphicsPipeline(gfx().mAttachmentFormats, pipelineState);
         vkCmdBindPipeline(cmd, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
     }
+#endif
+}
+
+void CommandBuffer::bindComputePipeline(VulkanProgram* vkProgram) const VULKAN_NOEXCEPT
+{
+#if !HAS_SHADER_OBJECT_EXT
+    extern VulkanDevice& gfx();
+    assert(vkProgram->getBindPoint() == VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE);
+    auto pipeline = vkProgram->getComputePipeline();
+    vkCmdBindPipeline(cmd, VkPipelineBindPoint::VK_PIPELINE_BIND_POINT_COMPUTE, pipeline);    
 #endif
 }
 

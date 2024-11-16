@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace mygfx {
 
@@ -34,6 +35,28 @@ public:
 
 class DescriptorSet;
 
+#if !HAS_SHADER_OBJECT_EXT
+
+class VulkanProgram;
+
+struct PipelineInfo {
+    VkPipeline pipeline = VK_NULL_HANDLE;
+    size_t hash = 0;
+    TimePoint lastTime {};
+
+    void destroy();
+};
+
+class PipelineCache : public std::unordered_map<size_t, PipelineInfo> {
+public:
+    PipelineCache();
+    ~PipelineCache();
+
+    static void gc();
+};
+
+#endif
+
 class VulkanProgram : public HwProgram {
 public:
     VulkanProgram();
@@ -53,8 +76,11 @@ public:
 #else
     VkPipeline getGraphicsPipeline(const AttachmentFormats& attachmentFormats, const struct PipelineState* pipelineState);
     VkPipeline getComputePipeline();
-    VkPipeline pipeline = VK_NULL_HANDLE;
-    size_t attachmentFormatsHash = 0;
+    PipelineInfo pipelineInfo;
+#if !HAS_DYNAMIC_STATE3
+    PipelineCache pipelineCache;
+#endif
+
 #endif
     VkShaderStageFlagBits stages[MAX_SHADER_STAGE] {};
     Vector<VkDescriptorSet> desciptorSets;

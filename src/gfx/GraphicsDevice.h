@@ -111,6 +111,7 @@ public:
 
     void post(const std::function<void()>& fn, int delay = 2);
 
+    size_t frameNum = 0;
 protected:
     void executeAll();
 

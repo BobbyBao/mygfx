@@ -2,12 +2,13 @@
 #include "VulkanDebug.h"
 #include "VulkanTools.h"
 #include "utils/Log.h"
-#include <vulkan/vulkan_beta.h>
 
 #if USE_VOLK
 #define VOLK_IMPLEMENTATION
 #include "Volk/volk.h"
 #endif
+
+#include <vulkan/vulkan_beta.h>
 
 namespace mygfx {
 
@@ -58,6 +59,9 @@ bool VulkanDeviceHelper::create(const char* name, bool validation)
 #if USE_VOLK
     volkInitialize();
 #endif
+    
+    //validation = true;
+
     // Vulkan instance
     VkResult err = createInstance(name, validation);
     if (err) {

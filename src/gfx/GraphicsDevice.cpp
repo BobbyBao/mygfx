@@ -34,6 +34,8 @@ void GraphicsDevice::swapContext()
     FrameChangeListener::callFrameChange();
 
     Stats::clear();
+
+    ++frameNum;
 }
 
 void GraphicsDevice::beginRender()

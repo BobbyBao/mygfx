@@ -72,9 +72,9 @@ private:
     size_t mHash = 0;
 };
 
-inline PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR { VK_NULL_HANDLE };
-
 #if !USE_VOLK
+
+inline PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR { VK_NULL_HANDLE };
 
 #define VK_FUNCTION(NAME) \
     inline PFN_##NAME NAME { VK_NULL_HANDLE }

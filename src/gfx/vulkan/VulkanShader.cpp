@@ -9,6 +9,49 @@ using namespace spirv_cross;
 
 namespace mygfx {
 
+#if !HAS_SHADER_OBJECT_EXT
+
+inline static std::unordered_set<PipelineCache*> sPipelineCaches;
+inline static std::mutex sLock;
+thread_local PipelineCache sPipelineCache;
+
+void PipelineInfo::destroy()
+{
+    if (pipeline) {
+        vkDestroyPipeline(gfx().device, pipeline, nullptr);
+        pipeline = VK_NULL_HANDLE;
+    }
+}
+
+PipelineCache::PipelineCache()
+{
+    std::unique_lock locker(sLock);
+    sPipelineCaches.insert(this);
+}
+
+PipelineCache::~PipelineCache()
+{
+    std::unique_lock locker(sLock);
+    sPipelineCaches.erase(this);
+}
+
+void PipelineCache::gc()
+{
+    using namespace std::literals::chrono_literals;
+
+    auto now = Clock::now();
+    for (auto& pipelineCache : sPipelineCaches) {
+
+        for (auto& info : *pipelineCache) {
+            if (now - info.second.lastTime < 100s) {
+                // todo:
+            }
+        }
+    }
+}
+
+#endif
+
 ShaderResourceInfo* findShaderResource(std::vector<Ref<ShaderResourceInfo>> shaderResources, uint32_t set, uint32_t binding)
 {
     for (auto& res : shaderResources) {
@@ -186,9 +229,18 @@ VulkanProgram::~VulkanProgram()
         vkDestroyShaderEXT(gfx().device, shaders[i], nullptr);
     }
 #else
-    if (pipeline) {
-        vkDestroyPipeline(gfx().device, pipeline, nullptr);
+
+    pipelineInfo.destroy();
+    
+#if !HAS_DYNAMIC_STATE3
+    for (auto& info : pipelineCache) {
+        info.second.destroy();
     }
+    
+    pipelineCache.clear();
+
+#endif
+
 #endif
     vkDestroyPipelineLayout(gfx().device, pipelineLayout, nullptr);
 }
@@ -314,44 +366,28 @@ bool VulkanProgram::createShaders()
 
 #if !HAS_SHADER_OBJECT_EXT
 
-class PipelineCahce : public std::unordered_map<VulkanProgram*, std::pair<VkPipeline, size_t>> {
-public:
-    inline static std::unordered_set<PipelineCahce*> sPipelineCaches;
-    inline static std::mutex sLock;
-    PipelineCahce() {
-        std::unique_lock locker(sLock);
-        sPipelineCaches.insert(this);
-    }
-
-    ~PipelineCahce()
-    {
-        std::unique_lock locker(sLock);
-        sPipelineCaches.erase(this);
-    }
-
-};
-
-thread_local PipelineCahce sPipelineCache;
-
 VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmentFormats, const PipelineState* pipelineState)
 {
-    if (ThreadUtils::isThisThread(gfx().renderThreadID)) {
-        if (attachmentFormats.getHash() == attachmentFormatsHash) {
-            return pipeline;
-        } else {
-            vkDestroyPipeline(gfx().device, pipeline, nullptr);
-        }
-    } else {
-        auto it = sPipelineCache.find(this);
-        if (it != sPipelineCache.end()) {
-            if (it->second.second == attachmentFormats.getHash()) {
-                return it->second.first;
-            } else {
-                vkDestroyPipeline(gfx().device, it->second.first, nullptr);
-                sPipelineCache.erase(it);
-            }
-        }
+    assert(ThreadUtils::isThisThread(gfx().renderThreadID));
+
+    size_t pipelineHash = attachmentFormats.getHash();
+
+#if !HAS_DYNAMIC_STATE3
+    pipelineHash = fnv1a(pipelineHash, (const unsigned char*)pipelineState, sizeof(PipelineState));
+    auto it = pipelineCache.find(pipelineHash);
+    if (it != pipelineCache.end()) {
+        it->second.lastTime = Clock::now();
+        return it->second.pipeline;
     }
+#else
+
+    if (pipelineHash == pipelineInfo.hash) {
+        pipelineInfo.lastTime = Clock::now();
+        return pipelineInfo.pipeline;
+    } else {
+        pipelineInfo.destroy();
+    }
+#endif
 
     VkPipelineShaderStageCreateInfo stages[16];
     for (int i = 0; i < mShaderModules.size(); i++) {
@@ -366,10 +402,10 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = initializers::pipelineVertexInputStateCreateInfo();
 #if !HAS_DYNAMIC_STATE3
+    VkVertexInputAttributeDescription vertexInputAttributeDescription[16];
+    VkVertexInputBindingDescription vertexInputBindingDescription[16];
     VulkanVertexInput* vertexInput = (VulkanVertexInput*)pipelineState->program->vertexInput;
     if (vertexInput) {
-        VkVertexInputAttributeDescription vertexInputAttributeDescription[16];
-        VkVertexInputBindingDescription vertexInputBindingDescription[16];
         for (auto i = 0; i < vertexInput->attributeDescriptions.size(); i++) {
             vertexInputAttributeDescription[i] = {
                 .location = vertexInput->attributeDescriptions[i].location,
@@ -379,7 +415,7 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
             };
         }
         for (auto i = 0; i < vertexInput->bindingDescriptions.size(); i++) {
-            vertexInputBindingDescription[i] = { 
+            vertexInputBindingDescription[i] = {
                 .binding = vertexInput->bindingDescriptions[i].binding,
                 .stride = vertexInput->bindingDescriptions[i].stride,
                 .inputRate = vertexInput->bindingDescriptions[i].inputRate
@@ -402,6 +438,14 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     auto colorBlendAttachmentState = initializers::pipelineColorBlendAttachmentState(VkColorComponentFlagBits::VK_COLOR_COMPONENT_R_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_G_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_B_BIT | VkColorComponentFlagBits::VK_COLOR_COMPONENT_A_BIT, false);
 
 #if !HAS_DYNAMIC_STATE3
+
+    rasterizationState.polygonMode = (VkPolygonMode)pipelineState->rasterState.polygonMode;
+    rasterizationState.rasterizerDiscardEnable = pipelineState->rasterState.rasterizerDiscardEnable;
+
+    multisampleState.alphaToCoverageEnable = pipelineState->rasterState.alphaToCoverageEnable;
+    multisampleState.alphaToOneEnable = pipelineState->rasterState.alphaToOneEnable;
+    multisampleState.rasterizationSamples = (VkSampleCountFlagBits)pipelineState->rasterState.rasterizationSamples;
+
     colorBlendAttachmentState.blendEnable = pipelineState->colorBlendState.colorBlendEnable;
     colorBlendAttachmentState.colorBlendOp = (VkBlendOp)pipelineState->colorBlendState.colorBlendOp;
     colorBlendAttachmentState.alphaBlendOp = (VkBlendOp)pipelineState->colorBlendState.alphaBlendOp;
@@ -489,19 +533,20 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
     VkPipeline pipe = VK_NULL_HANDLE;
     VK_CHECK_RESULT(vkCreateGraphicsPipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipe));
 
-    if (ThreadUtils::isThisThread(gfx().renderThreadID)) {
-        attachmentFormatsHash = attachmentFormats.getHash();
-        pipeline = pipe;
-    } else {
-        sPipelineCache.emplace(this, std::make_pair(pipe, attachmentFormats.getHash()));
-    }
+#if !HAS_DYNAMIC_STATE3
+    pipelineCache.emplace(pipelineHash, PipelineInfo { .pipeline = pipe, .hash = pipelineHash, .lastTime = Clock::now() });
+#else
+    pipelineInfo.hash = pipelineHash;
+    pipelineInfo.pipeline = pipe;
+    pipelineInfo.lastFrame = Clock::now();
+#endif
     return pipe;
 }
 
 VkPipeline VulkanProgram::getComputePipeline()
 {
-    if (pipeline) {
-        return pipeline;
+    if (pipelineInfo.pipeline) {
+        return pipelineInfo.pipeline;
     }
 
     if (mShaderModules.size() == 0) {
@@ -523,8 +568,8 @@ VkPipeline VulkanProgram::getComputePipeline()
         .basePipelineIndex = -1,
     };
 
-    VK_CHECK_RESULT(vkCreateComputePipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipeline));
-    return pipeline;
+    VK_CHECK_RESULT(vkCreateComputePipelines(gfx().device, VK_NULL_HANDLE, 1, &createInfo, nullptr, &pipelineInfo.pipeline));
+    return pipelineInfo.pipeline;
 }
 #endif
 

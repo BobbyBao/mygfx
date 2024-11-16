@@ -4,6 +4,7 @@
 #include <span>
 #include <string>
 #include <vector>
+#include <chrono>
 
 #include "utils/SharedPtr.h"
 
@@ -25,6 +26,9 @@ using Ref = SharedPtr<T>;
 namespace mygfx {
 
 using namespace utils;
+
+using TimePoint = std::chrono::time_point<std::chrono::high_resolution_clock>;
+using Clock = std::chrono::high_resolution_clock;
 
 using String = std::string;
 

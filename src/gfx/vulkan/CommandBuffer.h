@@ -67,7 +67,8 @@ public:
     void setPrimitiveRestartEnable(bool restartEnable) const VULKAN_NOEXCEPT;
 
     void bindShaderProgram(HwProgram* program) const VULKAN_NOEXCEPT;
-    void bindPipeline(VulkanProgram* vkProgram, const PipelineState* pipelineState) const VULKAN_NOEXCEPT;
+    void bindGraphicsPipeline(VulkanProgram* vkProgram, const PipelineState* pipelineState) const VULKAN_NOEXCEPT;
+    void bindComputePipeline(VulkanProgram* vkProgram) const VULKAN_NOEXCEPT;
     void bindRasterState(const RasterState* rasterState) const VULKAN_NOEXCEPT;
     void bindColorBlendState(const ColorBlendState* colorBlendState) const VULKAN_NOEXCEPT;
     void bindDepthState(const DepthState* depthState) const VULKAN_NOEXCEPT;
@@ -172,7 +173,13 @@ inline void CommandBuffer::bindShaderProgram(HwProgram* program) const VULKAN_NO
         mProgram = vkProgram;
 
 #if HAS_SHADER_OBJECT_EXT
-        vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);    
+        vkCmdBindShadersEXT(cmd, vkProgram->stageCount, vkProgram->stages, vkProgram->shaders);
+#else
+        if (vkProgram->getBindPoint() == VK_PIPELINE_BIND_POINT_COMPUTE) {
+            bindComputePipeline(vkProgram);
+        } else {        
+            bindGraphicsPipeline(vkProgram, nullptr);
+        }
 #endif
     }
 }

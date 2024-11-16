@@ -282,6 +282,19 @@ Dest bit_cast(const Source& source) noexcept {
 #endif
 }
 
+inline constexpr size_t _FNV_offset_basis = 14695981039346656037ULL;
+inline constexpr size_t _FNV_prime        = 1099511628211ULL;
+
+inline size_t fnv1a(size_t _Val, const unsigned char* const _First,
+    const size_t _Count) noexcept { // accumulate range [_First, _First + _Count) into partial FNV-1a hash _Val
+    for (size_t _Idx = 0; _Idx < _Count; ++_Idx) {
+        _Val ^= static_cast<size_t>(_First[_Idx]);
+        _Val *= _FNV_prime;
+    }
+
+    return _Val;
+}
+
 inline constexpr void hash_combine(size_t& seed, size_t hash)
 {
 	hash += 0x9e3779b9 + (seed << 6) + (seed >> 2);
@@ -301,6 +314,12 @@ inline void hash_combine(size_t& seed, T head, Args... args)
 	std::hash<T> hasher;
 	hash_combine(seed, hasher(head));
 	hash_combine(seed, args...);
+}
+
+inline void hash_combine(size_t& seed, const char* v, size_t size)
+{
+	std::hash<const char*> hasher;
+	hash_combine(seed, hasher(v));
 }
 
 template <typename T>
