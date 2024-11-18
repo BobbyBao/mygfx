@@ -33,9 +33,6 @@ using Clock = std::chrono::high_resolution_clock;
 using String = std::string;
 
 template <typename T>
-using Span = std::span<T>;
-
-template <typename T>
 using Vector = std::vector<T>;
 
 using ByteArray = std::vector<uint8_t>;
