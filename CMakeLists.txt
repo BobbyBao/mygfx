@@ -47,4 +47,4 @@ link_directories("$ENV{VULKAN_SDK}/Lib")
 
 include(cmake/helper.cmake)
 
-add_subdirectory(src/gfx)
+add_subdirectory(src)
