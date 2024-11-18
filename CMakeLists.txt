@@ -48,9 +48,3 @@ link_directories("$ENV{VULKAN_SDK}/Lib")
 include(cmake/helper.cmake)
 
 add_subdirectory(src/gfx)
-set_target_properties(gfx PROPERTIES FOLDER mygfx)
-
-add_subdirectory(src)
-
-add_subdirectory(demo/demos)
-set_target_properties(demos PROPERTIES FOLDER demo)
