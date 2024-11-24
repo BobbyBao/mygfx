@@ -16,29 +16,12 @@
 #include "imgui/ImGui.h"
 #include <filesystem>
 
-//#include <SDL3/SDL_vulkan.h>
 
 namespace mygfx {
 
-void* getNativeWindow(SDL_Window* sdlWindow)
-{
-#if defined(WIN32) && !defined(__WINRT__)
-    //return (HWND)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
-#else // /*defined(__APPLE__) && */defined(SDL_VIDEO_DRIVER_COCOA)
-    //return (void*)SDL_GetProperty(SDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
-#endif
-    return nullptr;
-}
-
-Application::Application(int argc, char** argv)
+Application::Application()
 {
     msInstance = this;
-
-    for (int i = 0; i < argc; i++) {
-        mArgs.push_back(argv[i]);
-    }
-
-    //SDL_Init(SDL_INIT_VIDEO);
 
 #ifndef NDEBUG
     mSettings.validation = true;
@@ -53,8 +36,6 @@ Application::Application(int argc, char** argv)
 
 Application::~Application()
 {
-    //SDL_Quit();
-
     msInstance = nullptr;
 }
 
@@ -132,20 +113,27 @@ void getCPUDescription(std::string& cpuName)
 #endif // _WINDOWS
 }
 
-bool Application::createWindow(void** window, void** windowInstance)
-{ 
-    /*
-    mSdlWindow = SDL_CreateWindow(mTitle.c_str(), mWidth, mHeight, SDL_WINDOW_RESIZABLE | SDL_WINDOW_VULKAN);
-    if (!mSdlWindow) {
+bool Application::init()
+{
+    mSettings.name = mTitle.c_str();
+
+    auto device = new VulkanDevice();
+    if (!device->create(mSettings)) {
         return false;
     }
-    
-    *window = getNativeWindow(mSdlWindow);
-    *windowInstance = nullptr;
-#if defined(WIN32)
-    *windowInstance = SDL_GetProperty(SDL_GetWindowProperties(mSdlWindow), SDL_PROP_WINDOW_WIN32_INSTANCE_POINTER, nullptr);
-#endif
-    */
+
+    mGraphicsApi = std::make_unique<GraphicsApi>(*device);
+
+    Texture::staticInit();
+
+    onInit();
+
+    onStart();
+
+    mStartTime = Clock::now();
+    mLastTimestamp = mStartTime;
+    mTimePrevEnd = mLastTimestamp;
+    mPrepared = true;
     return true;
 }
 
@@ -230,6 +218,18 @@ void Application::onPreUpdate(double delta)
     if (mShowGUI) {
         onGUI();
     }
+}
+    
+void Application::onUpdate(double delta)
+{
+}
+    
+void Application::onPreDraw(GraphicsApi& cmd)
+{
+}
+    
+void Application::onDraw(GraphicsApi& cmd)
+{
 }
 
 void Application::onPostDraw(GraphicsApi& cmd)

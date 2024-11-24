@@ -5,7 +5,6 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
-
 namespace math {
 
 using namespace glm;
@@ -19,7 +18,6 @@ using Vector4 = glm::vec4;
 using Quaternion = glm::quat;
 using Matrix3 = glm::mat3;
 using Matrix4 = glm::mat4;
-
 
 inline static const float MATH_PI = pi<float>();
 inline static const float MATH_HALF_PI = pi<float>() / 2;
@@ -63,8 +61,11 @@ struct Aabb {
         max = glm::max(max, pt);
         return *this;
     }
-
 };
+
+inline Aabb Aabb::Empty {};
+inline Aabb Aabb::Infinity { float3 { std::numeric_limits<float>::min() },
+    float3 { std::numeric_limits<float>::max() } };
 
 struct Rect {
     vec2 min;

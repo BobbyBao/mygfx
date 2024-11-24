@@ -9,15 +9,16 @@ class CameraController;
 
 class Application {
 public:
-    Application(int argc = 0, char** argv = nullptr);
+    Application();
     virtual ~Application();
 
     uint32_t getWidth() const { return mWidth; }
     uint32_t getHeight() const { return mHeight; }
+	
+	bool init();
 
     void handleEvent(const SDL_Event& e);
 protected:
-    virtual bool createWindow(void** window, void** windowInstance);
     virtual void onInit();
     virtual void onStart();
     virtual void onDestroy();
@@ -36,7 +37,8 @@ protected:
     virtual void mouseUp(int button, float x, float y);
     virtual void mouseWheel(float wheelDelta);
     virtual void mouseMove(float x, float y);
-
+	
+    inline static Application* msInstance = nullptr;
 protected:
     void setupConsole(std::string title);
     void setupDPIAwareness();
@@ -51,10 +53,22 @@ protected:
 	void* mHInstance;    
     std::unique_ptr<GraphicsApi> mGraphicsApi;
     Ref<HwSwapchain> mSwapchain;
+	bool mPrepared = false;
+    bool mQuit = false;
+    double mFrameTimer = 0.01;
+    uint32_t mFrameCounter = 0;
+    uint32_t mLastFPS = 0;
+    TimePoint mStartTime;
+    TimePoint mLastTimestamp, mTimePrevEnd;
     Ref<UIOverlay> mUI;
     bool mShowProfiler = false;
     bool mShowGUI = true;
-    inline static Application* msInstance = nullptr;
 };
+
+
+
+
+
+
 
 }

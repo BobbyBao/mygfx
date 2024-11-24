@@ -15,7 +15,6 @@ DemoDesc::DemoDesc(const char* name, const std::function<Demo*()>& creator)
 }
 
 DemoApp::DemoApp(int argc, char** argv)
-    : Application(argc, argv)
 {
 }
 
