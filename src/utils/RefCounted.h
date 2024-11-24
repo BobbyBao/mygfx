@@ -1,5 +1,6 @@
 #pragma once
 #include <atomic>
+#include "HandleAllocator.h"
 
 namespace utils {
 
@@ -22,13 +23,13 @@ public:
     void addRef();
     void releaseRef();
     int refs() const;
-    // WeakRefCount* getWeakRefCount() const;
+    WeakRefCount* getWeakRefCount() const;
 protected:
     virtual void deleteThis();
 
 private:
     std::atomic<int> mRefCount = 0;
-    // mutable Handle<WeakRefCount> mWeakRefCount;
+    mutable Handle<WeakRefCount> mWeakRefCount;
 };
 
 static_assert(sizeof(RefCounted) == 16);

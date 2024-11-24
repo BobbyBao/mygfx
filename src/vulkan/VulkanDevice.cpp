@@ -61,7 +61,7 @@ bool VulkanDevice::create(const Settings& settings)
     SamplerHandle::init();
 
     // Create a 'dynamic' constant buffer
-    const uint32_t constantBuffersMemSize = 16 * 1024 * 1024;
+    const uint32_t constantBuffersMemSize = 32 * 1024 * 1024;
     mConstantBufferRing.create(BufferUsage::UNIFORM | BufferUsage::STORAGE | BufferUsage::SHADER_DEVICE_ADDRESS,
         constantBuffersMemSize, MAX_BACKBUFFER_COUNT, constantBuffersMemSize, "Uniforms");
 #if LARGE_DYNAMIC_INDEX

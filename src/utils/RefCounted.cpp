@@ -7,13 +7,13 @@ RefCounted::RefCounted()
 }
 
 RefCounted::~RefCounted()
-{ /*
-         if (mWeakRefCount) {
-                 mWeakRefCount->expired = true;
-                 (mWeakRefCount->weakRefs)--;
-                 if (!mWeakRefCount->weakRefs)
-                         mWeakRefCount.free();
-         }*/
+{
+    if (mWeakRefCount) {
+        mWeakRefCount->expired = true;
+        (mWeakRefCount->weakRefs)--;
+        if (!mWeakRefCount->weakRefs)
+            mWeakRefCount.free();
+    }
 }
 
 void RefCounted::addRef()
@@ -37,14 +37,15 @@ int RefCounted::refs() const
 {
     return mRefCount;
 }
-/*
-WeakRefCount* RefCounted::getWeakRefCount() const {
-        if (mWeakRefCount.isNull()) {
-                mWeakRefCount.create();
-                (mWeakRefCount->weakRefs)++;
-        }
 
-        return mWeakRefCount.get();
-}*/
+WeakRefCount* RefCounted::getWeakRefCount() const
+{
+    if (mWeakRefCount.isNull()) {
+        mWeakRefCount.create();
+        (mWeakRefCount->weakRefs)++;
+    }
+
+    return mWeakRefCount.get();
+}
 
 }
