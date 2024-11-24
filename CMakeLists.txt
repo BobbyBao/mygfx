@@ -48,3 +48,4 @@ link_directories("$ENV{VULKAN_SDK}/Lib")
 include(cmake/helper.cmake)
 
 add_subdirectory(src)
+add_subdirectory(samples)
