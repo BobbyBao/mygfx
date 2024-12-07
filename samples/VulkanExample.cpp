@@ -70,6 +70,9 @@ void VulkanExample::prepare()
         setDemo(0);
     }
 
+    mUI = makeShared<UIOverlay>();
+    mUI->init();
+
     prepared = true;
 }
 
@@ -124,6 +127,8 @@ void VulkanExample::render()
 
     onDraw(cmd);
 
+    mUI->draw(cmd);
+
     cmd.endRendering(mSwapchain->renderTarget);
 
     cmd.commit(mSwapchain);
@@ -136,15 +141,14 @@ void VulkanExample::render()
 
 void VulkanExample::onGUI()
 { 
-    /*
     ImGui::SetNextWindowPos({ 10.0f, 10.0f });
     ImGui::SetNextWindowSize({ -1.0f, -1.0f });
     ImGui::SetNextWindowBgAlpha(0.75f);
 
     if (ImGui::Begin("Demos", nullptr, ImGuiWindowFlags_NoDecoration)) {
-        ImGui::Text("CPU:	%s", mCPUName.c_str());
+        //ImGui::Text("CPU:	%s", mCPUName.c_str());
         ImGui::Text("GPU:	%s", gfxApi().getDeviceName());
-        ImGui::Text("FPS:	%d", mLastFPS);
+        ImGui::Text("FPS:	%d", lastFPS);
         ImGui::Text("DrawCall:%d", Stats::getDrawCall());
 
         const char* preview_value = mActiveDemo ? mActiveDemo->mName : "";
@@ -165,14 +169,17 @@ void VulkanExample::onGUI()
         }
 
         ImGui::End();
-    }*/
+    }
 
 }
 
-void VulkanExample::keyDown(uint32_t key)
+void VulkanExample::windowResized()
 {
-    //Application::keyDown(key);
+    gfxApi().resize(mSwapchain, width, height);
+}
 
+void VulkanExample::keyPressed(uint32_t key)
+{
 }
 
 void VulkanExample::onUpdate(double delta)

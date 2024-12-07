@@ -72,7 +72,7 @@ const char* fsCode = R"(
 			}
 )";
 
-UIOverlay::UIOverlay(SDL_Window* wnd)
+UIOverlay::UIOverlay()
 {
 #if defined(__ANDROID__)
     if (vks::android::screenDensity >= ACONFIGURATION_DENSITY_XXHIGH) {
@@ -146,16 +146,6 @@ void UIOverlay::init()
 
     mFontTexture = Texture::create2D(texWidth, texHeight, Format::R8G8B8A8_UNORM, MemoryBlock(fontData, dataSize));
     io.Fonts->TexID = (void*)(int64_t)mFontTexture->index();
-}
-
-bool UIOverlay::handleEvent(const SDL_Event& event)
-{
-    if (ImGui::GetCurrentContext() == nullptr) {
-        return false;
-    }
-
-    //return ImGui_ImplSDL3_ProcessEvent(&event);
-    return false;
 }
 
 void UIOverlay::update()

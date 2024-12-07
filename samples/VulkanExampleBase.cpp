@@ -14,6 +14,8 @@ extern CAMetalLayer* layer;
 #endif
 #endif
 
+#include "imgui/imgui.h"
+
 using namespace mygfx;
 using namespace mygfx::samples;
 
@@ -110,8 +112,11 @@ void VulkanExampleBase::nextFrame()
 	{
 		viewUpdated = false;
 	}
+	
+	updateOverlay();
 
 	render();
+
 	frameCounter++;
 	auto tEnd = std::chrono::high_resolution_clock::now();
 #if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT)) && !defined(VK_EXAMPLE_XCODE_GENERATED)
@@ -150,44 +155,27 @@ void VulkanExampleBase::nextFrame()
 	}
 	tPrevEnd = tEnd;
 
-	//updateOverlay();
+}
+
+void VulkanExampleBase::updateOverlay()
+{
+	ImGuiIO& io = ImGui::GetIO();
+
+	io.DisplaySize = ImVec2((float)width, (float)height);
+	io.DeltaTime = frameTimer;
+
+	io.MousePos = ImVec2(mouseState.position.x, mouseState.position.y);
+	io.MouseDown[0] = mouseState.buttons.left;
+	io.MouseDown[1] = mouseState.buttons.right;
+	io.MouseDown[2] = mouseState.buttons.middle;
+
+	ImGui::NewFrame();
+	onGUI();
 }
 
 
 void VulkanExampleBase::renderLoop()
 { 
-	/*
-// SRS - for non-apple plaforms, handle benchmarking here within VulkanExampleBase::renderLoop()
-//     - for macOS, handle benchmarking within NSApp rendering loop via displayLinkOutputCb()
-#if !(defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT))
-	if (benchmark.active) {
-#if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-		while (!configured)
-		{
-			if (wl_display_dispatch(display) == -1)
-				break;
-		}
-		while (wl_display_prepare_read(display) != 0)
-		{
-			if (wl_display_dispatch_pending(display) == -1)
-				break;
-		}
-		wl_display_flush(display);
-		wl_display_read_events(display);
-		if (wl_display_dispatch_pending(display) == -1)
-			return;
-#endif
-
-		benchmark.run([=] { render(); }, vulkanDevice->properties);
-		vkDeviceWaitIdle(device);
-		if (benchmark.filename != "") {
-			benchmark.saveResults();
-		}
-		return;
-	}
-#endif
-	*/
-
 	destWidth = width;
 	destHeight = height;
 	lastTimestamp = std::chrono::high_resolution_clock::now();

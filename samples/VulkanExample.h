@@ -1,8 +1,10 @@
 #pragma once
+#include "GraphicsApi.h"
 
 #include "VulkanExampleBase.h"
 #include "ShaderLibs.h"
 #include "Maths.h"
+#include "UIOverlay.h"
 
 namespace mygfx::samples {
 
@@ -48,14 +50,15 @@ protected:
     void onDestroy();
     void render();
     void onGUI();
-    void keyDown(uint32_t key);
+    void windowResized() override;
+    void keyPressed(uint32_t key) override;
     void onUpdate(double delta);
     void onPreDraw(GraphicsApi& cmd);
     void onDraw(GraphicsApi& cmd);
     
     std::unique_ptr<GraphicsApi> mGraphicsApi;
     Ref<HwSwapchain> mSwapchain;
-
+    Ref<UIOverlay> mUI;
     int mActiveDemoIndex = -1;
     Ref<Demo> mActiveDemo;
 };

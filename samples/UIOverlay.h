@@ -15,11 +15,10 @@ class Texture;
 
 class UIOverlay : public utils::RefCounted {
 public:
-    UIOverlay(SDL_Window* wnd);
+    UIOverlay();
     ~UIOverlay();
 
     void init();
-    bool handleEvent(const SDL_Event& event);
     void update();
     void draw(GraphicsApi& cmd);
     void resize(uint32_t width, uint32_t height);

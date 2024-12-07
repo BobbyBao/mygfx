@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Application.h"
-
 #ifdef _WIN32
 #pragma comment(linker, "/subsystem:windows")
 #include <windows.h>
@@ -25,6 +23,20 @@
 #include <xcb/xcb.h>
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <vector>
+#include <array>
+#include <unordered_map>
+#include <numeric>
+#include <ctime>
+#include <iostream>
+#include <chrono>
+#include <random>
+#include <algorithm>
+#include <sys/stat.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -55,7 +67,9 @@ protected:
 	bool resizing = false;
 	void handleMouseMove(int32_t x, int32_t y);
 	void nextFrame();
-	
+	void updateOverlay();	
+    virtual void onGUI() { }
+
 	// Frame counter to display fps
 	uint32_t frameCounter = 0;
 	uint32_t lastFPS = 0;
