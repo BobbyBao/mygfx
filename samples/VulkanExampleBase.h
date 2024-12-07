@@ -47,7 +47,7 @@ class VulkanExampleBase
 public:
     VulkanExampleBase();
 	~VulkanExampleBase();
-	bool initVulkan();
+	virtual bool initVulkan();
 protected:
 	std::string getWindowTitle() const;
 	uint32_t destWidth;
@@ -259,9 +259,6 @@ public:
 	virtual void mouseMoved(double x, double y, bool &handled);
 	/** @brief (Virtual) Called when the window has been resized, can be used by the sample application to recreate resources */
 	virtual void windowResized();
-
-
-
 	
 	/** @brief Prepares all Vulkan resources and functions required to run the sample */
 	virtual void prepare();
@@ -270,14 +267,10 @@ public:
 
 	/** @brief Entry point for the main render loop */
 	void renderLoop();
-
-
-
 	
 #if defined(_WIN32)
 	virtual void OnHandleMessage(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif
-
 
 };
 

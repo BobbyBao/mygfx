@@ -1,5 +1,7 @@
 #include "VulkanExample.h"
 #include "utils/Log.h"
+#include "vulkan/VulkanDevice.h"
+#include "resource/Texture.h"
 
 using namespace mygfx;
 using namespace mygfx::samples;
@@ -18,13 +20,57 @@ VulkanExample::VulkanExample(int argc, char** argv)
 {
 }
 
-void VulkanExample::onStart()
+bool VulkanExample::initVulkan() {
+    
+    mygfx::Settings settings;
+    settings.name = title.c_str();
+
+    auto device = new VulkanDevice();
+    if (!device->create(settings)) {
+        return false;
+    }
+
+    mGraphicsApi = std::make_unique<GraphicsApi>(*device);
+
+    Texture::staticInit();
+    return true;
+}
+
+void VulkanExample::prepare()
 {
-    //Application::onStart();
+    SwapChainDesc desc {
+        .width = width,
+        .height = height,
+    };
+    
+#if defined(_WIN32)
+	desc.windowInstance = windowInstance;
+    desc.window = window;
+#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
+	desc.window = androidApp->window;
+#elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
+	desc.window = view;
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
+	desc.window = metalLayer;
+#elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
+	swapChain.initSurface(dfb, surface);
+#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
+	swapChain.initSurface(display, surface);
+#elif defined(VK_USE_PLATFORM_XCB_KHR)
+	swapChain.initSurface(connection, window);
+#elif (defined(_DIRECT2DISPLAY) || defined(VK_USE_PLATFORM_HEADLESS_EXT))
+	swapChain.initSurface(width, height);
+#elif defined(VK_USE_PLATFORM_SCREEN_QNX)
+	swapChain.initSurface(screen_context, screen_window);
+#endif
+
+    mSwapchain = mGraphicsApi->createSwapchain(desc);
 
     if (sDemos.size() > 0) {
         setDemo(0);
     }
+
+    prepared = true;
 }
 
 void VulkanExample::setDemo(int index)
@@ -59,6 +105,32 @@ void VulkanExample::setDemo(Demo* demo)
 
 void VulkanExample::render()
 {
+    auto& cmd = gfxApi();
+
+    cmd.beginFrame();
+
+    onPreDraw(cmd);
+
+    cmd.makeCurrent(mSwapchain);
+
+    RenderPassInfo renderInfo {
+        .clearFlags = TargetBufferFlags::ALL,
+        .clearColor = { 0.15f, 0.15f, 0.15f, 1.0f }
+    };
+
+    renderInfo.viewport = { .left = 0, .top = 0, .width = width, .height = height };
+
+    cmd.beginRendering(mSwapchain->renderTarget, renderInfo);
+
+    onDraw(cmd);
+
+    cmd.endRendering(mSwapchain->renderTarget);
+
+    cmd.commit(mSwapchain);
+
+    cmd.endFrame();
+
+    cmd.flush();
 
 }
 
@@ -132,7 +204,6 @@ void VulkanExample::onDestroy()
 
     ShaderLibs::clean();
 
-    //Application::onDestroy();
 }
 
 #include "Entrypoints.h"
