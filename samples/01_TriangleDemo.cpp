@@ -1,4 +1,4 @@
-#include "DemoApp.h"
+#include "VulkanExample.h"
 
 namespace mygfx::samples {
 

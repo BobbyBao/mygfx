@@ -14,7 +14,7 @@ class Demo : public utils::RefCounted {
 public:
     virtual void start() { }
     virtual void gui() { }
-    virtual void update(double delta) { }
+    virtual void update(float delta) { }
     virtual void preDraw(GraphicsApi& cmd) { }
     virtual void draw(GraphicsApi& cmd) { }
     virtual void stop() { }
@@ -52,7 +52,7 @@ protected:
     void onGUI();
     void windowResized() override;
     void keyPressed(uint32_t key) override;
-    void onUpdate(double delta);
+    void update(float delta) override;
     void onPreDraw(GraphicsApi& cmd);
     void onDraw(GraphicsApi& cmd);
     

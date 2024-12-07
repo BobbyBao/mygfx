@@ -114,7 +114,7 @@ void VulkanExampleBase::nextFrame()
 	}
 	
 	updateOverlay();
-
+	update(frameTimer);
 	render();
 
 	frameCounter++;

@@ -53,15 +53,15 @@ void VulkanExample::prepare()
 #elif defined(VK_USE_PLATFORM_METAL_EXT)
 	desc.window = metalLayer;
 #elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
-	swapChain.initSurface(dfb, surface);
+	//swapChain.initSurface(dfb, surface);
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-	swapChain.initSurface(display, surface);
+	//swapChain.initSurface(display, surface);
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
-	swapChain.initSurface(connection, window);
+	//swapChain.initSurface(connection, window);
 #elif (defined(_DIRECT2DISPLAY) || defined(VK_USE_PLATFORM_HEADLESS_EXT))
-	swapChain.initSurface(width, height);
+	//swapChain.initSurface(width, height);
 #elif defined(VK_USE_PLATFORM_SCREEN_QNX)
-	swapChain.initSurface(screen_context, screen_window);
+	//swapChain.initSurface(screen_context, screen_window);
 #endif
 
     mSwapchain = mGraphicsApi->createSwapchain(desc);
@@ -182,7 +182,7 @@ void VulkanExample::keyPressed(uint32_t key)
 {
 }
 
-void VulkanExample::onUpdate(double delta)
+void VulkanExample::update(float delta)
 {
     if (mActiveDemo) {
         mActiveDemo->update(delta);

@@ -69,6 +69,7 @@ protected:
 	void nextFrame();
 	void updateOverlay();	
     virtual void onGUI() { }
+    virtual void update(float delta) { }
 
 	// Frame counter to display fps
 	uint32_t frameCounter = 0;
