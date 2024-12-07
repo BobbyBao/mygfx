@@ -1,4 +1,4 @@
-#include "DemoApp.h"
+#include "VulkanExample.h"
 #include "utils/Log.h"
 
 using namespace mygfx;
@@ -14,20 +14,20 @@ DemoDesc::DemoDesc(const char* name, const std::function<Demo*()>& creator)
     sDemos.push_back(this);
 }
 
-DemoApp::DemoApp(int argc, char** argv)
+VulkanExample::VulkanExample(int argc, char** argv)
 {
 }
 
-void DemoApp::onStart()
+void VulkanExample::onStart()
 {
-    Application::onStart();
+    //Application::onStart();
 
     if (sDemos.size() > 0) {
         setDemo(0);
     }
 }
 
-void DemoApp::setDemo(int index)
+void VulkanExample::setDemo(int index)
 {
     if (index == mActiveDemoIndex) {
         return;
@@ -40,7 +40,7 @@ void DemoApp::setDemo(int index)
     setDemo(demo);
 }
 
-void DemoApp::setDemo(Demo* demo)
+void VulkanExample::setDemo(Demo* demo)
 {
     if (demo == mActiveDemo) {
         return;
@@ -57,7 +57,12 @@ void DemoApp::setDemo(Demo* demo)
     }
 }
 
-void DemoApp::onGUI()
+void VulkanExample::render()
+{
+
+}
+
+void VulkanExample::onGUI()
 { 
     /*
     ImGui::SetNextWindowPos({ 10.0f, 10.0f });
@@ -92,34 +97,34 @@ void DemoApp::onGUI()
 
 }
 
-void DemoApp::keyDown(uint32_t key)
+void VulkanExample::keyDown(uint32_t key)
 {
-    Application::keyDown(key);
+    //Application::keyDown(key);
 
 }
 
-void DemoApp::onUpdate(double delta)
+void VulkanExample::onUpdate(double delta)
 {
     if (mActiveDemo) {
         mActiveDemo->update(delta);
     }
 }
 
-void DemoApp::onPreDraw(GraphicsApi& cmd)
+void VulkanExample::onPreDraw(GraphicsApi& cmd)
 {
     if (mActiveDemo) {
         mActiveDemo->preDraw(cmd);
     }
 }
 
-void DemoApp::onDraw(GraphicsApi& cmd)
+void VulkanExample::onDraw(GraphicsApi& cmd)
 {
     if (mActiveDemo) {
         mActiveDemo->draw(cmd);
     }
 }
 
-void DemoApp::onDestroy()
+void VulkanExample::onDestroy()
 {
     if (mActiveDemo) {
         mActiveDemo->stop();
@@ -127,5 +132,9 @@ void DemoApp::onDestroy()
 
     ShaderLibs::clean();
 
-    Application::onDestroy();
+    //Application::onDestroy();
 }
+
+#include "Entrypoints.h"
+
+VULKAN_EXAMPLE_MAIN()

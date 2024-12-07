@@ -1,4 +1,4 @@
-#include "DemoApp.h"
+#include "VulkanExample.h"
 #include "resource/Mesh.h"
 #include "resource/Texture.h"
 
@@ -17,8 +17,8 @@ public:
 
     void draw(GraphicsApi& cmd) override
     {
-        float w = (float)mApp->getWidth();
-        float h = (float)mApp->getHeight();
+        float w = (float)mApp->width;
+        float h = (float)mApp->height;
         float aspect = w / h;
         auto vp = glm::ortho(-aspect, aspect, 1.0f, -1.0f, -1.0f, 1.0f);
 

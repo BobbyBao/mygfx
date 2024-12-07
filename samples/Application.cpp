@@ -27,90 +27,12 @@ Application::Application()
     mSettings.validation = true;
 #endif
 
-#if defined(_WIN32)
-    setupConsole(mTitle);
-    setupDPIAwareness();
-#endif
     FileSystem::setBasePath("../../../media");
 }
 
 Application::~Application()
 {
     msInstance = nullptr;
-}
-
-#if defined(_WIN32)
-// Win32 : Sets up a console window and redirects standard output to it
-void Application::setupConsole(std::string title)
-{
-    AllocConsole();
-    AttachConsole(GetCurrentProcessId());
-    FILE* stream;
-    freopen_s(&stream, "CONIN$", "r", stdin);
-    freopen_s(&stream, "CONOUT$", "w+", stdout);
-    freopen_s(&stream, "CONOUT$", "w+", stderr);
-    // Enable flags so we can color the output
-    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD dwMode = 0;
-    GetConsoleMode(consoleHandle, &dwMode);
-    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    SetConsoleMode(consoleHandle, dwMode);
-    SetConsoleTitle(TEXT(title.c_str()));
-}
-
-void Application::setupDPIAwareness()
-{
-    typedef HRESULT*(__stdcall * SetProcessDpiAwarenessFunc)(PROCESS_DPI_AWARENESS);
-
-    HMODULE shCore = LoadLibraryA("Shcore.dll");
-    if (shCore) {
-        SetProcessDpiAwarenessFunc setProcessDpiAwareness = (SetProcessDpiAwarenessFunc)GetProcAddress(shCore, "SetProcessDpiAwareness");
-
-        if (setProcessDpiAwareness != nullptr) {
-            setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
-        }
-
-        FreeLibrary(shCore);
-    }
-}
-
-#endif
-
-void getCPUDescription(std::string& cpuName)
-{
-#if defined(_WINDOWS)
-    int32_t nIDs = 0;
-    int32_t nExIDs = 0;
-
-    char strCPUName[0x40] = {};
-
-    std::array<int, 4> cpuInfo;
-    std::vector<std::array<int, 4>> extData;
-
-    __cpuid(cpuInfo.data(), 0);
-
-    // Calling __cpuid with 0x80000000 as the function_id argument
-    // gets the number of the highest valid extended ID.
-    __cpuid(cpuInfo.data(), 0x80000000);
-
-    nExIDs = cpuInfo[0];
-    for (int i = 0x80000000; i <= nExIDs; ++i) {
-        __cpuidex(cpuInfo.data(), i, 0);
-        extData.push_back(cpuInfo);
-    }
-
-    // Interpret CPU strCPUName string if reported
-    if (nExIDs >= 0x80000004) {
-        memcpy(strCPUName, extData[2].data(), sizeof(cpuInfo));
-        memcpy(strCPUName + 16, extData[3].data(), sizeof(cpuInfo));
-        memcpy(strCPUName + 32, extData[4].data(), sizeof(cpuInfo));
-    }
-
-    cpuName = strCPUName;
-#else
-#pragma message("Please add code to fetch CPU name for this platform")
-    cpuName = "Unavailable";
-#endif // _WINDOWS
 }
 
 bool Application::init()

@@ -40,10 +40,7 @@ protected:
 	
     inline static Application* msInstance = nullptr;
 protected:
-    void setupConsole(std::string title);
-    void setupDPIAwareness();
     
-    Vector<String> mArgs;
     String mTitle = "Phantom Player";
 	Settings mSettings;
 	uint32_t mWidth = 1920;

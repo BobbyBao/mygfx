@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Application.h"
+#include "VulkanExampleBase.h"
 #include "ShaderLibs.h"
 #include "Maths.h"
 
 namespace mygfx::samples {
 
-class DemoApp;
+class VulkanExample;
 
 class Demo : public utils::RefCounted {
 public:
@@ -20,9 +20,9 @@ public:
 protected:
     const char* mName = "";
     String mDesc;
-    DemoApp* mApp = nullptr;
+    VulkanExample* mApp = nullptr;
 
-    friend class DemoApp;
+    friend class VulkanExample;
 };
 
 struct DemoDesc {
@@ -34,24 +34,25 @@ struct DemoDesc {
 #define DEF_DEMO(TYPE, NAME) \
     inline static DemoDesc s_##TYPE(NAME, []() { return new TYPE(); });
 
-class DemoApp : public Application
+class VulkanExample : public VulkanExampleBase
 {
 public:
-    DemoApp(int argc = 0, char** argv = nullptr);
-
+    VulkanExample(int argc = 0, char** argv = nullptr);
+    
     void setDemo(int index);
     void setDemo(Demo* demo);
 
-    static DemoApp* get() { return (DemoApp*)msInstance; }
+    //static DemoApp* get() { return (DemoApp*)msInstance; }
 
 protected:
-    void onStart() override;
-    void onDestroy() override;
-    void onGUI() override;
-    void keyDown(uint32_t key) override;
-    void onUpdate(double delta) override;
-    void onPreDraw(GraphicsApi& cmd) override;
-    void onDraw(GraphicsApi& cmd) override;
+    void onStart();
+    void onDestroy();
+    void render();
+    void onGUI();
+    void keyDown(uint32_t key);
+    void onUpdate(double delta);
+    void onPreDraw(GraphicsApi& cmd);
+    void onDraw(GraphicsApi& cmd);
 
     int mActiveDemoIndex = -1;
     Ref<Demo> mActiveDemo;
