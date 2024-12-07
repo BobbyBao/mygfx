@@ -538,7 +538,6 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
 #else
     pipelineInfo.hash = pipelineHash;
     pipelineInfo.pipeline = pipe;
-    pipelineInfo.lastFrame = Clock::now();
 #endif
     return pipe;
 }

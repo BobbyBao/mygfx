@@ -26,6 +26,11 @@ VulkanDevice& gfx()
     return static_cast<VulkanDevice&>(device());
 }
 
+GraphicsDevice* GraphicsDevice::createDevice()
+{
+    return new VulkanDevice();
+}
+
 VulkanDevice::VulkanDevice()
 {
 }
@@ -75,6 +80,11 @@ bool VulkanDevice::create(const Settings& settings)
     mUploadHeap.create(uploadHeapMemSize);
 
     return true;
+}
+
+void* VulkanDevice::getInstanceData()
+{
+    return instance;
 }
 
 const char* VulkanDevice::getDeviceName() const
@@ -177,7 +187,6 @@ void VulkanDevice::destroy()
     mCommandQueues[2].release();
 
     VulkanDeviceHelper::destroy();
-
 }
 
 bool VulkanDevice::allocConstantBuffer(uint32_t size, void** pData, BufferInfo* pOut)
@@ -419,7 +428,6 @@ void VulkanDevice::makeCurrent(HwSwapchain* sc)
     } else {
         VK_CHECK_RESULT(result);
     }
-
 }
 
 void VulkanDevice::resetState(int)
@@ -476,24 +484,24 @@ void VulkanDevice::bindShaderProgram(HwProgram* program)
     mCurrentCmd->bindShaderProgram(program);
 }
 
-void VulkanDevice::bindRasterState(RasterState* rasterState)
+void VulkanDevice::bindRasterState(const RasterState& rasterState)
 {
-    mCurrentCmd->bindRasterState(rasterState);
+    mCurrentCmd->bindRasterState(&rasterState);
 }
 
-void VulkanDevice::bindColorBlendState(ColorBlendState* colorBlendState)
+void VulkanDevice::bindColorBlendState(const ColorBlendState& colorBlendState)
 {
-    mCurrentCmd->bindColorBlendState(colorBlendState);
+    mCurrentCmd->bindColorBlendState(&colorBlendState);
 }
 
-void VulkanDevice::bindDepthState(DepthState* depthState)
+void VulkanDevice::bindDepthState(const DepthState& depthState)
 {
-    mCurrentCmd->bindDepthState(depthState);
+    mCurrentCmd->bindDepthState(&depthState);
 }
 
-void VulkanDevice::bindStencilState(StencilState* stencilState)
+void VulkanDevice::bindStencilState(const StencilState& stencilState)
 {
-    mCurrentCmd->bindStencilState(stencilState);
+    mCurrentCmd->bindStencilState(&stencilState);
 }
 
 void VulkanDevice::bindPipelineState(const PipelineState& pipelineState)
@@ -605,15 +613,15 @@ static void drawBatch1(const CommandBuffer& cmd, const RenderCommand* start, uin
 void VulkanDevice::drawBatch(HwRenderQueue* renderQueue)
 {
     const auto& primitives = renderQueue->getReadCommands();
-//#if HAS_SHADER_OBJECT_EXT
+    // #if HAS_SHADER_OBJECT_EXT
     if (primitives.size() > 200) {
         drawMultiThreaded(primitives, *mCurrentCmd);
     } else {
         drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
     }
-//#else
-//    drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
-//#endif
+    // #else
+    //     drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
+    // #endif
 
     Stats::drawCall() += (uint32_t)primitives.size();
 }
@@ -659,7 +667,7 @@ void VulkanDevice::drawMultiThreaded(const std::vector<RenderCommand>& items, co
     uint32_t start = 0, end = 0;
 
     mSecondCmdBuffers.reserve(threadNum);
-    
+
 #if !HAS_SHADER_OBJECT_EXT
     for (auto& prim : items) {
         VulkanProgram* vkProgram = (VulkanProgram*)prim.pipelineState.program;

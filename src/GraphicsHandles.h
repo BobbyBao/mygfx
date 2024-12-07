@@ -113,7 +113,7 @@ public:
     ShaderResourceInfo* getShaderResource(const String& name);
     HwDescriptorSet* getDescriptorSet(uint32_t index);
     HwDescriptorSet* createDescriptorSet(uint32_t index);
-    HwVertexInput* vertexInput;
+    Ref<HwVertexInput> vertexInput;
 };
 
 struct RenderTargetDesc {

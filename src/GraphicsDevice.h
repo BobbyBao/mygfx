@@ -29,9 +29,12 @@ class GraphicsDevice : public SyncContext {
 public:
     GraphicsDevice();
     virtual ~GraphicsDevice();
+    
+    static GraphicsDevice* createDevice();
 
     virtual bool create(const Settings& settings) = 0;
     virtual const char* getDeviceName() const = 0;
+    virtual void* getInstanceData() { return nullptr; }
 
     // Returns the dispatcher. This is only called once during initialization of the CommandStream,
     // so it doesn't matter that it's virtual.

@@ -217,6 +217,10 @@ void CommandBuffer::resetState() const VULKAN_NOEXCEPT
     vkCmdSetPrimitiveTopologyEXT(cmd, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     vkCmdSetRasterizerDiscardEnableEXT(cmd, VK_FALSE);
 
+    vkCmdSetLineWidth(cmd, 1.0f);
+    
+    vkCmdSetRasterizerDiscardEnable(cmd, false);
+
 #if HAS_DYNAMIC_STATE3
     vkCmdSetPolygonModeEXT(cmd, VK_POLYGON_MODE_FILL);
     vkCmdSetRasterizationSamplesEXT(cmd, VK_SAMPLE_COUNT_1_BIT);

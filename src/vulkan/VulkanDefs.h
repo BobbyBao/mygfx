@@ -1,6 +1,6 @@
 #pragma once
 
-#define USE_VOLK 0
+#define USE_VOLK 1
 #if USE_VOLK
 #include "volk/volk.h"
 #else
@@ -22,10 +22,10 @@
 
 #define HAS_DYNAMIC_STATE1 1
 #define HAS_DYNAMIC_STATE2 1
-#define HAS_DYNAMIC_STATE3 0
+#define HAS_DYNAMIC_STATE3 1
 
 #if defined(VK_EXT_shader_object) && defined(HAS_DYNAMIC_RENDERING)
-#define HAS_SHADER_OBJECT_EXT 0
+#define HAS_SHADER_OBJECT_EXT 1
 #else
 #define HAS_SHADER_OBJECT_EXT 0
 #endif

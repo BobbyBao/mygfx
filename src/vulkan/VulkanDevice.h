@@ -32,7 +32,8 @@ public:
     ~VulkanDevice();
 
     bool create(const Settings& settings) override;
-
+    
+    void* getInstanceData() override;
     const char* getDeviceName() const override;
     Dispatcher getDispatcher() const noexcept override;
 

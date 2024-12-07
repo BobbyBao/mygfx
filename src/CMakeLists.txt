@@ -104,8 +104,7 @@ IF (NOT Vulkan_FOUND)
 	message(FATAL_ERROR "Could not find Vulkan library!")
 ENDIF()
 
-#include_directories("$ENV{VULKAN_SDK}/Include")
-#link_directories("$ENV{VULKAN_SDK}/Lib")
+include_directories("$ENV{VULKAN_SDK}/Include")
 
 message(STATUS $ENV{VULKAN_SDK})
 message(STATUS ${Vulkan_LIBRARY})
@@ -123,3 +122,5 @@ add_library(${TARGET} STATIC ${_SRC})
 
 target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${TARGET} PUBLIC tiny_imageformat/include)
+
+target_link_directories(${TARGET} PUBLIC "$ENV{VULKAN_SDK}/Lib")
