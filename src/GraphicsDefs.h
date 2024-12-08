@@ -492,9 +492,11 @@ struct Offset3D {
     int32_t z;
 };
 
+#define DEBUG_NAME 0
+
 class HwObject : public RefCounted {
 public:
-#ifdef _MSVC_
+#ifdef _MSC_VER 
     void* operator new(std::size_t size);
     void* operator new(std::size_t size, void* p);
     void operator delete(void* ptr, std::size_t size);
@@ -502,7 +504,9 @@ public:
     void operator delete[](void* ptr, int num) = delete;
 #endif
     static void gc(bool force = false);
-
+#if DEBUG_NAME
+    const char* debugName = "";
+#endif
 protected:
     void deleteThis() override;
 

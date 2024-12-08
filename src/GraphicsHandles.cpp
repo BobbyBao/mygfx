@@ -2,14 +2,14 @@
 #include "GraphicsDevice.h"
 #include <deque>
 #include <mutex>
-#ifdef _MSVC_
+#ifdef _MSC_VER 
 #include <memory_resource>
 #endif
 namespace mygfx {
 
 static std::recursive_mutex mLock;
 static std::deque<std::pair<HwObject*, int>> mDisposables;
-#ifdef _MSVC_
+#ifdef _MSC_VER 
 static size_t max_blocks_per_chunk = 1024;
 static size_t largest_required_pool_block = 1024;
 static std::pmr::synchronized_pool_resource sPool { std::pmr::pool_options { max_blocks_per_chunk, largest_required_pool_block } };
@@ -32,6 +32,14 @@ void HwObject::operator delete(void* ptr, std::size_t size)
 void HwObject::deleteThis()
 {
     std::lock_guard<std::recursive_mutex> locker(mLock);
+    auto it = std::find_if(mDisposables.begin(), mDisposables.end(), [this](auto& v) {
+        return v.first == this;
+    });
+    if (it != mDisposables.end()) {
+        assert(false);
+        return;
+    }
+
     mDisposables.emplace_back(this, 4);
 }
 
@@ -40,7 +48,7 @@ void HwObject::gc(bool force)
     std::lock_guard<std::recursive_mutex> locker(mLock);
     while (!mDisposables.empty()) {
         auto& f = mDisposables.front();
-        if (f.second == 0 || force) {
+        if (f.second == 0 || force) {            
             delete f.first;
             mDisposables.pop_front();
         } else {
@@ -65,7 +73,6 @@ ResourceState HwResource::getCurrentResourceState(uint32_t subResource) const
 #if RESOURCE_STATE
     if (subResource == 0xffffffff)
         return mCurrentStates.front();
-    // CauldronAssert(ASSERT_CRITICAL, subResource < m_CurrentStates.size(), L"Trying to get state of sub-resource out of range!");
     return mCurrentStates.at(subResource);
 #else
     return ResourceState::Undefined;
