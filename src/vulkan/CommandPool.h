@@ -10,7 +10,7 @@ public:
     CommandPool() = default;
     CommandPool(CommandPool&& other);
     CommandPool(uint32_t queueFamilyIndex);
-    ~CommandPool();
+    virtual ~CommandPool();
 
     void create(uint32_t queueFamilyIndex);
 

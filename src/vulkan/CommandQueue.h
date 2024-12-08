@@ -10,6 +10,7 @@ namespace mygfx {
 class CommandQueue {
 public:
     CommandQueue() = default;
+    virtual ~CommandQueue() = default;
 
     void init(CommandQueueType queueType, uint32_t queueFamilyIndex, uint32_t queueIndex, uint32_t numFramesInFlight, const char* name);
     void release();

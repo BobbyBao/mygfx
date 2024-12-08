@@ -63,8 +63,9 @@ CommandBuffer* CommandQueue::getCommandBuffer(uint32_t count, bool isSecond)
 
 void CommandQueue::freeCommandBuffer(CommandBuffer* cmd)
 {   
+    auto pool = cmd->commandPool;
     cmd->free();
-    releaseCommandPool(cmd->commandPool);
+    releaseCommandPool(pool);
 }
 
 CommandList* CommandQueue::getCommandPool()
