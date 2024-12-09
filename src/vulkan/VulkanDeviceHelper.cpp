@@ -60,8 +60,6 @@ bool VulkanDeviceHelper::create(const char* name, bool validation)
 #if USE_VOLK
     volkInitialize();
 #endif
-    
-    //validation = true;
 
     // Vulkan instance
     VkResult err = createInstance(name, validation);

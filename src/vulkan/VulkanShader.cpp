@@ -404,7 +404,7 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
 #if !HAS_DYNAMIC_STATE3
     VkVertexInputAttributeDescription vertexInputAttributeDescription[16];
     VkVertexInputBindingDescription vertexInputBindingDescription[16];
-    VulkanVertexInput* vertexInput = (VulkanVertexInput*)pipelineState->program->vertexInput;
+    VulkanVertexInput* vertexInput = (VulkanVertexInput*)pipelineState->program->vertexInput.get();
     if (vertexInput) {
         for (auto i = 0; i < vertexInput->attributeDescriptions.size(); i++) {
             vertexInputAttributeDescription[i] = {

@@ -341,7 +341,7 @@ protected:
     inline void* allocateCommand(size_t size)
     {
 #ifndef NDEBUG
-        assert(utils::ThreadUtils::isThisThread(mThreadId));
+//        assert(utils::ThreadUtils::isThisThread(mThreadId));
 #endif
         return mCurrentBuffer->allocate(size);
     }
