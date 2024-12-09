@@ -18,7 +18,7 @@ public:
         float2 extend;
         float depth;
         uint32_t color;
-        Rect uv;
+        math::Rect uv;
         int32_t index;
         float2 destPos;
 
@@ -26,7 +26,7 @@ public:
 
         void getVertex(Vertex2D* v)
         {
-            Rect r = { position - extend, position + extend };
+            math::Rect r = { position - extend, position + extend };
             v[0].pos = { r.min, depth };
             v[0].color = color;
             v[0].uv = uv.min;
@@ -74,7 +74,7 @@ public:
             int index = mTextures[linearRand<int>(0, (int)mTextures.size() - 1)]->index();
             mSprites.push_back(
                 Sprite2D { center, { halfSize, halfSize },
-                    0.0f, 0xffffffff, Rect { { 0, 0 }, { 1, 1 } }, index, { linearRand<float>(0, width), linearRand<float>(0.0f, height) } });
+                    0.0f, 0xffffffff, math::Rect { { 0, 0 }, { 1, 1 } }, index, { linearRand<float>(0, width), linearRand<float>(0.0f, height) } });
         }
 
         for (auto& spr : mSprites) {
@@ -106,7 +106,7 @@ public:
         spr.position = pos;
 
         Vertex2D* v = &mVertices[spr.vertexStart];
-        Rect r = { pos - spr.extend, pos + spr.extend };
+        math::Rect r = { pos - spr.extend, pos + spr.extend };
         v[0].pos = { r.min, spr.depth };
         v[1].pos = { r.max.x, r.min.y, spr.depth };
         v[2].pos = { r.max, spr.depth };

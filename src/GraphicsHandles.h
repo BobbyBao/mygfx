@@ -3,6 +3,11 @@
 #include "utils/SharedPtr.h"
 #include <vector>
 
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+#define VK_NO_PROTOTYPES
+#include "vulkan/vulkan.h"
+#endif
+
 namespace mygfx {
 
 class HwResource : public HwObject {
@@ -149,7 +154,11 @@ struct SwapChainDesc {
     bool fullscreen = false;
     bool vsync = false;
     void* windowInstance = nullptr;
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+    CAMetalLayer* window = nullptr;
+#else
     void* window = nullptr;
+#endif
     void* surface = nullptr;
 };
 

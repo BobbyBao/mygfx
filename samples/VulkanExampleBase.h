@@ -52,6 +52,11 @@
 #include "keycodes.hpp"
 #include "camera.hpp"
 
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+#define VK_NO_PROTOTYPES
+#include "vulkan/vulkan.h"
+#endif
+
 namespace mygfx::samples {
 
 class VulkanExampleBase

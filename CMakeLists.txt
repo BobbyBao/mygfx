@@ -34,6 +34,25 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-switch-enum")
 endif()
 
+IF(WIN32)
+ELSEIF (APPLE)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_METAL_EXT -DVK_EXAMPLE_XCODE_GENERATED")
+IF(CMAKE_GENERATOR MATCHES "Makefiles" OR CMAKE_GENERATOR MATCHES "Ninja")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fobjc-arc -ObjC++")
+ELSE() # SRS - use objective-c++ language flag vs. ObjC++ for Xcode builds
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fobjc-arc -xobjective-c++")
+ENDIF()
+
+ENDIF(WIN32)
+
+IF(WIN32)
+    # Nothing here (yet)
+ELSEIF(APPLE)
+    link_libraries(${Vulkan_LIBRARY} "-framework AppKit" "-framework QuartzCore")
+ELSE(WIN32)
+    link_libraries(${XCB_LIBRARIES} ${Vulkan_LIBRARY} ${Vulkan_LIBRARY} ${DIRECTFB_LIBRARIES} ${WAYLAND_CLIENT_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+ENDIF(WIN32)
+
 
 # Force validation at compile time
 if (FORCE_VALIDATION)
