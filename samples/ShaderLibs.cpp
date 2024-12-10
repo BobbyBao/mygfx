@@ -5,12 +5,14 @@ namespace mygfx::samples {
 static utils::Ref<Shader> sColorShader;
 static utils::Ref<Shader> sUnlitShader;
 static utils::Ref<Shader> sLightShader;
+static utils::Ref<Shader> sFullscreenShader;
 
 void ShaderLibs::clean()
 {
     sColorShader.reset();
     sUnlitShader.reset();
     sLightShader.reset();
+    sFullscreenShader.reset();
 }
 
 utils::Ref<Shader> ShaderLibs::getColorShader()
@@ -174,4 +176,58 @@ utils::Ref<Shader> ShaderLibs::getSimpleLightShader()
     return sLightShader;
 }
 
+Shader* ShaderLibs::getFullscreenShader()
+{
+    if (sFullscreenShader) {
+        return sFullscreenShader;
+    }
+
+    const char* vsCode = R"(
+#version 450
+
+#extension GL_ARB_separate_shader_objects : enable
+#extension GL_ARB_shading_language_420pack : enable
+
+layout(location = 0) out vec2 out_UV;
+layout(location = 1) flat out int out_TexIndex;
+
+out gl_PerVertex
+{
+    vec4 gl_Position;
+};
+
+const vec4 FullScreenVertsPos[3] = { {-1, 1, 1, 1}, {3, 1, 1, 1}, {-1, -3, 1, 1} };
+const vec2 FullScreenVertsUVs[3] = { { 0, 0}, {2, 0}, {0, 2} };
+
+void main()
+{
+    gl_Position = FullScreenVertsPos[gl_VertexIndex];
+    out_UV = FullScreenVertsUVs[gl_VertexIndex];
+    out_TexIndex = gl_InstanceIndex;
+}
+	)";
+
+    const char* fsCode = R"(
+#version 450
+
+#extension GL_EXT_nonuniform_qualifier : require
+    
+layout(set = 0, binding = 0) uniform sampler2D textures_2d[];
+
+layout(location = 0) in vec2 in_UV;
+layout(location = 1) flat in int in_TexIndex;
+layout(location = 0) out vec4 out_FragColor;
+
+void main()
+{
+    out_FragColor = texture(textures_2d[nonuniformEXT(in_TexIndex)], in_UV);
+}
+	)";
+
+    sFullscreenShader = new Shader(vsCode, fsCode);
+    sFullscreenShader->setVertexInput({});
+	sFullscreenShader->setCullMode(CullMode::NONE);
+    sFullscreenShader->setDepthTest(false, false);
+    return sFullscreenShader;
+}
 }

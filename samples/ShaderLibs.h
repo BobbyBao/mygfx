@@ -9,6 +9,7 @@ namespace mygfx::samples {
 		static utils::Ref<Shader> getColorShader();
 		static utils::Ref<Shader> getUnlitShader();
 		static utils::Ref<Shader> getSimpleLightShader();
+		static Shader* getFullscreenShader();
 		static void clean();
 	};
 
