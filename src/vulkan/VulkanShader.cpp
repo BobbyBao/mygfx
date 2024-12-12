@@ -3,7 +3,7 @@
 #include "VulkanInitializers.hpp"
 #include "utils/Log.h"
 #include "utils/ThreadUtils.h"
-#include <spirv_cross/spirv_glsl.hpp>
+#include <../third_party/SPIRV-Cross/spirv_glsl.hpp>
 
 using namespace spirv_cross;
 
