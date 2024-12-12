@@ -22,11 +22,11 @@ VulkanExample::VulkanExample(int argc, char** argv)
 
 bool VulkanExample::initVulkan() {
     
-    mygfx::Settings settings;
-    settings.name = title.c_str();
-
+    mygfx::Settings s;
+    s.name = title.c_str();
+    s.validation = settings.validation;
     auto device = new VulkanDevice();
-    if (!device->create(settings)) {
+    if (!device->create(s)) {
         return false;
     }
 

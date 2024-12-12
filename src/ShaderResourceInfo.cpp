@@ -98,7 +98,7 @@ uint32_t ShaderStruct::getMemberSize() const
     uint32_t sz = 0;
     for (int i = 0; i < members.size(); i++) {
         const ShaderStruct& member = members[i];
-        sz += member.size;
+        sz = std::max(sz, member.offset + member.size);
     }
     return sz;
 }

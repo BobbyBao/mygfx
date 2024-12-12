@@ -1044,10 +1044,10 @@ dispatch_group_t concurrentGroup;
 	});
 
 	// SRS - When benchmarking, set up termination notification on main thread when concurrent queue completes
-	if (vulkanExample->benchmark.active) {
-		dispatch_queue_t notifyQueue = dispatch_get_main_queue();
-		dispatch_group_notify(concurrentGroup, notifyQueue, ^{ [NSApp terminate:nil]; });
-	}
+	//if (vulkanExample->benchmark.active) {
+	//	dispatch_queue_t notifyQueue = dispatch_get_main_queue();
+	//	dispatch_group_notify(concurrentGroup, notifyQueue, ^{ [NSApp terminate:nil]; });
+	//}
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender
@@ -1060,7 +1060,7 @@ dispatch_group_t concurrentGroup;
 {
 	vulkanExample->quit = YES;
 	dispatch_group_wait(concurrentGroup, DISPATCH_TIME_FOREVER);
-	vkDeviceWaitIdle(vulkanExample->vulkanDevice->logicalDevice);
+	//vkDeviceWaitIdle(vulkanExample->vulkanDevice->logicalDevice);
 	delete(vulkanExample);
 }
 
@@ -1146,8 +1146,8 @@ static CVReturn displayLinkOutputCallback(CVDisplayLinkRef displayLink, const CV
 			break;
 		case KEY_1:										// support keyboards with no function keys
 		case KEY_F1:
-			vulkanExample->ui.visible = !vulkanExample->ui.visible;
-			vulkanExample->ui.updated = true;
+			//vulkanExample->ui.visible = !vulkanExample->ui.visible;
+			//vulkanExample->ui.updated = true;
 			break;
 		case KEY_DELETE:								// support keyboards with no escape key
 		case KEY_ESCAPE:
@@ -1353,6 +1353,7 @@ void* VulkanExampleBase::setupWindow(void* view)
 void VulkanExampleBase::displayLinkOutputCb()
 {
 #if defined(VK_EXAMPLE_XCODE_GENERATED)
+    /*
 	if (benchmark.active) {
 		benchmark.run([=] { render(); }, vulkanDevice->properties);
 		if (benchmark.filename != "") {
@@ -1360,7 +1361,7 @@ void VulkanExampleBase::displayLinkOutputCb()
 		}
 		quit = true;	// SRS - quit NSApp rendering loop when benchmarking complete
 		return;
-	}
+	}*/
 #endif
 
 	if (prepared)

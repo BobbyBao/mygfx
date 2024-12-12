@@ -25,6 +25,14 @@ VulkanStage const* VulkanStagePool::acquireStage(const void* buffer, size_t size
         mUsedStages.insert(stage);
         mLockFreeStages.unlock();
         stage->lastAccessed = mCurrentFrame;
+
+        void* mapped = nullptr;
+        assert(stage->memory);
+        vmaMapMemory(mAllocator, stage->memory, &mapped);
+        memcpy(mapped, buffer, size);
+        vmaUnmapMemory(mAllocator, stage->memory);
+        vmaFlushAllocation(mAllocator, stage->memory, 0, size);
+
         return stage;
     }
     mLockFreeStages.unlock();

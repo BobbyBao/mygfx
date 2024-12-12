@@ -219,7 +219,7 @@ void CommandBuffer::resetState() const VULKAN_NOEXCEPT
 
     vkCmdSetLineWidth(cmd, 1.0f);
     
-    vkCmdSetRasterizerDiscardEnable(cmd, false);
+    vkCmdSetRasterizerDiscardEnableEXT(cmd, false);
 
 #if HAS_DYNAMIC_STATE3
     vkCmdSetPolygonModeEXT(cmd, VK_POLYGON_MODE_FILL);

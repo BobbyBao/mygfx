@@ -39,6 +39,8 @@ void VulkanSwapChain::initSurface()
     initSurface((xcb_connection_t*)desc.windowInstance, (xcb_window_t)desc.window);
 #elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
     initSurface(desc.window);
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
+    initSurface((CAMetalLayer* )desc.window);
 #endif
 
     selectSurfaceFormat();
@@ -190,6 +192,13 @@ bool VulkanSwapChain::initSurface(screen_context_t screen_context, screen_window
     surfaceCreateInfo.flags = 0;
     surfaceCreateInfo.pView = view;
     err = vkCreateMacOSSurfaceMVK(instance, &surfaceCreateInfo, NULL, &mSurface);
+#elif defined(VK_USE_PLATFORM_METAL_EXT)
+        VkMetalSurfaceCreateInfoEXT surfaceCreateInfo = {};
+        surfaceCreateInfo.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
+        surfaceCreateInfo.pNext = NULL;
+        surfaceCreateInfo.flags = 0;
+        surfaceCreateInfo.pLayer = metalLayer;
+        err = vkCreateMetalSurfaceEXT(instance, &surfaceCreateInfo, NULL, &mSurface);
 #elif defined(_DIRECT2DISPLAY)
     createDirect2DisplaySurface(width, height);
 #elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)

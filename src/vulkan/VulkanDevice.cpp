@@ -613,15 +613,15 @@ static void drawBatch1(const CommandBuffer& cmd, const RenderCommand* start, uin
 void VulkanDevice::drawBatch(HwRenderQueue* renderQueue)
 {
     const auto& primitives = renderQueue->getReadCommands();
-    // #if HAS_SHADER_OBJECT_EXT
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+    drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
+#else
     if (primitives.size() > 200) {
         drawMultiThreaded(primitives, *mCurrentCmd);
     } else {
         drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
     }
-    // #else
-    //     drawBatch1(*mCurrentCmd, primitives.data(), (uint32_t)primitives.size());
-    // #endif
+#endif
 
     Stats::drawCall() += (uint32_t)primitives.size();
 }

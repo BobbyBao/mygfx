@@ -3,6 +3,12 @@ set(TARGET gfx)
 
 project(${TARGET})
 
+option(DISABLE_SHADER_OBJECT_EXT "Disable shader object extension" OFF)
+
+if (DISABLE_SHADER_OBJECT_EXT)
+	add_definitions(-DHAS_SHADER_OBJECT_EXT=0)
+endif()
+
 # Use FindVulkan module added with CMAKE 3.7
 if (NOT CMAKE_VERSION VERSION_LESS 3.7.0)
 	message(STATUS "Using module to find Vulkan")
@@ -109,12 +115,6 @@ include_directories("$ENV{VULKAN_SDK}/Include")
 message(STATUS $ENV{VULKAN_SDK})
 message(STATUS ${Vulkan_LIBRARY})
 
-IF(WIN32)
-	link_libraries(${Vulkan_LIBRARY} spirv-cross-core.lib spirv-cross-glsl.lib)
-ELSE(WIN32)
-	link_libraries(${Vulkan_LIBRARY} libspirv-cross-core.a libspirv-cross-glsl.a )
-ENDIF(WIN32)
-
 ucm_add_dirs("" TO _SRC RECURSIVE FILTER_POP 1)
 ucm_remove_directories("tiny_imageformat" FROM _SRC)
 
@@ -124,3 +124,4 @@ target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${TARGET} PUBLIC tiny_imageformat/include)
 
 target_link_directories(${TARGET} PUBLIC "$ENV{VULKAN_SDK}/Lib")
+target_link_libraries(${TARGET} spirv-cross-core spirv-cross-glsl)

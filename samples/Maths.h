@@ -19,8 +19,8 @@ using Quaternion = glm::quat;
 using Matrix3 = glm::mat3;
 using Matrix4 = glm::mat4;
 
-inline static const float MATH_PI = pi<float>();
-inline static const float MATH_HALF_PI = pi<float>() / 2;
+inline static const float MATH_PI = glm::pi<float>();
+inline static const float MATH_HALF_PI = glm::pi<float>() / 2;
 
 inline constexpr vec3 FORWARD(0.0f, 0.0f, -1.0f);
 inline constexpr vec3 BACK(0.0f, 0.0f, 1.0);
