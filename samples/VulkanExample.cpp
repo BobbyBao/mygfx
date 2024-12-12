@@ -1,7 +1,7 @@
 #include "VulkanExample.h"
+#include "resource/Texture.h"
 #include "utils/Log.h"
 #include "vulkan/VulkanDevice.h"
-#include "resource/Texture.h"
 
 using namespace mygfx;
 using namespace mygfx::samples;
@@ -20,8 +20,14 @@ VulkanExample::VulkanExample(int argc, char** argv)
 {
 }
 
-bool VulkanExample::initVulkan() {
-    
+VulkanExample::~VulkanExample()
+{
+    onDestroy();
+}
+
+bool VulkanExample::initVulkan()
+{
+
     mygfx::Settings s;
     s.name = title.c_str();
     s.validation = settings.validation;
@@ -42,26 +48,26 @@ void VulkanExample::prepare()
         .width = width,
         .height = height,
     };
-    
+
 #if defined(_WIN32)
-	desc.windowInstance = windowInstance;
+    desc.windowInstance = windowInstance;
     desc.window = window;
 #elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	desc.window = androidApp->window;
+    desc.window = androidApp->window;
 #elif (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK))
-	desc.window = view;
+    desc.window = view;
 #elif defined(VK_USE_PLATFORM_METAL_EXT)
-	desc.window = metalLayer;
+    desc.window = metalLayer;
 #elif defined(VK_USE_PLATFORM_DIRECTFB_EXT)
-	//swapChain.initSurface(dfb, surface);
+    // swapChain.initSurface(dfb, surface);
 #elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-	//swapChain.initSurface(display, surface);
+    // swapChain.initSurface(display, surface);
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
-	//swapChain.initSurface(connection, window);
+    // swapChain.initSurface(connection, window);
 #elif (defined(_DIRECT2DISPLAY) || defined(VK_USE_PLATFORM_HEADLESS_EXT))
-	//swapChain.initSurface(width, height);
+    // swapChain.initSurface(width, height);
 #elif defined(VK_USE_PLATFORM_SCREEN_QNX)
-	//swapChain.initSurface(screen_context, screen_window);
+    // swapChain.initSurface(screen_context, screen_window);
 #endif
 
     mSwapchain = mGraphicsApi->createSwapchain(desc);
@@ -136,17 +142,16 @@ void VulkanExample::render()
     cmd.endFrame();
 
     cmd.flush();
-
 }
 
 void VulkanExample::onGUI()
-{ 
+{
     ImGui::SetNextWindowPos({ 10.0f, 10.0f });
     ImGui::SetNextWindowSize({ -1.0f, -1.0f });
     ImGui::SetNextWindowBgAlpha(0.75f);
 
     if (ImGui::Begin("Demos", nullptr, ImGuiWindowFlags_NoDecoration)) {
-        //ImGui::Text("CPU:	%s", mCPUName.c_str());
+        // ImGui::Text("CPU:	%s", mCPUName.c_str());
         ImGui::Text("GPU:	%s", gfxApi().getDeviceName());
         ImGui::Text("FPS:	%d", lastFPS);
         ImGui::Text("DrawCall:%d", Stats::getDrawCall());
@@ -170,7 +175,6 @@ void VulkanExample::onGUI()
 
         ImGui::End();
     }
-
 }
 
 void VulkanExample::windowResized()
@@ -210,7 +214,7 @@ void VulkanExample::onDestroy()
     }
 
     ShaderLibs::clean();
-
+    Texture::staticDeinit();
 }
 
 #include "Entrypoints.h"

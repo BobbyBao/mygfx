@@ -40,7 +40,8 @@ class VulkanExample : public VulkanExampleBase
 {
 public:
     VulkanExample(int argc = 0, char** argv = nullptr);
-    
+    ~VulkanExample();
+
 	bool initVulkan() override;
     void prepare() override;
 

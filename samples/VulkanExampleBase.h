@@ -63,7 +63,7 @@ class VulkanExampleBase
 {
 public:
     VulkanExampleBase();
-	~VulkanExampleBase();
+	virtual ~VulkanExampleBase();
 	virtual bool initVulkan();
 protected:
 	std::string getWindowTitle() const;
