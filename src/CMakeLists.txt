@@ -3,6 +3,12 @@ set(TARGET gfx)
 
 project(${TARGET})
 
+option(DISABLE_SHADER_OBJECT_EXT "Disable shader object extension" OFF)
+
+if (DISABLE_SHADER_OBJECT_EXT)
+	add_definitions(-DHAS_SHADER_OBJECT_EXT=0)
+endif()
+
 # Use FindVulkan module added with CMAKE 3.7
 if (NOT CMAKE_VERSION VERSION_LESS 3.7.0)
 	message(STATUS "Using module to find Vulkan")

@@ -146,6 +146,7 @@ uint64_t CommandQueue::submit(const VkCommandBuffer* commandBuffers, uint32_t co
 
     info.pNext = &semaphoreSubmitInfo;
 
+    std::lock_guard<std::mutex> lock(mSubmitMutex);
     vkQueueSubmit(mQueue, 1, &info, VK_NULL_HANDLE);
     // LOG_DEBUG("vkQueueSubmit : {}, {}", (uint64_t)m_Queue, std::this_thread::get_id()._Get_underlying_id());
     return mLatestSemaphoreValue;
