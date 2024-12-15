@@ -96,27 +96,27 @@ public:
     {
     }
 
-    T& operator[](uint32_t id)
+    T& operator[](uint32_t id) noexcept
     {
         return manager[id & IndexMask];
     }
 
-    T& operator[](const Handle<T, ChunksPerBlock, MaxBlock>& id)
+    T& operator[](const Handle<T, ChunksPerBlock, MaxBlock>& id) noexcept
     {
         return manager[id.getIndex()];
     }
 
-    T& get(const Handle<T, ChunksPerBlock, MaxBlock>& id)
+    T& get(const Handle<T, ChunksPerBlock, MaxBlock>& id) noexcept
     {
         return *manager.getPtr(id.getIndex());
     }
 
-    T* getPtr(const Handle<T, ChunksPerBlock, MaxBlock>& id)
+    T* getPtr(const Handle<T, ChunksPerBlock, MaxBlock>& id) noexcept
     {
         return manager.getPtr(id.getIndex());
     }
 
-    bool isValid(const Handle<T, ChunksPerBlock, MaxBlock>& id)
+    bool isValid(const Handle<T, ChunksPerBlock, MaxBlock>& id) noexcept
     {
         return version[id.getIndex()] == id.version;
     }

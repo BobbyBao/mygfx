@@ -232,8 +232,7 @@ private:
     void addRef()
     {
         if (refCount_) {
-            assert(refCount_->weakRefs >= 0);
-            ++(refCount_->weakRefs);
+            refCount_->addRef();
         }
     }
 
@@ -241,11 +240,7 @@ private:
     void releaseRef()
     {
         if (refCount_) {
-            assert(refCount_->weakRefs > 0);
-            --(refCount_->weakRefs);
-
-            if (expired() && !refCount_->weakRefs)
-                delete refCount_;
+            refCount_->releaseRef();
         }
 
         ptr_ = nullptr;

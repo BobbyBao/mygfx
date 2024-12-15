@@ -125,3 +125,5 @@ target_include_directories(${TARGET} PUBLIC tiny_imageformat/include)
 
 target_link_directories(${TARGET} PUBLIC "$ENV{VULKAN_SDK}/Lib")
 target_link_libraries(${TARGET} spirv-cross-core spirv-cross-glsl)
+
+set_target_properties(${TARGET} PROPERTIES FOLDER mygfx)

@@ -12,7 +12,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 IF(MSVC)
 add_compile_options(/MP)
-add_compile_options(/MD)
 ENDIF()
 
 add_definitions(

@@ -17,3 +17,5 @@ add_executable(${TARGET} ${_SRC})
 
 target_include_directories(${TARGET} PRIVATE "./")
 target_link_libraries(${TARGET} gfx)
+
+set_target_properties(${TARGET} PROPERTIES FOLDER mygfx)

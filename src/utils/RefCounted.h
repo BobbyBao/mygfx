@@ -1,12 +1,27 @@
 #pragma once
-#include <atomic>
 #include "HandleAllocator.h"
+#include <atomic>
 
 namespace utils {
 
 struct WeakRefCount {
     std::atomic<bool> expired = false;
     std::atomic<int> weakRefs = 0;
+    Handle<WeakRefCount> handle;
+
+    void addRef()
+    {
+        ++weakRefs;
+    }
+
+    void releaseRef()
+    {
+        if (--weakRefs == 0) {
+            if (expired) {
+                handle.free();
+            }
+        }
+    }
 };
 
 /// Base class for intrusively reference-counted objects. These are noncopyable and non-assignable.
@@ -24,6 +39,7 @@ public:
     void releaseRef();
     int refs() const;
     WeakRefCount* getWeakRefCount() const;
+
 protected:
     virtual void deleteThis();
 

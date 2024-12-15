@@ -48,7 +48,7 @@ struct ChunkedArrayBase {
         return ptr;
     }
 
-    void* getAddr(uint32_t index)
+    inline void* getAddr(uint32_t index) noexcept
     {
         assert(index < getChunkCount());
 
@@ -57,7 +57,7 @@ struct ChunkedArrayBase {
         return ((char*)blocks[block]) + chunk_size * blockIndex;
     }
 
-    void* getAddrSafe(uint32_t index)
+    void* getAddrSafe(uint32_t index) noexcept
     {
         uint32_t block = (uint32_t)index >> shift;
         uint32_t blockIndex = (uint32_t)index & mask;
@@ -99,17 +99,17 @@ public:
         clear();
     }
 
-    T* getPtr(uint32_t index)
+    inline T* getPtr(uint32_t index) noexcept
     {
         return (T*)getAddrSafe(index);
     }
 
-    T& operator[](uint32_t index)
+    inline T& operator[](uint32_t index) noexcept
     {
         return *getPtr(index);
     }
 
-    const T& operator[](uint32_t index) const
+    inline const T& operator[](uint32_t index) const noexcept
     {
         return *getPtr(index);
     }
@@ -138,22 +138,22 @@ public:
         clear();
     }
 
-    T& operator[](uint32_t index)
+    inline T& operator[](uint32_t index) noexcept
     {
         return *getPtr(index);
     }
 
-    const T& operator[](uint32_t index) const
+    inline const T& operator[](uint32_t index) const noexcept
     {
         return *getPtr(index);
     }
 
-    T* getPtr(uint32_t index)
+    inline T* getPtr(uint32_t index) noexcept
     {
         return (T*)getAddr(index);
     }
 
-    T* getPtrSafe(uint32_t index)
+    inline T* getPtrSafe(uint32_t index) noexcept
     {
         return (T*)getAddrSafe(index);
     }

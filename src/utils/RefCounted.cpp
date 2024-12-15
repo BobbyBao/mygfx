@@ -42,6 +42,7 @@ WeakRefCount* RefCounted::getWeakRefCount() const
 {
     if (mWeakRefCount.isNull()) {
         mWeakRefCount.create();
+        mWeakRefCount->handle = mWeakRefCount;
         (mWeakRefCount->weakRefs)++;
     }
 
