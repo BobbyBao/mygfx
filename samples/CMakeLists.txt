@@ -7,9 +7,13 @@ project(${TARGET})
 ucm_add_dirs("" TO _SRC RECURSIVE FILTER_POP 1)
 
 IF(WIN32)
-	link_libraries(shaderc_combined.lib)
+	link_libraries(
+		shaderc_combined$<$<CONFIG:Debug>:d>.lib
+	)
 ELSE(WIN32)
-	link_libraries(libshaderc_combined.a)
+	link_libraries(
+		libshaderc_combined$<$<CONFIG:Debug>:d>.a
+	)
 ENDIF(WIN32)
 
 
