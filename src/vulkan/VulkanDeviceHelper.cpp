@@ -17,7 +17,6 @@ namespace mygfx {
 
 static VkPhysicalDeviceBufferDeviceAddressFeatures BufferDeviceAddressFeatures = {};
 static VkPhysicalDeviceDescriptorIndexingFeatures DescriptorIndexingFeatures = {};
-static VkPhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties = {};
 
 VulkanDeviceHelper::VulkanDeviceHelper()
 {
@@ -278,7 +277,7 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
 #endif
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-        android::loadVulkanFunctions(instance);
+        //android::loadVulkanFunctions(instance);
 #endif
 
         // If requested, we enable the default validation layers for debugging
@@ -376,6 +375,9 @@ void VulkanDeviceHelper::getEnabledFeatures()
         device_properties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2_KHR;
         device_properties.pNext = &descriptorIndexingProperties;
         vkGetPhysicalDeviceProperties2KHR(physicalDevice, &device_properties);
+
+        LOG_INFO("maxPerStageDescriptorUpdateAfterBindSamplers: ", descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSamplers);
+        LOG_INFO("maxPerStageDescriptorUpdateAfterBindSampledImages: ", descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSampledImages);
     }
 
     // VK_KHR_timeline_semaphore was promoted to 1.2, so no need to query the extension

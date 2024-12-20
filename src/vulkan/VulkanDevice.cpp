@@ -44,6 +44,8 @@ bool VulkanDevice::create(const Settings& settings)
     if (!VulkanDeviceHelper::create(settings.name, settings.validation)) {
         return false;
     }
+    
+    mainThreadID = ThreadUtils::getThreadId();
 
     // Create synchronization objects
     VkSemaphoreCreateInfo semaphoreCreateInfo = initializers::semaphoreCreateInfo();

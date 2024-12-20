@@ -6,14 +6,15 @@
 using namespace mygfx;
 using namespace mygfx::samples;
 
-static std::vector<DemoDesc*> sDemos;
+static std::array<DemoDesc*, 64> sDemos;
+static int demoCount = 0;
 
 DemoDesc::DemoDesc(const char* name, const std::function<Demo*()>& creator)
 {
     this->name = name;
     this->creator = creator;
 
-    sDemos.push_back(this);
+    sDemos[demoCount++] = this;
 }
 
 VulkanExample::VulkanExample(int argc, char** argv)
@@ -72,7 +73,7 @@ void VulkanExample::prepare()
 
     mSwapchain = mGraphicsApi->createSwapchain(desc);
 
-    if (sDemos.size() > 0) {
+    if (demoCount > 0) {
         setDemo(0);
     }
 
@@ -159,7 +160,7 @@ void VulkanExample::onGUI()
         const char* preview_value = mActiveDemo ? mActiveDemo->mName : "";
 
         if (ImGui::BeginCombo("Active Demo", preview_value)) {
-            for (int i = 0; i < sDemos.size(); i++) {
+            for (int i = 0; i < demoCount; i++) {
                 auto desc = sDemos[i];
                 if (ImGui::Selectable(desc->name)) {
                     setDemo(i);

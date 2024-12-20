@@ -1,8 +1,6 @@
 #include "SyncContext.h"
 
 namespace mygfx {
-std::thread::id SyncContext::mainThreadID;
-std::thread::id SyncContext::renderThreadID;
 
 bool SyncContext::singleLoop() const
 {

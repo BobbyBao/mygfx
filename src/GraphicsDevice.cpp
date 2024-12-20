@@ -42,6 +42,10 @@ void GraphicsDevice::beginRender()
 {
     mainSemWait();
     mLastRenderTime = Clock::now();
+    std::function<void()> fn;
+    while (mPostCommands.try_dequeue(fn)) {
+        fn();
+    }
 }
 
 void GraphicsDevice::endRender()
@@ -63,7 +67,13 @@ void GraphicsDevice::endRender()
 
 void GraphicsDevice::post(const std::function<void()>& fn, int delay)
 {
+    CHECK_RENDER_THREAD();
     mPostCall.push_back(std::make_tuple(fn, delay));
+}
+
+void GraphicsDevice::post_async(const std::function<void()>& fn)
+{
+    mPostCommands.enqueue(fn);
 }
 
 void GraphicsDevice::executeAll()

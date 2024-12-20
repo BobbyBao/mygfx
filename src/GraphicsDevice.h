@@ -5,6 +5,7 @@
 #include "PipelineState.h"
 #include "SyncContext.h"
 #include "Uniforms.h"
+#include "utils/concurrentqueue.h"
 
 namespace mygfx {
 
@@ -113,7 +114,7 @@ public:
     void endRender();
 
     void post(const std::function<void()>& fn, int delay = 2);
-
+    void post_async(const std::function<void()>& fn);
     size_t frameNum = 0;
 protected:
     void executeAll();
@@ -121,6 +122,8 @@ protected:
     Ref<HwSwapchain> mSwapChain;
     TimePoint mLastRenderTime;
     std::vector<std::tuple<std::function<void()>, int>> mPostCall;
+    
+    moodycamel::ConcurrentQueue<std::function<void()>> mPostCommands;
 };
 
 struct RenderCommand {

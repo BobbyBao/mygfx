@@ -47,6 +47,8 @@ public:
     /** @brief List of extensions supported by the device */
     std::vector<VkExtensionProperties> supportedExtensions;
 
+    VkPhysicalDeviceDescriptorIndexingProperties descriptorIndexingProperties = {};
+
     /** @brief Contains queue family indices */
     struct
     {
@@ -55,9 +57,10 @@ public:
         uint32_t transfer;
     } queueFamilyIndices;
 
-    const VkQueueFamilyProperties& graphicsQueueFamilyProperties() { return queueFamilyProperties[queueFamilyIndices.graphics]; }
-    const VkQueueFamilyProperties& computeQueueFamilyProperties() { return queueFamilyProperties[queueFamilyIndices.compute]; }
-    const VkQueueFamilyProperties& copyQueueFamilyProperties() { return queueFamilyProperties[queueFamilyIndices.transfer]; }
+    const VkQueueFamilyProperties& graphicsQueueFamilyProperties() const { return queueFamilyProperties[queueFamilyIndices.graphics]; }
+    const VkQueueFamilyProperties& computeQueueFamilyProperties() const { return queueFamilyProperties[queueFamilyIndices.compute]; }
+    const VkQueueFamilyProperties& copyQueueFamilyProperties() const { return queueFamilyProperties[queueFamilyIndices.transfer]; }
+    bool enalbeAsyncCopy() const {  return copyQueueFamilyProperties().queueCount > 1; }
 
 protected:
 

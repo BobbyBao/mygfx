@@ -1,5 +1,6 @@
 #include "VulkanBuffer.h"
 #include "VulkanDevice.h"
+#include "utils/ThreadUtils.h"
 
 namespace mygfx {
 
@@ -122,9 +123,18 @@ void VulkanBuffer::setData(const void* data, VkDeviceSize size, VkDeviceSize off
         VkBufferCopy copyRegion = {};
         copyRegion.size = size;
 
-        gfx().executeCommand(CommandQueueType::Copy, [=](auto& c) {
-            vkCmdCopyBuffer(c.cmd, stage->buffer, buffer, 1, &copyRegion);
-        });
+        if (ThreadUtils::isThisThread(gfx().renderThreadID) || gfx().enalbeAsyncCopy()) {
+            gfx().executeCommand(CommandQueueType::Copy, [=](auto& c) {
+                vkCmdCopyBuffer(c.cmd, stage->buffer, buffer, 1, &copyRegion);
+            });
+        } else {
+            gfx().post_async([=]() {
+                gfx().executeCommand(CommandQueueType::Copy, [=](auto& c) {
+                    vkCmdCopyBuffer(c.cmd, stage->buffer, buffer, 1, &copyRegion);
+                });
+            });
+            
+        }
     }
 }
 
