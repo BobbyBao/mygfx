@@ -376,8 +376,8 @@ void VulkanDeviceHelper::getEnabledFeatures()
         device_properties.pNext = &descriptorIndexingProperties;
         vkGetPhysicalDeviceProperties2KHR(physicalDevice, &device_properties);
 
-        LOG_INFO("maxPerStageDescriptorUpdateAfterBindSamplers: ", descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSamplers);
-        LOG_INFO("maxPerStageDescriptorUpdateAfterBindSampledImages: ", descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSampledImages);
+        LOG_INFO("maxPerStageDescriptorUpdateAfterBindSamplers: {}", descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSamplers);
+        LOG_INFO("maxPerStageDescriptorUpdateAfterBindSampledImages: {}", descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSampledImages);
     }
 
     // VK_KHR_timeline_semaphore was promoted to 1.2, so no need to query the extension

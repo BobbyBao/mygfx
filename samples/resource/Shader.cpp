@@ -120,6 +120,7 @@ void Shader::setDepthTest(bool test, bool write)
 
 void Shader::updateDescriptorSet(uint32_t set, uint32_t binding, Texture* tex)
 {
+    CHECK_MAIN_THREAD();
     auto ds = mProgram->getDescriptorSet(set);
     if (ds != nullptr) {
         gfxApi().updateDescriptorSet1(ds, binding, tex->getSRV());
@@ -128,6 +129,7 @@ void Shader::updateDescriptorSet(uint32_t set, uint32_t binding, Texture* tex)
 
 void Shader::updateDescriptorSet(uint32_t set, uint32_t binding, HwTextureView* texView)
 {
+    CHECK_MAIN_THREAD();
     auto ds = mProgram->getDescriptorSet(set);
     if (ds != nullptr) {
         gfxApi().updateDescriptorSet1(ds, binding, texView);
@@ -136,6 +138,7 @@ void Shader::updateDescriptorSet(uint32_t set, uint32_t binding, HwTextureView* 
 
 void Shader::updateDescriptorSet(uint32_t set, uint32_t binding, HwBuffer* buffer)
 {
+    CHECK_MAIN_THREAD();
     auto ds = mProgram->getDescriptorSet(set);
     if (ds != nullptr) {
         gfxApi().updateDescriptorSet2(ds, binding, buffer);
@@ -144,6 +147,7 @@ void Shader::updateDescriptorSet(uint32_t set, uint32_t binding, HwBuffer* buffe
 
 void Shader::updateDescriptorSet(uint32_t set, uint32_t binding, const BufferInfo& bufferInfo)
 {
+    CHECK_MAIN_THREAD();
     auto ds = mProgram->getDescriptorSet(set);
     if (ds != nullptr) {
         gfxApi().updateDescriptorSet3(ds, binding, bufferInfo);

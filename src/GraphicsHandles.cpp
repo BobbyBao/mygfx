@@ -106,13 +106,13 @@ Ref<HwTexture> HwTexture::Black;
 Ref<HwTexture> HwTexture::White;
 Ref<HwTexture> HwTexture::Magenta;
 
-SamplerHandle SamplerHandle::NearestRepeat;
-SamplerHandle SamplerHandle::NearestClampToEdge;
-SamplerHandle SamplerHandle::NearestClampToBorder;
-SamplerHandle SamplerHandle::LinearRepeat;
-SamplerHandle SamplerHandle::LinearClampToEdge;
-SamplerHandle SamplerHandle::LinearClampToBorder;
-SamplerHandle SamplerHandle::Shadow;
+Ref<SamplerHandle> SamplerHandle::NearestRepeat;
+Ref<SamplerHandle> SamplerHandle::NearestClampToEdge;
+Ref<SamplerHandle> SamplerHandle::NearestClampToBorder;
+Ref<SamplerHandle> SamplerHandle::LinearRepeat;
+Ref<SamplerHandle> SamplerHandle::LinearClampToEdge;
+Ref<SamplerHandle> SamplerHandle::LinearClampToBorder;
+Ref<SamplerHandle> SamplerHandle::Shadow;
 
 void SamplerHandle::init()
 {
@@ -137,9 +137,9 @@ void SamplerHandle::init()
     Shadow = device().createSampler(point);
 
     SamplerInfo linear;
-    linear.magFilter = Filter::NEAREST;
-    linear.minFilter = Filter::NEAREST;
-    linear.mipmapMode = Filter::NEAREST;
+    linear.magFilter = Filter::LINEAR;
+    linear.minFilter = Filter::LINEAR;
+    linear.mipmapMode = Filter::LINEAR;
     LinearRepeat = device().createSampler(linear);
 
     linear.addressModeU = SamplerAddressMode::CLAMP_TO_EDGE;
@@ -155,6 +155,13 @@ void SamplerHandle::init()
 
 void SamplerHandle::shutdown()
 {
+    NearestRepeat.reset();
+    NearestClampToEdge.reset();
+    NearestClampToBorder.reset();
+    LinearRepeat.reset();
+    LinearClampToEdge.reset();
+    LinearClampToBorder.reset();
+    Shadow.reset();
 }
 
 HwRenderPrimitive::HwRenderPrimitive(VertexData* geo, const DrawPrimitiveCommand& primitive)

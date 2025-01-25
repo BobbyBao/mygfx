@@ -64,8 +64,9 @@ public:
     VulkanStagePool& getStagePool() { return *mStagePool; }
     UploadHeap& getUploadHeap() { return mUploadHeap; }
     DescriptorTable* getTextureSet() { return mTextureSet; }
-    DescriptorTable* getImageSet() { return mImageSet; }
-    DescriptorTable* getBufferSet() { return mBufferSet; }
+    DescriptorTable* getImageSet() { return mSampledImageTable; }
+    SamplerTable* getSamplerSet() { return mSamplerSet; }
+    DescriptorTable* getStorageImageSet() { return mStorageImageTable; }
 
     VkBuffer getGlobalUniformBuffer()
     {
@@ -85,25 +86,20 @@ public:
     void freeCommandBuffer(CommandBuffer* cmd);
     void executeCommand(CommandQueueType queueType, const std::function<void(const CommandBuffer&)>& fn);
 
-    VkSampler getVkSampler(SamplerHandle sampler)
-    {
-        return mSamplers[sampler.index].second;
-    }
-
 protected:
     void drawMultiThreaded(const std::vector<RenderCommand>& items, const CommandBuffer& cmd);
-
 
     DynamicBufferPool mConstantBufferRing;
     DynamicBufferPool mVertexBufferRing;
     UploadHeap mUploadHeap;
     std::mutex mSamplerLock;
-    std::vector<std::pair<SamplerInfo, VkSampler>> mSamplers;
+
     DescriptorPoolManager mDescriptorPoolManager;
 
+    Ref<SamplerTable> mSamplerSet;
     Ref<DescriptorTable> mTextureSet;
-    Ref<DescriptorTable> mImageSet;
-    Ref<DescriptorTable> mBufferSet;
+    Ref<DescriptorTable> mSampledImageTable;
+    Ref<DescriptorTable> mStorageImageTable;
 
     CommandQueue mCommandQueues[(int)CommandQueueType::Count];
 

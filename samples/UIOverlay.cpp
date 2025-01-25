@@ -58,16 +58,19 @@ const char* fsCode = R"(
 
 			layout (location = 0) out vec4 outColor;
 
-			layout(set = 1, binding = 0) uniform sampler2D textures[];
-
+			layout(set = 1, binding = 0) uniform texture2D textures_2d[];
+			layout(set = 2, binding = 0) uniform sampler samplers[];
+        
+#define getSampler2D(index) sampler2D(textures_2d[nonuniformEXT((index) & 0xffff)], samplers[nonuniformEXT((index) >> 16)])
+	        
 			void main() 
 			{
 				outColor = inColor;
 				
 				if (texIndex < 0) {
-					outColor.a *= textureLod(textures[nonuniformEXT(-texIndex)], inUV, 0).r;
+					outColor.a *= textureLod(getSampler2D(-texIndex), inUV, 0).r;
 				} else {
-					outColor *= textureLod(textures[nonuniformEXT(texIndex)], inUV, 0);
+					outColor *= textureLod(getSampler2D(texIndex), inUV, 0);
 				}
 			}
 )";
@@ -145,7 +148,7 @@ void UIOverlay::init()
     style.ScaleAllSizes(scale);
 
     mFontTexture = Texture::create2D(texWidth, texHeight, Format::R8G8B8A8_UNORM, MemoryBlock(fontData, dataSize));
-    io.Fonts->TexID = (void*)(int64_t)mFontTexture->index();
+    io.Fonts->TexID = (ImTextureID)mFontTexture->index();
 }
 
 void UIOverlay::update()

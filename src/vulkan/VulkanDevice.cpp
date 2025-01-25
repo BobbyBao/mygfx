@@ -57,8 +57,11 @@ bool VulkanDevice::create(const Settings& settings)
 
     mStagePool = new VulkanStagePool(mVmaAllocator);
 
-    mTextureSet = new DescriptorTable(DescriptorType::COMBINED_IMAGE_SAMPLER | DescriptorType::STORAGE_IMAGE);
-    // mImageSet = new DescriptorTable(DescriptorType::StorageImage);
+    mSamplerSet = new SamplerTable();
+    mTextureSet = new DescriptorTable(DescriptorType::COMBINED_IMAGE_SAMPLER);
+    mSampledImageTable = new DescriptorTable(DescriptorType::SAMPLED_IMAGE);
+    mStorageImageTable = new DescriptorTable(DescriptorType::STORAGE_IMAGE);
+
     // mBufferSet = new DescriptorTable(DescriptorType::StorageBuffer);
     LOG_DEBUG("QueueFamilyIndex: {}, {}, {}", queueFamilyIndices.graphics, queueFamilyIndices.compute, queueFamilyIndices.transfer);
     mCommandQueues[0].init(CommandQueueType::Graphics, queueFamilyIndices.graphics, 0, 3, "");
@@ -168,19 +171,16 @@ void VulkanDevice::destroy()
     vkDestroySemaphore(device, mPresentComplete, nullptr);
 
     mTextureSet.reset();
+    mSamplerSet.reset();
+    mSampledImageTable.reset();
 
     mConstantBufferRing.destroy();
     mVertexBufferRing.destroy();
 
-    mDescriptorPoolManager.destroyAll();
-
     SamplerHandle::shutdown();
 
-    for (auto& s : mSamplers) {
-        vkDestroySampler(device, s.second, nullptr);
-    }
+    mDescriptorPoolManager.destroyAll();
 
-    mSamplers.clear();
     mStagePool->terminate();
     delete mStagePool;
 
@@ -244,46 +244,9 @@ bool VulkanDevice::copyData(HwTexture* tex, TextureDataProvider* dataProvider)
     return vkTex->copyData(dataProvider);
 }
 
-VkSampler createVkSampler(const SamplerInfo& info)
+Ref<SamplerHandle> VulkanDevice::createSampler(const SamplerInfo& info)
 {
-    VkSamplerCreateInfo samplerCI = {};
-    samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    samplerCI.magFilter = (VkFilter)info.magFilter;
-    samplerCI.minFilter = (VkFilter)info.minFilter;
-    samplerCI.mipmapMode = (VkSamplerMipmapMode)info.mipmapMode;
-    samplerCI.addressModeU = (VkSamplerAddressMode)info.addressModeU;
-    samplerCI.addressModeV = (VkSamplerAddressMode)info.addressModeV;
-    samplerCI.addressModeW = (VkSamplerAddressMode)info.addressModeW;
-
-    samplerCI.mipLodBias = 0.0f;
-    samplerCI.anisotropyEnable = info.anisotropyEnable;
-    samplerCI.maxAnisotropy = 1.0f;
-    samplerCI.compareEnable = info.compareEnable;
-    samplerCI.compareOp = (VkCompareOp)info.compareOp;
-    samplerCI.minLod = -1000;
-    samplerCI.maxLod = 1000;
-
-    samplerCI.borderColor = (VkBorderColor)info.borderColor;
-    samplerCI.unnormalizedCoordinates = info.unnormalizedCoordinates;
-
-    VkSampler vkSampler;
-    vkCreateSampler(gfx().device, &samplerCI, nullptr, &vkSampler);
-    return vkSampler;
-}
-
-SamplerHandle VulkanDevice::createSampler(const SamplerInfo& info)
-{
-    std::lock_guard<std::mutex> lock(mSamplerLock);
-    for (int i = 0; i < mSamplers.size(); i++) {
-        auto& s = mSamplers[i];
-        if (s.first == info) {
-            return SamplerHandle { .index = (uint16_t)i };
-        }
-    }
-    auto s = createVkSampler(info);
-    auto index = mSamplers.size();
-    mSamplers.emplace_back(info, s);
-    return SamplerHandle { .index = (uint16_t)index };
+    return mSamplerSet->createSampler(info);
 }
 
 Ref<HwShaderModule> VulkanDevice::createShaderModule(ShaderStage stage, const ByteArray& shaderCode, ShaderCodeType shaderCodeType, const char* pShaderEntryPoint)

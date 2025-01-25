@@ -28,7 +28,6 @@ VulkanExample::~VulkanExample()
 
 bool VulkanExample::initVulkan()
 {
-
     mygfx::Settings s;
     s.name = title.c_str();
     s.validation = settings.validation;

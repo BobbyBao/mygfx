@@ -4,7 +4,7 @@
 #include "VulkanDefs.h"
 
 #include <vector>
-
+#include "utils/WeakPtr.h"
 namespace mygfx {
 
 class VulkanRenderPrimitive : public HwRenderPrimitive {
@@ -41,8 +41,14 @@ public:
 
     uint32_t numAttachments() const { return isSwapchain ? 1 : (uint32_t)colorAttachments.size(); }
 
-    Vector<Ref<VulkanTextureView>> colorAttachments;
+    Vector<utils::WeakPtr<VulkanTextureView>> colorAttachments;
     Ref<VulkanTextureView> depthAttachment = nullptr;
 };
 
+class VulkanSampler : public SamplerHandle {
+public:
+    VulkanSampler(const SamplerInfo& info);
+
+    VkSampler vkSampler = VK_NULL_HANDLE;
+};
 }

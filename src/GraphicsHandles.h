@@ -82,16 +82,17 @@ public:
     static Ref<HwTexture> Magenta;
 };
 
-struct SamplerHandle {
-    uint16_t index;
+struct SamplerHandle : public HwObject {
+    SamplerInfo samplerInfo;
+    uint16_t index = 0;
 
-    static SamplerHandle NearestRepeat;
-    static SamplerHandle NearestClampToEdge;
-    static SamplerHandle NearestClampToBorder;
-    static SamplerHandle LinearRepeat;
-    static SamplerHandle LinearClampToEdge;
-    static SamplerHandle LinearClampToBorder;
-    static SamplerHandle Shadow;
+    static Ref<SamplerHandle> NearestRepeat;
+    static Ref<SamplerHandle> NearestClampToEdge;
+    static Ref<SamplerHandle> NearestClampToBorder;
+    static Ref<SamplerHandle> LinearRepeat;
+    static Ref<SamplerHandle> LinearClampToEdge;
+    static Ref<SamplerHandle> LinearClampToBorder;
+    static Ref<SamplerHandle> Shadow;
 
     static void init();
     static void shutdown();

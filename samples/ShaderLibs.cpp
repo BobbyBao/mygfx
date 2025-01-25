@@ -93,7 +93,8 @@ utils::Ref<Shader> ShaderLibs::getUnlitShader()
 
 	#extension GL_EXT_nonuniform_qualifier : require
 
-	layout(set = 1, binding = 0) uniform sampler2D textures[];
+	layout(set = 1, binding = 0) uniform texture2D textures_2d[];
+	layout(set = 2, binding = 0) uniform sampler samplers[];
 
 	layout(location = 0) in vec2 inUV;
 	layout(location = 1) in vec4 inColor;
@@ -101,9 +102,11 @@ utils::Ref<Shader> ShaderLibs::getUnlitShader()
 
 	layout(location = 0) out vec4 outFragColor;
 
+	#define getSampler2D(index) sampler2D(textures_2d[nonuniformEXT((index) & 0xffff)], samplers[nonuniformEXT((index) >> 16)])
+	
 	void main()
 	{
-		outFragColor = inColor*textureLod(textures[nonuniformEXT(inTexIndex)], inUV, 0);
+		outFragColor = inColor*textureLod(getSampler2D(inTexIndex), inUV, 0);
 	}
 	)";
 
@@ -156,16 +159,19 @@ utils::Ref<Shader> ShaderLibs::getSimpleLightShader()
 		int baseColor;
 	} materialUniforms;
 
-	layout(set = 1, binding = 0) uniform sampler2D textures[];
+	layout(set = 1, binding = 0) uniform texture2D textures_2d[];
+	layout(set = 2, binding = 0) uniform sampler samplers[];
 
 	layout(location = 0) in vec2 inUV;
 	layout(location = 1) in vec3 inNorm;
 
 	layout(location = 0) out vec4 outFragColor;
-
+	
+	#define getSampler2D(index) sampler2D(textures_2d[nonuniformEXT((index) & 0xffff)], samplers[nonuniformEXT((index) >> 16)])
+	
 	void main()
 	{
-		outFragColor = texture(textures[nonuniformEXT(materialUniforms.baseColor)], inUV);
+		outFragColor = texture(getSampler2D(materialUniforms.baseColor), inUV);
 	}
 	)";
 
@@ -212,15 +218,18 @@ void main()
 
 #extension GL_EXT_nonuniform_qualifier : require
     
-layout(set = 0, binding = 0) uniform sampler2D textures_2d[];
+layout(set = 0, binding = 0) uniform texture2D textures_2d[];
+layout(set = 1, binding = 0) uniform sampler samplers[];
 
 layout(location = 0) in vec2 in_UV;
 layout(location = 1) flat in int in_TexIndex;
 layout(location = 0) out vec4 out_FragColor;
 
+#define getSampler2D(index) sampler2D(textures_2d[nonuniformEXT((index) & 0xffff)], samplers[nonuniformEXT((index) >> 16)])
+	    
 void main()
 {
-    out_FragColor = texture(textures_2d[nonuniformEXT(in_TexIndex)], in_UV);
+    out_FragColor = texture(getSampler2D(in_TexIndex), in_UV);
 }
 	)";
 

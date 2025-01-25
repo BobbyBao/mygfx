@@ -364,7 +364,7 @@ struct SamplerInfo {
     bool anisotropyEnable : 1 = false;
 
     bool srgb : 1 = false;
-    // uint8_t reserve : 7;
+    uint8_t reserve : 7 = 0;
 
     constexpr static SamplerInfo create(Filter filter, SamplerAddressMode addressMode, bool srgb = false)
     {

@@ -40,6 +40,16 @@ void VulkanTexture::destroy()
     mSRV.reset();
     mRTV.reset();
     mDSV.reset();
+
+    for(auto& v : mSRVs) {
+        v->destroy();
+    }
+    mSRVs.clear();
+
+    for(auto& v : mRTVs) {
+        v->destroy();
+    }
+    mRTVs.clear();
 }
 
 bool VulkanTexture::create(const TextureData& textureData)
@@ -341,7 +351,7 @@ Ref<VulkanTextureView> VulkanTexture::createSRV(int mipLevel, const char* name)
     }
 
     info.subresourceRange.baseArrayLayer = 0;
-    auto srv = makeShared<VulkanTextureView>(info, mSampler, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, name);
+    auto srv = makeShared<VulkanTextureView>(info, (VulkanSampler*)mSampler.get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, name);
     mSRVs.push_back(srv);
     return srv;
 }

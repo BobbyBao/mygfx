@@ -17,7 +17,7 @@ VulkanTextureView::VulkanTextureView(const VkImageViewCreateInfo& view_info, con
     }
 }
 
-VulkanTextureView::VulkanTextureView(const VkImageViewCreateInfo& view_info, SamplerHandle sampler, VkImageLayout imageLayout, const char* resName)
+VulkanTextureView::VulkanTextureView(const VkImageViewCreateInfo& view_info, VulkanSampler* sampler, VkImageLayout imageLayout, const char* resName)
 {
     mViewInfo = view_info;
     vkCreateImageView(gfx().device, &view_info, nullptr, &handle_);
@@ -38,8 +38,14 @@ void VulkanTextureView::destroy()
     if (handle_) {
         auto imageView = handle_;
         auto imageIndex = index_;
-
-        gfx().getTextureSet()->free(imageIndex);
+    #if USE_COMBINEDSAMPLER
+    auto textureSet = gfx().getTextureSet();
+    #else
+    auto textureSet = gfx().getImageSet();
+    #endif
+        if (imageIndex != -1) {
+            textureSet->free(imageIndex&0xff);
+        }
         vkDestroyImageView(gfx().device, imageView, nullptr);
 
         index_ = -1;
@@ -47,35 +53,25 @@ void VulkanTextureView::destroy()
     }
 }
 
-void VulkanTextureView::updateDescriptor(SamplerHandle sampler, VkImageLayout imageLayout)
+void VulkanTextureView::updateDescriptor(VulkanSampler* sampler, VkImageLayout imageLayout)
 {
     mDescriptor.imageView = handle_;
-    mDescriptor.sampler = gfx().getVkSampler(sampler);
+    mDescriptor.sampler = sampler->vkSampler;
     mDescriptor.imageLayout = imageLayout;
-
+    #if USE_COMBINEDSAMPLER
     auto textureSet = gfx().getTextureSet();
-    if (textureSet) {
-        if (index_ == -1) {
-            textureSet->add(*this);
-        } else {
-            textureSet->update(*this);
-        }
+    #else
+    auto textureSet = gfx().getImageSet();
+    
+    #endif
+
+    if (index_ == -1) {
+        index_ = (textureSet->add(mDescriptor) | (sampler->index << 16));
+    } else {
+        textureSet->update(index_&0xff, mDescriptor);
     }
+    
+
 }
 
-void VulkanTextureView::updateDescriptor(VkSampler sampler, VkImageLayout imageLayout)
-{
-    mDescriptor.imageView = handle_;
-    mDescriptor.sampler = sampler;
-    mDescriptor.imageLayout = imageLayout;
-
-    auto textureSet = gfx().getTextureSet();
-    if (textureSet) {
-        if (index_ == -1) {
-            textureSet->add(*this);
-        } else {
-            textureSet->update(*this);
-        }
-    }
-}
 }

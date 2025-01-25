@@ -6,7 +6,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanDefs.h"
 #include "VulkanHandles.h"
-#include "VulkanShader.h"
+#include "VulkanProgram.h"
 #include "VulkanTextureView.h"
 
 #include <span>

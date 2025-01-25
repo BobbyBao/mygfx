@@ -12,7 +12,7 @@ IF(WIN32)
 	)
 ELSE(WIN32)
 	link_libraries(
-		libshaderc_combined$<$<CONFIG:Debug>:d>.a
+		libshaderc_combined.a
 	)
 ENDIF(WIN32)
 

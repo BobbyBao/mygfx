@@ -21,6 +21,8 @@ VkDescriptorSet ResourceSet::defaultSet()
 
 void ResourceSet::setDynamicBuffer(uint32_t binding, uint32_t size)
 {
+    CHECK_RENDER_THREAD();
+
     VkDescriptorBufferInfo info = {};
     info.buffer = gfx().getGlobalUniformBuffer();
     info.offset = 0;
@@ -30,6 +32,8 @@ void ResourceSet::setDynamicBuffer(uint32_t binding, uint32_t size)
 
 void ResourceSet::setBuffer(uint32_t binding, const VkDescriptorBufferInfo& bufferInfo)
 {
+    CHECK_RENDER_THREAD();
+
     descriptorInfos_[binding] = bufferInfo;
 
     for (auto& it : descriptorSets_) {
@@ -59,12 +63,15 @@ DescriptorSet* ResourceSet::getDescriptorSet(DescriptorSetLayout* layout)
 
 DescriptorSet* ResourceSet::addDescriptorSet(const Span<DescriptorSetLayoutBinding>& bindings)
 {
+    CHECK_RENDER_THREAD();
+
     auto dsl = makeShared<DescriptorSetLayout>(bindings);
     return addDescriptorSet(dsl);
 }
 
 DescriptorSet* ResourceSet::addDescriptorSet(DescriptorSetLayout* layout)
-{
+{    
+    std::lock_guard locker(mutex_);
     auto hash = layout->toHash();
     auto it = descriptorSets_.find(hash);
     if (it == descriptorSets_.end()) {
@@ -97,7 +104,7 @@ void DescriptorTable::init()
     descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
     descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::FRAGMENT);
     addDescriptorSet(descriptorSetLayoutTex);
-
+#if false
     descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
     descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::TESSELLATION_EVALUATION | ShaderStage::FRAGMENT);
     addDescriptorSet(descriptorSetLayoutTex);
@@ -109,7 +116,7 @@ void DescriptorTable::init()
     descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
     descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::TESSELLATION_CONTROL | ShaderStage::TESSELLATION_EVALUATION | ShaderStage::FRAGMENT);
     addDescriptorSet(descriptorSetLayoutTex);
-
+#endif
     descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
     descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::COMPUTE);
     addDescriptorSet(descriptorSetLayoutTex);
@@ -131,37 +138,35 @@ VkDescriptorSet DescriptorTable::defaultSet()
     return fragmentSet_->handle();
 }
 
-void DescriptorTable::add(VulkanTextureView& tex, bool update)
+int DescriptorTable::add(const VkDescriptorImageInfo& descriptorInfo, bool update)
 {
     std::lock_guard locker(mutex_);
     std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
-    // assert(tex.Index < 0);
     int index;
     if (freeIndics_.size() > 0) {
         index = freeIndics_.back();
         freeIndics_.pop_back();
-        imageInfos[index] = tex.descriptorInfo();
+        imageInfos[index] = descriptorInfo;
     } else {
         index = (int)imageInfos.size();
-        imageInfos.push_back(tex.descriptorInfo());
+        imageInfos.push_back(descriptorInfo);
     }
 
     for (auto& it : descriptorSets_) {
         it.second->bind(0, index, imageInfos[index]);
     }
 
-    tex.index_ = index;
+    return index;
 }
 
-void DescriptorTable::update(VulkanTextureView& tex)
+void DescriptorTable::update(int index, const VkDescriptorImageInfo& descriptorInfo)
 {
-    assert(tex.index() > 0);
+    assert(index >= 0);
     std::lock_guard locker(mutex_);
-    int index = tex.index();
 
     std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
-    if (std::memcmp(&imageInfos[index], &tex.descriptorInfo(), sizeof(VkDescriptorImageInfo)) != 0) {
-        imageInfos[index] = tex.descriptorInfo();
+    if (std::memcmp(&imageInfos[index], &descriptorInfo, sizeof(VkDescriptorImageInfo)) != 0) {
+        imageInfos[index] = descriptorInfo;
 
         for (auto& it : descriptorSets_) {
             it.second->bind(0, index, imageInfos[index]);
@@ -169,11 +174,10 @@ void DescriptorTable::update(VulkanTextureView& tex)
     }
 }
 
-void DescriptorTable::free(int tex)
+void DescriptorTable::free(int index)
 {
     std::lock_guard locker(mutex_);
-    if (tex >= 0) {
-        int index = tex;
+    if (index >= 0) {
 
         std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
 
@@ -187,7 +191,7 @@ void DescriptorTable::free(int tex)
             it.second->bind(0, index, imageInfos[index]);
         }
 
-        freeIndics_.push_back(tex);
+        freeIndics_.push_back(index);
     }
 }
 
@@ -199,4 +203,81 @@ void DescriptorTable::clear()
     descriptorSets_.clear();
 }
 
+SamplerTable::SamplerTable()
+{
+    init();
+}
+
+SamplerTable::~SamplerTable()
+{
+}
+
+void SamplerTable::init()
+{
+    auto descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
+    descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::FRAGMENT);
+    mFragmentSet = addDescriptorSet(descriptorSetLayoutTex);
+
+    descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
+    descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::FRAGMENT);
+    addDescriptorSet(descriptorSetLayoutTex);
+
+    descriptorInfos_[0] = std::vector<VkDescriptorImageInfo>();
+}
+
+Ref<SamplerHandle> SamplerTable::createSampler(SamplerInfo info)
+{    
+    std::lock_guard locker(mutex_);
+    for (int i = 0; i < mSamplers.size(); i++) {
+        if (mSamplers[i]->samplerInfo == info) {
+            return mSamplers[i];
+        }
+    }
+    
+    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
+
+    int index = (int)imageInfos.size();
+    assert(index == mSamplers.size());
+
+    VulkanSampler* s = new VulkanSampler(info);
+    mSamplers.emplace_back(s);
+    
+    VkDescriptorImageInfo descriptorInfo {};
+    descriptorInfo.sampler = s->vkSampler;
+    descriptorInfo.imageView = VK_NULL_HANDLE;
+    descriptorInfo.imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+    imageInfos.push_back(descriptorInfo);
+
+    for (auto& it : descriptorSets_) {
+        it.second->bind(0, index, imageInfos[index]);
+    }
+
+    s->index = index;
+
+    return Ref<SamplerHandle>(s);
+}
+
+void SamplerTable::update(int index, const VkDescriptorImageInfo& descriptorInfo)
+{
+    assert(index >= 0);
+    std::lock_guard locker(mutex_);
+
+    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
+    if (imageInfos[index] != descriptorInfo) {
+        imageInfos[index] = descriptorInfo;
+
+        for (auto& it : descriptorSets_) {
+            it.second->bind(0, index, imageInfos[index]);
+        }
+    }
+}
+
+void SamplerTable::clear()
+{
+    std::lock_guard locker(mutex_);
+    descriptorInfos_.clear();
+    descriptorSets_.clear();
+    mSamplers.clear();
+}
 }

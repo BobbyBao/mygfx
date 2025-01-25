@@ -75,6 +75,16 @@ private:
     size_t mHash = 0;
 };
 
+inline bool operator==(const VkDescriptorImageInfo& lhs, const VkDescriptorImageInfo& rhs) noexcept
+{
+    return std::memcmp(&lhs, &rhs, sizeof(VkDescriptorImageInfo)) == 0;
+}
+
+inline bool operator!=(const VkDescriptorImageInfo& lhs, const VkDescriptorImageInfo& rhs) noexcept
+{
+    return std::memcmp(&lhs, &rhs, sizeof(VkDescriptorImageInfo)) != 0;
+}
+
 #if !USE_VOLK
 
 inline PFN_vkGetPhysicalDeviceProperties2KHR vkGetPhysicalDeviceProperties2KHR { VK_NULL_HANDLE };

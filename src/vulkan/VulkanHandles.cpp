@@ -98,4 +98,39 @@ VulkanRenderTarget::VulkanRenderTarget(uint32_t w, uint32_t h, bool isSwapchain)
     height = h;
     this->isSwapchain = isSwapchain;
 }
+
+VkSampler createVkSampler(const SamplerInfo& info)
+{
+    VkSamplerCreateInfo samplerCI = {};
+    samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerCI.magFilter = (VkFilter)info.magFilter;
+    samplerCI.minFilter = (VkFilter)info.minFilter;
+    samplerCI.mipmapMode = (VkSamplerMipmapMode)info.mipmapMode;
+    samplerCI.addressModeU = (VkSamplerAddressMode)info.addressModeU;
+    samplerCI.addressModeV = (VkSamplerAddressMode)info.addressModeV;
+    samplerCI.addressModeW = (VkSamplerAddressMode)info.addressModeW;
+
+    samplerCI.mipLodBias = 0.0f;
+    samplerCI.anisotropyEnable = info.anisotropyEnable;
+    samplerCI.maxAnisotropy = 1.0f;
+    samplerCI.compareEnable = info.compareEnable;
+    samplerCI.compareOp = (VkCompareOp)info.compareOp;
+    samplerCI.minLod = -1000;
+    samplerCI.maxLod = 1000;
+
+    samplerCI.borderColor = (VkBorderColor)info.borderColor;
+    samplerCI.unnormalizedCoordinates = info.unnormalizedCoordinates;
+
+    VkSampler vkSampler;
+    vkCreateSampler(gfx().device, &samplerCI, nullptr, &vkSampler);
+    return vkSampler;
+}
+
+VulkanSampler::VulkanSampler(const SamplerInfo& info)
+{
+    samplerInfo = info;
+    vkSampler = createVkSampler(info);
+
+}
+
 }
