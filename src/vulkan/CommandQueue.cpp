@@ -182,7 +182,7 @@ void CommandQueue::wait(uint64_t waitValue) const
     waitInfo.pSemaphores = &mSemaphore;
     waitInfo.pValues = &waitValue;
 
-#if VK_VERSION == VK_1_1
+#if MYGFX_FEATURE_LEVEL <= 1
     VkResult res = vkWaitSemaphoresKHR(gfx().device, &waitInfo, std::numeric_limits<uint64_t>::max());
 #else
     VkResult res = vkWaitSemaphores(gfx().device, &waitInfo, std::numeric_limits<uint64_t>::max());

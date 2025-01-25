@@ -136,11 +136,11 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
     appInfo.pApplicationName = name;
     appInfo.pEngineName = name;
 
-#if VK_VERSION == VK_1_1
+#if MYGFX_FEATURE_LEVEL == 1
     appInfo.apiVersion = VK_API_VERSION_1_1;
-#elif VK_VERSION == VK_1_2
+#elif MYGFX_FEATURE_LEVEL == 2
     appInfo.apiVersion = VK_API_VERSION_1_2;
-#elif VK_VERSION == VK_1_3
+#elif MYGFX_FEATURE_LEVEL == 3
     appInfo.apiVersion = VK_API_VERSION_1_3;
 #endif
 

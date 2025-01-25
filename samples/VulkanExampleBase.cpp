@@ -889,7 +889,7 @@ int32_t VulkanExampleBase::handleAppInput(struct android_app* app, AInputEvent* 
 						bool handled = false;
 						if (vulkanExample->settings.overlay) {
 							ImGuiIO& io = ImGui::GetIO();
-							handled = io.WantCaptureMouse && vulkanExample->ui.visible;
+							handled = io.WantCaptureMouse;// && vulkanExample->ui.visible;
 						}
 						if (!handled) {
 							int32_t eventX = AMotionEvent_getX(event, 0);
@@ -942,8 +942,8 @@ int32_t VulkanExampleBase::handleAppInput(struct android_app* app, AInputEvent* 
 		case AKEYCODE_1:							// support keyboards with no function keys
 		case AKEYCODE_F1:
 		case AKEYCODE_BUTTON_L1:
-			vulkanExample->ui.visible = !vulkanExample->ui.visible;
-			vulkanExample->ui.updated = true;
+			//vulkanExample->ui.visible = !vulkanExample->ui.visible;
+			//vulkanExample->ui.updated = true;
 			break;
 		case AKEYCODE_BUTTON_R1:
 			vulkanExample->keyPressed(GAMEPAD_BUTTON_R1);
@@ -1543,8 +1543,8 @@ void VulkanExampleBase::handleEvent(const DFBWindowEvent *event)
 				paused = !paused;
 				break;
 			case KEY_F1:
-				ui.visible = !ui.visible;
-				ui.updated = true;
+				//ui.visible = !ui.visible;
+				//ui.updated = true;
 				break;
 			default:
 				break;
@@ -1718,8 +1718,8 @@ void VulkanExampleBase::keyboardKey(struct wl_keyboard *keyboard,
 		break;
 	case KEY_F1:
 		if (state) {
-			ui.visible = !ui.visible;
-			ui.updated = true;
+			//ui.visible = !ui.visible;
+			//ui.updated = true;
 		}
 		break;
 	case KEY_ESCAPE:
@@ -2086,8 +2086,8 @@ void VulkanExampleBase::handleEvent(const xcb_generic_event_t *event)
 				paused = !paused;
 				break;
 			case KEY_F1:
-				ui.visible = !ui.visible;
-				ui.updated = true;
+				//ui.visible = !ui.visible;
+				//ui.updated = true;
 				break;
 		}
 	}
@@ -2212,8 +2212,8 @@ void VulkanExampleBase::handleEvent()
 							paused = !paused;
 							break;
 						case KEYCODE_F1:
-							ui.visible = !ui.visible;
-							ui.updated = true;
+							//ui.visible = !ui.visible;
+							//ui.updated = true;
 							break;
 						default:
 							break;

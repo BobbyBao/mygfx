@@ -87,7 +87,7 @@ VulkanBuffer::VulkanBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t 
         info.pNext = nullptr;
         info.buffer = buffer;
 
-#if VK_VERSION == VK_1_1
+#if MYGFX_FEATURE_LEVEL <= 1
         deviceAddress = vkGetBufferDeviceAddressKHR(gfx().device, &info);
 #else
         deviceAddress = vkGetBufferDeviceAddress(gfx().device, &info);
