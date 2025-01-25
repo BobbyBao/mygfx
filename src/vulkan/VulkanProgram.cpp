@@ -433,7 +433,8 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
 
 #endif
 
-    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = initializers::pipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, 0, false);
+    VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = initializers::pipelineInputAssemblyStateCreateInfo(
+            (VkPrimitiveTopology)pipelineState->primitiveState.primitiveTopology, 0, false);
     VkPipelineTessellationStateCreateInfo tessellationState = initializers::pipelineTessellationStateCreateInfo(3);
     VkPipelineViewportStateCreateInfo viewportState = initializers::pipelineViewportStateCreateInfo(0, 0);
     VkPipelineRasterizationStateCreateInfo rasterizationState = initializers::pipelineRasterizationStateCreateInfo(VkPolygonMode::VK_POLYGON_MODE_FILL, VkCullModeFlagBits::VK_CULL_MODE_NONE, VkFrontFace::VK_FRONT_FACE_COUNTER_CLOCKWISE);

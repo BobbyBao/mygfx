@@ -121,7 +121,7 @@ public:
     CommandQueueType getCommandQueueType() const;
 
     VkCommandBuffer cmd;
-    mutable CommandList* commandPool;
+    mutable CommandList* commandPool = nullptr;
 
 private:
     mutable VulkanVertexInput* mVertexInput;

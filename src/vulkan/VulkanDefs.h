@@ -12,31 +12,47 @@
 #include "../utils/algorithm.h"
 #include <vma/vk_mem_alloc.h>
 
-#define VK_1_1 1
-#define VK_1_2 2
-#define VK_1_3 3
+#define MYGFX_FEATURE_LEVEL_0 0
+#define MYGFX_FEATURE_LEVEL_1 1
+#define MYGFX_FEATURE_LEVEL_2 2
+#define MYGFX_FEATURE_LEVEL_3 3
 
-#define VK_VERSION 3
+#ifndef MYGFX_FEATURE_LEVEL
 
-#define HAS_DYNAMIC_RENDERING
+#if defined(VK_USE_PLATFORM_METAL_EXT)
+#define MYGFX_FEATURE_LEVEL 2
+#else
+#define MYGFX_FEATURE_LEVEL 3
+#endif
+
+#endif
 
 #define HAS_DYNAMIC_STATE1 1
-#define HAS_DYNAMIC_STATE2 1
 
-#ifndef HAS_SHADER_OBJECT_EXT
-#if defined(VK_EXT_shader_object) && defined(HAS_DYNAMIC_RENDERING)
+#if defined(VK_EXT_shader_object) && (MYGFX_FEATURE_LEVEL == 3)
 #define HAS_SHADER_OBJECT_EXT 1
+#define HAS_DYNAMIC_STATE2 1
 #define HAS_DYNAMIC_STATE3 1
+#elif(MYGFX_FEATURE_LEVEL == 2)
+#define HAS_SHADER_OBJECT_EXT 0
+#define HAS_DYNAMIC_STATE2 1
+#define HAS_DYNAMIC_STATE3 0
+#elif(MYGFX_FEATURE_LEVEL == 1)
+#define HAS_SHADER_OBJECT_EXT 0
+#define HAS_DYNAMIC_STATE2 1
+#define HAS_DYNAMIC_STATE3 0
 #else
 #define HAS_SHADER_OBJECT_EXT 0
+#define HAS_DYNAMIC_STATE2 0
 #define HAS_DYNAMIC_STATE3 0
-#endif
 #endif
 
 namespace mygfx {
 
 static constexpr uint32_t DESCRIPTOR_TYPE_COUNT = 16;
 static constexpr uint32_t VARIABLE_DESC_COUNT = 4096;
+static constexpr uint32_t IMAGE_VARIABLE_DESC_COUNT = 65536 / 2;
+static constexpr uint32_t SAMPLER_VARIABLE_DESC_COUNT = 1024;
 
 struct DescriptorResourceCounts : public std::array<uint32_t, DESCRIPTOR_TYPE_COUNT> {
 
