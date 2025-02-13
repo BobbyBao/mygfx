@@ -43,8 +43,8 @@ VulkanDeviceHelper::VulkanDeviceHelper()
     enabledDeviceExtensions.push_back(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME);
 
     enabledDeviceExtensions.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
-    //enabledDeviceExtensions.push_back(VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
-    
+    // enabledDeviceExtensions.push_back(VK_EXT_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME);
+
 #if (defined(VK_USE_PLATFORM_IOS_MVK) || defined(VK_USE_PLATFORM_MACOS_MVK) || defined(VK_USE_PLATFORM_METAL_EXT))
     // SRS - When running on iOS/macOS with MoltenVK and VK_KHR_portability_subset is defined and supported by the device, enable the extension
     enabledDeviceExtensions.push_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
@@ -277,7 +277,7 @@ VkResult VulkanDeviceHelper::createInstance(const char* name, bool validation)
 #endif
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-        //android::loadVulkanFunctions(instance);
+        // android::loadVulkanFunctions(instance);
 #endif
 
         // If requested, we enable the default validation layers for debugging
@@ -461,6 +461,23 @@ void VulkanDeviceHelper::getEnabledFeatures()
         };
         featuresAppender.AppendNext(&features);
     }
+}
+
+uint32_t VulkanDeviceHelper::getMaxVariableCount(VkDescriptorType type) const
+{
+    switch (type) {
+    case VK_DESCRIPTOR_TYPE_SAMPLER:
+        return std::min(SAMPLER_VARIABLE_DESC_COUNT, getMaxSamplers());
+    case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+        return std::min(IMAGE_VARIABLE_DESC_COUNT, getMaxSampledImages());
+    case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+        return std::min(IMAGE_VARIABLE_DESC_COUNT, getMaxSampledImages());
+    case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
+        return std::min(IMAGE_VARIABLE_DESC_COUNT, getMaxStorageImages());    
+    default:
+        break;
+    }
+    return IMAGE_VARIABLE_DESC_COUNT;
 }
 
 void VulkanDeviceHelper::getEnabledExtensions()

@@ -245,7 +245,8 @@ static void collectionResource(VkShaderStageFlagBits shaderStage, CompilerGLSL* 
                 bool isLiteral = type.array_size_literal[arr];
                 uint32_t arrCount = type.array[arr];
                 if (isLiteral) {
-                    shaderResourceInfo->dsLayoutBinding.descriptorCount = arrCount == 0 ? VARIABLE_DESC_COUNT : arrCount;
+                    shaderResourceInfo->dsLayoutBinding.descriptorCount = arrCount == 0 ? 
+                        gfx().getMaxVariableCount(descriptorType) : arrCount;
                     shaderResourceInfo->bindless = arrCount == 0;
                 }
 
