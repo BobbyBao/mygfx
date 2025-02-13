@@ -61,10 +61,13 @@ public:
     const VkQueueFamilyProperties& computeQueueFamilyProperties() const { return queueFamilyProperties[queueFamilyIndices.compute]; }
     const VkQueueFamilyProperties& copyQueueFamilyProperties() const { return queueFamilyProperties[queueFamilyIndices.transfer]; }
     bool enalbeAsyncCopy() const {  return copyQueueFamilyProperties().queueCount > 1; }
+
     uint32_t getMaxSamplers() const { return descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSamplers; }
     uint32_t getMaxCombinedImageSamplers() const { return descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSamplers; }
     uint32_t getMaxSampledImages() const { return descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindSampledImages; }
     uint32_t getMaxStorageImages() const { return descriptorIndexingProperties.maxPerStageDescriptorUpdateAfterBindStorageImages; }
+    uint32_t getMaxVariableCount(VkDescriptorType type) const;
+
 protected:
     VkResult createInstance(const char* name, bool validation);
     bool selectPhysicalDevice();

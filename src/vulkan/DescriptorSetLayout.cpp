@@ -101,7 +101,8 @@ void DescriptorSetLayout::defineDescriptorTable(DescriptorType descriptorType, S
 {
     isBindless = true;
 
-    dsLayoutbindings_ = { DescriptorSetLayoutBinding { 0, descriptorType, VARIABLE_DESC_COUNT, shaderStageFlag } };
+    auto desciptorCount = gfx().getMaxVariableCount((VkDescriptorType)descriptorType);
+    dsLayoutbindings_ = { DescriptorSetLayoutBinding { 0, descriptorType, desciptorCount, shaderStageFlag } };
 
     VkDescriptorBindingFlags descriptorBindingFlags = 0;
     descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
@@ -109,7 +110,7 @@ void DescriptorSetLayout::defineDescriptorTable(DescriptorType descriptorType, S
     descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
     descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
     descriptorBindingFlags_ = { descriptorBindingFlags };
-    variableDescCounts_ = { VARIABLE_DESC_COUNT };
+    variableDescCounts_ = { desciptorCount };
 
     create();
 }
