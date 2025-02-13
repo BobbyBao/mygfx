@@ -36,7 +36,7 @@
 #elif(MYGFX_FEATURE_LEVEL == 2)
 #define HAS_SHADER_OBJECT_EXT 0
 #define HAS_DYNAMIC_STATE2 1
-#define HAS_DYNAMIC_STATE3 1
+#define HAS_DYNAMIC_STATE3 0
 #elif(MYGFX_FEATURE_LEVEL == 1)
 #define HAS_SHADER_OBJECT_EXT 0
 #define HAS_DYNAMIC_STATE2 1
@@ -51,6 +51,8 @@ namespace mygfx {
 
 static constexpr uint32_t DESCRIPTOR_TYPE_COUNT = 16;
 static constexpr uint32_t VARIABLE_DESC_COUNT = 4096;
+static constexpr uint32_t IMAGE_VARIABLE_DESC_COUNT = 65536 / 2;
+static constexpr uint32_t SAMPLER_VARIABLE_DESC_COUNT = 1024;
 
 struct DescriptorResourceCounts : public std::array<uint32_t, DESCRIPTOR_TYPE_COUNT> {
 
