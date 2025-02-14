@@ -406,8 +406,22 @@ void CommandBuffer::bindStencilState(const StencilState* stencilState) const VUL
     }
 
     mStencilState = *stencilState;
-
+#if HAS_DYNAMIC_STATE3
     vkCmdSetStencilTestEnableEXT(cmd, stencilState->stencilTestEnable);
+    vkCmdSetStencilOpEXT(cmd, VK_STENCIL_FACE_FRONT_BIT, (VkStencilOp)stencilState->front.failOp, (VkStencilOp)stencilState->front.passOp,
+        (VkStencilOp)stencilState->front.depthFailOp, (VkCompareOp)stencilState->front.compareOp);
+    
+    vkCmdSetStencilCompareMask(cmd, VK_STENCIL_FACE_FRONT_BIT, stencilState->front.compareMask);
+    vkCmdSetStencilReference(cmd, VK_STENCIL_FACE_FRONT_BIT, stencilState->front.reference);
+    vkCmdSetStencilWriteMask(cmd, VK_STENCIL_FACE_FRONT_BIT, stencilState->front.compareMask);
+    
+    vkCmdSetStencilOpEXT(cmd, VK_STENCIL_FACE_BACK_BIT, (VkStencilOp)stencilState->back.failOp, (VkStencilOp)stencilState->back.passOp,
+        (VkStencilOp)stencilState->back.depthFailOp, (VkCompareOp)stencilState->back.compareOp);
+
+    vkCmdSetStencilCompareMask(cmd, VK_STENCIL_FACE_BACK_BIT, stencilState->back.compareMask);
+    vkCmdSetStencilReference(cmd, VK_STENCIL_FACE_BACK_BIT, stencilState->back.reference);
+    vkCmdSetStencilWriteMask(cmd, VK_STENCIL_FACE_BACK_BIT, stencilState->back.compareMask);
+#endif
 }
 
 void CommandBuffer::bindPipelineState(const PipelineState* pipelineState) const VULKAN_NOEXCEPT

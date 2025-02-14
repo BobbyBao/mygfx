@@ -124,8 +124,8 @@ public:
     mutable CommandList* commandPool = nullptr;
 
 private:
-    mutable VulkanVertexInput* mVertexInput;
-    mutable VulkanProgram* mProgram;
+    mutable VulkanVertexInput* mVertexInput = nullptr;
+    mutable VulkanProgram* mProgram = nullptr;
     mutable PrimitiveState mPrimitiveState {};
     mutable VertexAttribute mVertexSemantic = VertexAttribute::ALL;
     mutable RasterState mRasterState {};
