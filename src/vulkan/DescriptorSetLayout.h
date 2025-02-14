@@ -17,10 +17,10 @@ public:
     void define(const Span<DescriptorSetLayoutBinding>& bindings, bool update = false);
     void defineDescriptorTable(DescriptorType descriptorType, ShaderStage shaderStageFlag);
 
-    inline uint32_t numBindings() const { return static_cast<uint32_t>(dsLayoutbindings_.size()); }
+    inline uint32_t numBindings() const { return static_cast<uint32_t>(mDSLayoutbindings.size()); }
 
     inline const DescriptorResourceCounts& sizeCounts() const { return mDescriptorResourceCounts; }
-    inline const std::vector<uint32_t>& variableDescCounts() const { return variableDescCounts_; }
+    inline const std::vector<uint32_t>& variableDescCounts() const { return mVariableDescCounts; }
 
     const DescriptorSetLayoutBinding* getBinding(const String& name) const;
     const DescriptorSetLayoutBinding* getBinding(uint32_t index) const;
@@ -30,7 +30,7 @@ public:
 
     const VkDescriptorSetLayout& handle() const;
 
-    inline operator VkDescriptorSetLayout() const { return handle_; }
+    inline operator VkDescriptorSetLayout() const { return mHandle; }
 
     void destroy();
 
@@ -40,12 +40,12 @@ public:
 
 private:
     void create() const;
-    mutable VkDescriptorSetLayout handle_ = nullptr;
-    std::vector<DescriptorSetLayoutBinding> dsLayoutbindings_;
-    mutable std::vector<VkDescriptorBindingFlags> descriptorBindingFlags_;
-    std::vector<uint32_t> variableDescCounts_;
+    mutable VkDescriptorSetLayout mHandle = nullptr;
+    std::vector<DescriptorSetLayoutBinding> mDSLayoutbindings;
+    mutable std::vector<VkDescriptorBindingFlags> mDescriptorBindingFlags;
+    std::vector<uint32_t> mVariableDescCounts;
     mutable DescriptorResourceCounts mDescriptorResourceCounts = { 0 };
-    mutable size_t hash_ { 0 };
+    mutable size_t mHash { 0 };
 };
 
 inline VkDescriptorSetLayoutBinding toVk(const DescriptorSetLayoutBinding& dsLayountBinding)

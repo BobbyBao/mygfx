@@ -71,7 +71,7 @@ public:
 private:
     Vector<Ref<VulkanShaderModule>> mShaderModules;
     Vector<Ref<DescriptorSetLayout>> mDescriptorSetLayouts;
-    Vector<VkDescriptorSetLayout> descriptorSetLayouts;
+    Vector<VkDescriptorSetLayout> mVkDescriptorSetLayouts;
     ProgramType programType;
     VkShaderCodeTypeEXT shaderCodeType;
     Vector<Ref<DescriptorSet>> mDesciptorSets;

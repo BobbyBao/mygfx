@@ -33,12 +33,10 @@ public:
     void setDynamicBuffer(uint32_t binding, uint32_t size);
 
 protected:
-    VkDescriptorSet defaultSet();
     void setBuffer(uint32_t binding, const VkDescriptorBufferInfo& bufferInfo);
-    std::map<uint32_t, DescriptorInfo> descriptorInfos_;
-    Ref<DescriptorSet> defaultSet_;
-    std::mutex mutex_;
-    std::unordered_map<size_t, Ref<DescriptorSet>> descriptorSets_;
+    std::map<uint32_t, DescriptorInfo> mDescriptorInfos;
+    std::mutex mMutex;
+    std::unordered_map<size_t, Ref<DescriptorSet>> mDescriptorSets;
 };
 
 class DescriptorTable : public ResourceSet {
@@ -54,10 +52,9 @@ public:
 private:
     void clear();
     DescriptorSet* fragmentSet();
-    VkDescriptorSet defaultSet();
     DescriptorType mDescriptorType = DescriptorType::COMBINED_IMAGE_SAMPLER;
-    std::vector<int> freeIndics_;
-    Ref<DescriptorSet> fragmentSet_;
+    std::vector<int> mFreeIndics;
+    Ref<DescriptorSet> mFragmentSet;
 };
 
 class SamplerTable : public ResourceSet {

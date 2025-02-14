@@ -15,13 +15,13 @@ DescriptorSetLayout::DescriptorSetLayout(const Span<DescriptorSetLayoutBinding>&
 
 DescriptorSetLayout::DescriptorSetLayout(const std::vector<Ref<ShaderResourceInfo>>& bindings)
 {
-    dsLayoutbindings_.reserve(dsLayoutbindings_.size());
-    descriptorBindingFlags_.reserve(dsLayoutbindings_.size());
-    variableDescCounts_.reserve(dsLayoutbindings_.size());
+    mDSLayoutbindings.reserve(mDSLayoutbindings.size());
+    mDescriptorBindingFlags.reserve(mDSLayoutbindings.size());
+    mVariableDescCounts.reserve(mDSLayoutbindings.size());
 
     for (auto& res : bindings) {
-        dsLayoutbindings_.push_back(res->dsLayoutBinding);
-        variableDescCounts_.push_back(res->dsLayoutBinding.descriptorCount);
+        mDSLayoutbindings.push_back(res->dsLayoutBinding);
+        mVariableDescCounts.push_back(res->dsLayoutBinding.descriptorCount);
 
         if (res->bindless) {
             this->isBindless = true;
@@ -31,9 +31,9 @@ DescriptorSetLayout::DescriptorSetLayout(const std::vector<Ref<ShaderResourceInf
             descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT;
             descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
             descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
-            descriptorBindingFlags_.push_back(descriptorBindingFlags);
+            mDescriptorBindingFlags.push_back(descriptorBindingFlags);
         } else {
-            descriptorBindingFlags_.push_back(VkDescriptorBindingFlags {});
+            mDescriptorBindingFlags.push_back(VkDescriptorBindingFlags {});
         }
     }
 
@@ -47,9 +47,9 @@ DescriptorSetLayout::~DescriptorSetLayout()
 
 const DescriptorSetLayoutBinding* DescriptorSetLayout::getBinding(const String& name) const
 {
-    for (uint32_t i = 0; i < dsLayoutbindings_.size(); i++) {
-        if (dsLayoutbindings_[i].name == name) {
-            return &dsLayoutbindings_[i];
+    for (uint32_t i = 0; i < mDSLayoutbindings.size(); i++) {
+        if (mDSLayoutbindings[i].name == name) {
+            return &mDSLayoutbindings[i];
         }
     }
 
@@ -58,41 +58,41 @@ const DescriptorSetLayoutBinding* DescriptorSetLayout::getBinding(const String& 
 
 const DescriptorSetLayoutBinding* DescriptorSetLayout::getBinding(uint32_t index) const
 {
-    if (index < dsLayoutbindings_.size()) {
-        return &dsLayoutbindings_[index];
+    if (index < mDSLayoutbindings.size()) {
+        return &mDSLayoutbindings[index];
     }
     return nullptr;
 }
 
 DescriptorSetLayoutBinding* DescriptorSetLayout::getBinding(uint32_t index)
 {
-    if (index < dsLayoutbindings_.size()) {
-        return &dsLayoutbindings_[index];
+    if (index < mDSLayoutbindings.size()) {
+        return &mDSLayoutbindings[index];
     }
     return nullptr;
 }
 
 ShaderStage DescriptorSetLayout::shaderStageFlags() const
 {
-    if (dsLayoutbindings_.size() > 0) {
-        return dsLayoutbindings_[0].stageFlags;
+    if (mDSLayoutbindings.size() > 0) {
+        return mDSLayoutbindings[0].stageFlags;
     }
     return ShaderStage::None;
 }
 
 const VkDescriptorSetLayout& DescriptorSetLayout::handle() const
 {
-    if (!handle_) {
+    if (!mHandle) {
         create();
     }
 
-    return handle_;
+    return mHandle;
 }
 
 void DescriptorSetLayout::define(const Span<DescriptorSetLayoutBinding>& bindings, bool update)
 {
-    dsLayoutbindings_.assign(bindings.begin(), bindings.end());
-    descriptorBindingFlags_.resize(dsLayoutbindings_.size());
+    mDSLayoutbindings.assign(bindings.begin(), bindings.end());
+    mDescriptorBindingFlags.resize(mDSLayoutbindings.size());
     updatable = update;
     create();
 }
@@ -102,15 +102,15 @@ void DescriptorSetLayout::defineDescriptorTable(DescriptorType descriptorType, S
     isBindless = true;
 
     auto desciptorCount = gfx().getMaxVariableCount((VkDescriptorType)descriptorType);
-    dsLayoutbindings_ = { DescriptorSetLayoutBinding { 0, descriptorType, desciptorCount, shaderStageFlag } };
+    mDSLayoutbindings = { DescriptorSetLayoutBinding { 0, descriptorType, desciptorCount, shaderStageFlag } };
 
     VkDescriptorBindingFlags descriptorBindingFlags = 0;
     descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
     descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT;
     descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
     descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
-    descriptorBindingFlags_ = { descriptorBindingFlags };
-    variableDescCounts_ = { desciptorCount };
+    mDescriptorBindingFlags = { descriptorBindingFlags };
+    mVariableDescCounts = { desciptorCount };
 
     create();
 }
@@ -118,7 +118,7 @@ void DescriptorSetLayout::defineDescriptorTable(DescriptorType descriptorType, S
 void DescriptorSetLayout::create() const
 {
     std::vector<VkDescriptorSetLayoutBinding> bindings;
-    for (auto& binding : dsLayoutbindings_) {
+    for (auto& binding : mDSLayoutbindings) {
         bindings.push_back(toVk(binding));
     }
 
@@ -138,16 +138,16 @@ void DescriptorSetLayout::create() const
         descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT;
         descriptorBindingFlags |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
 
-        std::fill(descriptorBindingFlags_.begin(), descriptorBindingFlags_.end(), (uint32_t)descriptorBindingFlags);
-        setLayoutBindingFlags.bindingCount = static_cast<uint32_t>(descriptorBindingFlags_.size());
-        setLayoutBindingFlags.pBindingFlags = descriptorBindingFlags_.data();
+        std::fill(mDescriptorBindingFlags.begin(), mDescriptorBindingFlags.end(), (uint32_t)descriptorBindingFlags);
+        setLayoutBindingFlags.bindingCount = static_cast<uint32_t>(mDescriptorBindingFlags.size());
+        setLayoutBindingFlags.pBindingFlags = mDescriptorBindingFlags.data();
 
         layoutInfo.pNext = &setLayoutBindingFlags;
         layoutInfo.flags = VkDescriptorSetLayoutCreateFlagBits::VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
     }
 
-    if (handle_) {
-        auto handle = handle_;
+    if (mHandle) {
+        auto handle = mHandle;
         gfx().post([=]() {
             vkDestroyDescriptorSetLayout(gfx().device, handle, nullptr);
         });
@@ -155,35 +155,35 @@ void DescriptorSetLayout::create() const
         mDescriptorResourceCounts.fill(0);
     }
 
-    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gfx().device, &layoutInfo, nullptr, &handle_));
+    VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gfx().device, &layoutInfo, nullptr, &mHandle));
 
-    for (auto& binding : dsLayoutbindings_) {
+    for (auto& binding : mDSLayoutbindings) {
         mDescriptorResourceCounts[(int)binding.descriptorType] += binding.descriptorCount;
     }
 }
 
 void DescriptorSetLayout::destroy()
 {
-    if (handle_) {
-        auto handle = handle_;
+    if (mHandle) {
+        auto handle = mHandle;
         gfx().post([=]() {
             vkDestroyDescriptorSetLayout(gfx().device, handle, nullptr);
         });
 
         mDescriptorResourceCounts.fill(0);
-        handle_ = nullptr;
+        mHandle = nullptr;
     }
 }
 
 size_t DescriptorSetLayout::toHash() const
 {
-    if (hash_ == 0) {
-        for (auto& binding : dsLayoutbindings_) {
-            utils::hash_combine(hash_, binding.binding, binding.descriptorType, binding.descriptorCount, (uint32_t)binding.stageFlags);
+    if (mHash == 0) {
+        for (auto& binding : mDSLayoutbindings) {
+            utils::hash_combine(mHash, binding.binding, binding.descriptorType, binding.descriptorCount, (uint32_t)binding.stageFlags);
         }
     }
 
-    return hash_;
+    return mHash;
 }
 
 }

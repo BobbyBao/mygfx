@@ -19,8 +19,8 @@ public:
 
 private:
     PoolInfo& createNewPool(const DescriptorResourceCounts& counts, uint32_t totalSets);
-    std::vector<PoolInfo> pools_;
-    std::mutex mutex_;
+    std::vector<PoolInfo> mPools;
+    std::mutex mMutex;
 };
 
 class PoolInfo {
@@ -30,12 +30,12 @@ public:
     bool allocate(const DescriptorResourceCounts& counts);
     void free(const DescriptorResourceCounts& counts);
 
-    inline VkDescriptorPool& pool() { return pool_; }
+    inline VkDescriptorPool& pool() { return mPool; }
 
 private:
-    VkDescriptorPool pool_;
-    DescriptorResourceCounts descriptorCounts { 0 };
-    uint32_t remainingSets_;
+    VkDescriptorPool mPool;
+    DescriptorResourceCounts mDescriptorCounts { 0 };
+    uint32_t mRemainingSets;
 };
 
 }

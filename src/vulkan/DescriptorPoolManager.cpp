@@ -30,8 +30,8 @@ void DescriptorPoolManager::init()
 
 VkDescriptorPool& DescriptorPoolManager::getPool(const DescriptorResourceCounts& counts, uint32_t totalSets)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
-    for (auto& poolInfo : pools_) {
+    std::lock_guard<std::mutex> lock(mMutex);
+    for (auto& poolInfo : mPools) {
         if (poolInfo.allocate(counts)) {
             return poolInfo.pool();
         }
@@ -45,9 +45,9 @@ VkDescriptorPool& DescriptorPoolManager::getPool(const DescriptorResourceCounts&
 
 void DescriptorPoolManager::free(const VkDescriptorPool& pool, const DescriptorResourceCounts& counts)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mMutex);
 
-    for (auto& poolInfo : pools_) {
+    for (auto& poolInfo : mPools) {
         if (poolInfo.pool() == pool) {
             poolInfo.free(counts);
         }
@@ -73,43 +73,43 @@ PoolInfo& DescriptorPoolManager::createNewPool(const DescriptorResourceCounts& c
 
     VkDescriptorPool descriptorPool;
     vkCreateDescriptorPool(gfx().device, &poolCI, nullptr, &descriptorPool);
-    return pools_.emplace_back(descriptorPool, counts, totalSets);
+    return mPools.emplace_back(descriptorPool, counts, totalSets);
 }
 
 void DescriptorPoolManager::destroyAll()
 {
-    for (auto& poolInfo : pools_) {
+    for (auto& poolInfo : mPools) {
         vkDestroyDescriptorPool(gfx().device, poolInfo.pool(), nullptr);
     }
 
-    pools_.clear();
+    mPools.clear();
 }
 
 PoolInfo::PoolInfo(const VkDescriptorPool& pool, const DescriptorResourceCounts& counts, uint32_t totalSets)
 {
-    pool_ = pool;
-    descriptorCounts = counts;
-    remainingSets_ = totalSets;
+    mPool = pool;
+    mDescriptorCounts = counts;
+    mRemainingSets = totalSets;
 }
 
 bool PoolInfo::allocate(const DescriptorResourceCounts& counts)
 {
-    if (descriptorCounts != counts) {
+    if (mDescriptorCounts != counts) {
         return false;
     }
 
-    if (remainingSets_ <= 0) {
+    if (mRemainingSets <= 0) {
         return false;
     }
 
-    remainingSets_ -= 1;
+    mRemainingSets -= 1;
 
     return true;
 }
 
 void PoolInfo::free(const DescriptorResourceCounts& counts)
 {
-    remainingSets_ += 1;
+    mRemainingSets += 1;
 }
 
 }
