@@ -35,14 +35,24 @@ PipelineCache::~PipelineCache()
 void PipelineCache::gc()
 {
     using namespace std::literals::chrono_literals;
-
+    static Vector<size_t> toRemove;
     auto now = Clock::now();
+    std::unique_lock locker(sLock);
     for (auto& pipelineCache : sPipelineCaches) {
-
+        
         for (auto& info : *pipelineCache) {
             if (now - info.second.lastTime < 100s) {
                 // todo:
+                info.destroy();
+                toRemove.push_back(info.first);
             }
+        }
+
+        if (toRemove.size() > 0) {
+            for (auto hash : toRemove) {
+                pipelineCache->erase(hash);
+            }
+            toRemove.clear();
         }
     }
 }
@@ -210,7 +220,7 @@ VulkanProgram::VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)
         } break;
         }
 
-        descriptorSetLayouts.push_back(dsLayout->handle());
+        mVkDescriptorSetLayouts.push_back(dsLayout->handle());
     }
 
     Vector<VkPushConstantRange> pushConstRanges;
@@ -218,7 +228,7 @@ VulkanProgram::VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)
         pushConstRanges.push_back(VkPushConstantRange { (VkShaderStageFlags)pc.stageFlags, pc.offset, pc.size });
     }
 
-    VkPipelineLayoutCreateInfo pipelineLayoutCI = initializers::pipelineLayoutCreateInfo(descriptorSetLayouts.data(), (uint32_t)descriptorSetLayouts.size());
+    VkPipelineLayoutCreateInfo pipelineLayoutCI = initializers::pipelineLayoutCreateInfo(mVkDescriptorSetLayouts.data(), (uint32_t)mVkDescriptorSetLayouts.size());
     pipelineLayoutCI.pushConstantRangeCount = (uint32_t)pushConstRanges.size();
     pipelineLayoutCI.pPushConstantRanges = pushConstRanges.data();
     VK_CHECK_RESULT(vkCreatePipelineLayout(gfx().device, &pipelineLayoutCI, nullptr, &pipelineLayout));
@@ -327,8 +337,8 @@ bool VulkanProgram::createShaders()
         shaderCreateInfos[i].pCode = sm->shaderCode.data();
         shaderCreateInfos[i].codeSize = sm->shaderCode.size();
         shaderCreateInfos[i].pName = sm->entryPoint.data();
-        shaderCreateInfos[i].setLayoutCount = (uint32_t)descriptorSetLayouts.size();
-        shaderCreateInfos[i].pSetLayouts = descriptorSetLayouts.data();
+        shaderCreateInfos[i].setLayoutCount = (uint32_t)mVkDescriptorSetLayouts.size();
+        shaderCreateInfos[i].pSetLayouts = mVkDescriptorSetLayouts.data();
         shaderCreateInfos[i].pPushConstantRanges = pushConstRanges.data();
         shaderCreateInfos[i].pushConstantRangeCount = (uint32_t)pushConstRanges.size();
 

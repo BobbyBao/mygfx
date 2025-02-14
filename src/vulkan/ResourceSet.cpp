@@ -11,12 +11,7 @@ ResourceSet::ResourceSet()
 
 ResourceSet::ResourceSet(const Span<DescriptorSetLayoutBinding>& bindings)
 {
-    defaultSet_ = addDescriptorSet(bindings);
-}
-
-VkDescriptorSet ResourceSet::defaultSet()
-{
-    return *defaultSet_;
+    addDescriptorSet(bindings);
 }
 
 void ResourceSet::setDynamicBuffer(uint32_t binding, uint32_t size)
@@ -34,9 +29,9 @@ void ResourceSet::setBuffer(uint32_t binding, const VkDescriptorBufferInfo& buff
 {
     CHECK_RENDER_THREAD();
 
-    descriptorInfos_[binding] = bufferInfo;
+    mDescriptorInfos[binding] = bufferInfo;
 
-    for (auto& it : descriptorSets_) {
+    for (auto& it : mDescriptorSets) {
         it.second->bind(binding, bufferInfo);
     }
 }
@@ -45,15 +40,15 @@ DescriptorSet* ResourceSet::getDescriptorSet(DescriptorSetLayout* layout)
 {
     DescriptorSet* descriptorSet = nullptr;
     auto hash = layout->toHash();
-    std::lock_guard locker(mutex_);
-    auto it = descriptorSets_.find(hash);
+    std::lock_guard locker(mMutex);
+    auto it = mDescriptorSets.find(hash);
     // assert(descriptorSet != nullptr);
-    if (it == descriptorSets_.end()) {
+    if (it == mDescriptorSets.end()) {
         descriptorSet = new DescriptorSet(layout);
-        for (auto& kvp : descriptorInfos_) {
+        for (auto& kvp : mDescriptorInfos) {
             descriptorSet->bind(kvp.first, kvp.second);
         }
-        return descriptorSets_.try_emplace(hash, descriptorSet).first->second;
+        return mDescriptorSets.try_emplace(hash, descriptorSet).first->second;
     } else {
         descriptorSet = it->second;
     }
@@ -71,15 +66,15 @@ DescriptorSet* ResourceSet::addDescriptorSet(const Span<DescriptorSetLayoutBindi
 
 DescriptorSet* ResourceSet::addDescriptorSet(DescriptorSetLayout* layout)
 {    
-    std::lock_guard locker(mutex_);
+    std::lock_guard locker(mMutex);
     auto hash = layout->toHash();
-    auto it = descriptorSets_.find(hash);
-    if (it == descriptorSets_.end()) {
+    auto it = mDescriptorSets.find(hash);
+    if (it == mDescriptorSets.end()) {
         Ref<DescriptorSet> descriptorSet(new DescriptorSet(layout));
-        for (auto& kvp : descriptorInfos_) {
+        for (auto& kvp : mDescriptorInfos) {
             descriptorSet->bind(kvp.first, kvp.second);
         }
-        return descriptorSets_.try_emplace(hash, descriptorSet).first->second;
+        return mDescriptorSets.try_emplace(hash, descriptorSet).first->second;
     }
 
     return it->second.get();
@@ -99,7 +94,7 @@ void DescriptorTable::init()
 {
     auto descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
     descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::FRAGMENT);
-    fragmentSet_ = addDescriptorSet(descriptorSetLayoutTex);
+    mFragmentSet = addDescriptorSet(descriptorSetLayoutTex);
 
     descriptorSetLayoutTex = makeShared<DescriptorSetLayout>();
     descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::FRAGMENT);
@@ -125,34 +120,29 @@ void DescriptorTable::init()
     descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::FRAGMENT | ShaderStage::COMPUTE);
     addDescriptorSet(descriptorSetLayoutTex);
 
-    descriptorInfos_[0] = std::vector<VkDescriptorImageInfo>();
+    mDescriptorInfos[0] = std::vector<VkDescriptorImageInfo>();
 }
 
 DescriptorSet* DescriptorTable::fragmentSet()
 {
-    return fragmentSet_;
-}
-
-VkDescriptorSet DescriptorTable::defaultSet()
-{
-    return fragmentSet_->handle();
+    return mFragmentSet;
 }
 
 int DescriptorTable::add(const VkDescriptorImageInfo& descriptorInfo, bool update)
 {
-    std::lock_guard locker(mutex_);
-    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
+    std::lock_guard locker(mMutex);
+    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(mDescriptorInfos[0]);
     int index;
-    if (freeIndics_.size() > 0) {
-        index = freeIndics_.back();
-        freeIndics_.pop_back();
+    if (mFreeIndics.size() > 0) {
+        index = mFreeIndics.back();
+        mFreeIndics.pop_back();
         imageInfos[index] = descriptorInfo;
     } else {
         index = (int)imageInfos.size();
         imageInfos.push_back(descriptorInfo);
     }
 
-    for (auto& it : descriptorSets_) {
+    for (auto& it : mDescriptorSets) {
         it.second->bind(0, index, imageInfos[index]);
     }
 
@@ -162,13 +152,13 @@ int DescriptorTable::add(const VkDescriptorImageInfo& descriptorInfo, bool updat
 void DescriptorTable::update(int index, const VkDescriptorImageInfo& descriptorInfo)
 {
     assert(index >= 0);
-    std::lock_guard locker(mutex_);
+    std::lock_guard locker(mMutex);
 
-    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
+    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(mDescriptorInfos[0]);
     if (std::memcmp(&imageInfos[index], &descriptorInfo, sizeof(VkDescriptorImageInfo)) != 0) {
         imageInfos[index] = descriptorInfo;
 
-        for (auto& it : descriptorSets_) {
+        for (auto& it : mDescriptorSets) {
             it.second->bind(0, index, imageInfos[index]);
         }
     }
@@ -176,10 +166,10 @@ void DescriptorTable::update(int index, const VkDescriptorImageInfo& descriptorI
 
 void DescriptorTable::free(int index)
 {
-    std::lock_guard locker(mutex_);
+    std::lock_guard locker(mMutex);
     if (index >= 0) {
 
-        std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
+        std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(mDescriptorInfos[0]);
 
         if (HwTexture::Magenta) {
 
@@ -187,20 +177,20 @@ void DescriptorTable::free(int index)
             imageInfos[index] = vkTex->srv()->descriptorInfo();
         }
 
-        for (auto& it : descriptorSets_) {
+        for (auto& it : mDescriptorSets) {
             it.second->bind(0, index, imageInfos[index]);
         }
 
-        freeIndics_.push_back(index);
+        mFreeIndics.push_back(index);
     }
 }
 
 void DescriptorTable::clear()
 {
-    std::lock_guard locker(mutex_);
-    descriptorInfos_.clear();
-    freeIndics_.clear();
-    descriptorSets_.clear();
+    std::lock_guard locker(mMutex);
+    mDescriptorInfos.clear();
+    mFreeIndics.clear();
+    mDescriptorSets.clear();
 }
 
 SamplerTable::SamplerTable()
@@ -222,19 +212,19 @@ void SamplerTable::init()
     descriptorSetLayoutTex->defineDescriptorTable(mDescriptorType, ShaderStage::VERTEX | ShaderStage::FRAGMENT);
     addDescriptorSet(descriptorSetLayoutTex);
 
-    descriptorInfos_[0] = std::vector<VkDescriptorImageInfo>();
+    mDescriptorInfos[0] = std::vector<VkDescriptorImageInfo>();
 }
 
 Ref<SamplerHandle> SamplerTable::createSampler(SamplerInfo info)
 {    
-    std::lock_guard locker(mutex_);
+    std::lock_guard locker(mMutex);
     for (int i = 0; i < mSamplers.size(); i++) {
         if (mSamplers[i]->samplerInfo == info) {
             return mSamplers[i];
         }
     }
     
-    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
+    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(mDescriptorInfos[0]);
 
     int index = (int)imageInfos.size();
     assert(index == mSamplers.size());
@@ -249,7 +239,7 @@ Ref<SamplerHandle> SamplerTable::createSampler(SamplerInfo info)
 
     imageInfos.push_back(descriptorInfo);
 
-    for (auto& it : descriptorSets_) {
+    for (auto& it : mDescriptorSets) {
         it.second->bind(0, index, imageInfos[index]);
     }
 
@@ -261,13 +251,13 @@ Ref<SamplerHandle> SamplerTable::createSampler(SamplerInfo info)
 void SamplerTable::update(int index, const VkDescriptorImageInfo& descriptorInfo)
 {
     assert(index >= 0);
-    std::lock_guard locker(mutex_);
+    std::lock_guard locker(mMutex);
 
-    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(descriptorInfos_[0]);
+    std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(mDescriptorInfos[0]);
     if (imageInfos[index] != descriptorInfo) {
         imageInfos[index] = descriptorInfo;
 
-        for (auto& it : descriptorSets_) {
+        for (auto& it : mDescriptorSets) {
             it.second->bind(0, index, imageInfos[index]);
         }
     }
@@ -275,9 +265,9 @@ void SamplerTable::update(int index, const VkDescriptorImageInfo& descriptorInfo
 
 void SamplerTable::clear()
 {
-    std::lock_guard locker(mutex_);
-    descriptorInfos_.clear();
-    descriptorSets_.clear();
+    std::lock_guard locker(mMutex);
+    mDescriptorInfos.clear();
+    mDescriptorSets.clear();
     mSamplers.clear();
 }
 }

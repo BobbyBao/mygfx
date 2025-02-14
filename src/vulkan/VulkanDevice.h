@@ -105,7 +105,7 @@ protected:
 
     VulkanStagePool* mStagePool = nullptr;
     // Swap chain image presentation
-    VkSemaphore mPresentComplete;
+    VkSemaphore mPresentComplete = VK_NULL_HANDLE;
     
     // Active frame buffer index
     uint32_t mCurrentImage = 0;

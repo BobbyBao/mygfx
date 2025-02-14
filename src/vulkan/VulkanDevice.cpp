@@ -695,6 +695,9 @@ void VulkanDevice::commit(HwSwapchain* sc)
 
 void VulkanDevice::endFrame(int)
 {
+#if !HAS_SHADER_OBJECT_EXT
+    PipelineCache::gc();
+#endif
     HwObject::gc();
     mStagePool->gc();
 }
