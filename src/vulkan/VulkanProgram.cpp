@@ -43,7 +43,7 @@ void PipelineCache::gc()
         for (auto& info : *pipelineCache) {
             if (now - info.second.lastTime < 100s) {
                 // todo:
-                info.destroy();
+                info.second.destroy();
                 toRemove.push_back(info.first);
             }
         }
