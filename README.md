@@ -3,5 +3,5 @@
 
 ## Features
 - 采用DynamicRendering渲染，不支持RenderPass/FrameBuffer
-- 支持最新的ShaderObject扩展，不创建Pipeline
+- 支持最新的ShaderObject扩展
 - 支持DescriptorIndexing，并支持DescriptorSet绑定
