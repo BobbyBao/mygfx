@@ -39,7 +39,7 @@ void PipelineCache::gc()
     auto now = Clock::now();
     std::unique_lock locker(sLock);
     for (auto& pipelineCache : sPipelineCaches) {
-        
+
         for (auto& info : *pipelineCache) {
             if (now - info.second.lastTime < 100s) {
                 // todo:
@@ -174,6 +174,8 @@ VulkanProgram::VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)
                     resourceSetType = ResourceSetType::SampledImage;
                 } else if (res->dsLayoutBinding.descriptorType == DescriptorType::SAMPLER) {
                     resourceSetType = ResourceSetType::Sampler;
+                } else if (res->dsLayoutBinding.descriptorType == DescriptorType::STORAGE_BUFFER) {
+                    resourceSetType = ResourceSetType::StorageBuffer;
                 }
             }
         }
@@ -199,6 +201,11 @@ VulkanProgram::VulkanProgram(Ref<HwShaderModule>* shaderModules, uint32_t count)
         } break;
         case ResourceSetType::Sampler: {
             auto ds = gfx().getSamplerSet()->getDescriptorSet(dsLayout);
+            desciptorSets.push_back(*ds);
+            mDesciptorSets.emplace_back(ds);
+        } break;
+        case ResourceSetType::StorageBuffer: {
+            auto ds = gfx().getStorageBufferSet()->getDescriptorSet(dsLayout);
             desciptorSets.push_back(*ds);
             mDesciptorSets.emplace_back(ds);
         } break;
@@ -444,7 +451,7 @@ VkPipeline VulkanProgram::getGraphicsPipeline(const AttachmentFormats& attachmen
 #endif
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = initializers::pipelineInputAssemblyStateCreateInfo(
-            (VkPrimitiveTopology)pipelineState->primitiveState.primitiveTopology, 0, false);
+        (VkPrimitiveTopology)pipelineState->primitiveState.primitiveTopology, 0, false);
     VkPipelineTessellationStateCreateInfo tessellationState = initializers::pipelineTessellationStateCreateInfo(3);
     VkPipelineViewportStateCreateInfo viewportState = initializers::pipelineViewportStateCreateInfo(0, 0);
     VkPipelineRasterizationStateCreateInfo rasterizationState = initializers::pipelineRasterizationStateCreateInfo(VkPolygonMode::VK_POLYGON_MODE_FILL, VkCullModeFlagBits::VK_CULL_MODE_NONE, VkFrontFace::VK_FRONT_FACE_COUNTER_CLOCKWISE);
