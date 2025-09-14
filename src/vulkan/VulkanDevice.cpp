@@ -61,6 +61,7 @@ bool VulkanDevice::create(const Settings& settings)
     mTextureSet = new DescriptorTable(DescriptorType::COMBINED_IMAGE_SAMPLER);
     mSampledImageTable = new DescriptorTable(DescriptorType::SAMPLED_IMAGE);
     mStorageImageTable = new DescriptorTable(DescriptorType::STORAGE_IMAGE);
+    mStorageBufferTable = new DescriptorTable(DescriptorType::STORAGE_BUFFER);
 
     // mBufferSet = new DescriptorTable(DescriptorType::StorageBuffer);
     LOG_DEBUG("QueueFamilyIndex: {}, {}, {}", queueFamilyIndices.graphics, queueFamilyIndices.compute, queueFamilyIndices.transfer);
@@ -173,7 +174,8 @@ void VulkanDevice::destroy()
     mTextureSet.reset();
     mSamplerSet.reset();
     mSampledImageTable.reset();
-
+    mStorageImageTable.reset();
+    mStorageBufferTable.reset();
     mConstantBufferRing.destroy();
     mVertexBufferRing.destroy();
 
@@ -219,6 +221,12 @@ bool VulkanDevice::allocIndexBuffer(uint32_t sizeInBytes, void** pData, BufferIn
 Ref<HwBuffer> VulkanDevice::createBuffer(BufferUsage usage, MemoryUsage memoryUsage, uint64_t size, uint16_t stride, const void* data)
 {
     return makeShared<VulkanBuffer>(usage, memoryUsage, size, stride, data);
+}
+
+Ref<HwBufferView> VulkanDevice::createBufferView(HwBuffer* buffer, uint64_t offset, uint64_t range) 
+{
+    VulkanBuffer* vkBuffer = static_cast<VulkanBuffer*>(buffer);
+    return makeShared<VulkanBufferView>(vkBuffer, offset, range);
 }
 
 Ref<HwTexture> VulkanDevice::createTexture(const TextureData& textureData, SamplerInfo sampler)

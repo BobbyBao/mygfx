@@ -46,6 +46,8 @@ public:
 
     void init();
 
+    int add(const VkDescriptorBufferInfo& descriptorInfo, bool update = true);
+    void update(int index, const VkDescriptorBufferInfo& descriptorInfo);
     int add(const VkDescriptorImageInfo& descriptorInfo, bool update = true);
     void update(int index, const VkDescriptorImageInfo& descriptorInfo);
     void free(int index);

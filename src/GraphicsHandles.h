@@ -45,6 +45,13 @@ inline uint64_t BufferInfo::getDeviceAddress() const
     return buffer ? buffer->deviceAddress + offset : 0;
 }
 
+class HwBufferView : public HwObject {
+public:
+    inline int index() const { return index_; }
+
+    int index_ = -1;
+};
+
 class HwTextureView : public HwObject {
 public:
     inline int index() const { return index_; }
@@ -56,12 +63,12 @@ class HwTexture : public HwResource {
 public:
     HwTexture() { type = ResourceType::IMAGE; }
 
-    uint16_t width, height;
+    uint16_t width = 0, height = 0;
     uint16_t depth = 1;
     uint16_t layerCount = 1;
     uint16_t faceCount = 1;
     uint16_t mipLevels = 1;
-    Format format;
+    Format format = Format::UNDEFINED;
     SamplerType samplerType = SamplerType::SAMPLER_2D;
 
     Ref<HwTextureView> mSRV;

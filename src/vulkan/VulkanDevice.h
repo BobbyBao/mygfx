@@ -67,6 +67,7 @@ public:
     DescriptorTable* getImageSet() { return mSampledImageTable; }
     SamplerTable* getSamplerSet() { return mSamplerSet; }
     DescriptorTable* getStorageImageSet() { return mStorageImageTable; }
+    DescriptorTable* getStorageBufferSet() { return mStorageBufferTable; }
 
     VkBuffer getGlobalUniformBuffer()
     {
@@ -100,6 +101,7 @@ protected:
     Ref<DescriptorTable> mTextureSet;
     Ref<DescriptorTable> mSampledImageTable;
     Ref<DescriptorTable> mStorageImageTable;
+    Ref<DescriptorTable> mStorageBufferTable;
 
     CommandQueue mCommandQueues[(int)CommandQueueType::Count];
 

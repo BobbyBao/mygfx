@@ -128,6 +128,42 @@ DescriptorSet* DescriptorTable::fragmentSet()
     return mFragmentSet;
 }
 
+int DescriptorTable::add(const VkDescriptorBufferInfo& descriptorInfo, bool update)
+{
+    std::lock_guard locker(mMutex);
+    std::vector<VkDescriptorBufferInfo>& imageInfos = std::get<std::vector<VkDescriptorBufferInfo>>(mDescriptorInfos[0]);
+    int index;
+    if (mFreeIndics.size() > 0) {
+        index = mFreeIndics.back();
+        mFreeIndics.pop_back();
+        imageInfos[index] = descriptorInfo;
+    } else {
+        index = (int)imageInfos.size();
+        imageInfos.push_back(descriptorInfo);
+    }
+
+    for (auto& it : mDescriptorSets) {
+        it.second->bind(0, index, imageInfos[index]);
+    }
+
+    return index;
+}
+
+void DescriptorTable::update(int index, const VkDescriptorBufferInfo& descriptorInfo)
+{
+    assert(index >= 0);
+    std::lock_guard locker(mMutex);
+
+    std::vector<VkDescriptorBufferInfo>& imageInfos = std::get<std::vector<VkDescriptorBufferInfo>>(mDescriptorInfos[0]);
+    if (std::memcmp(&imageInfos[index], &descriptorInfo, sizeof(VkDescriptorBufferInfo)) != 0) {
+        imageInfos[index] = descriptorInfo;
+
+        for (auto& it : mDescriptorSets) {
+            it.second->bind(0, index, imageInfos[index]);
+        }
+    }
+}
+
 int DescriptorTable::add(const VkDescriptorImageInfo& descriptorInfo, bool update)
 {
     std::lock_guard locker(mMutex);
@@ -166,19 +202,30 @@ void DescriptorTable::update(int index, const VkDescriptorImageInfo& descriptorI
 
 void DescriptorTable::free(int index)
 {
-    std::lock_guard locker(mMutex);
     if (index >= 0) {
+        std::lock_guard locker(mMutex);
 
-        std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(mDescriptorInfos[0]);
+        if (mDescriptorType == DescriptorType::STORAGE_BUFFER || mDescriptorType == DescriptorType::UNIFORM_BUFFER) {
 
-        if (HwTexture::Magenta) {
+            std::vector<VkDescriptorBufferInfo>& bufferInfos = std::get<std::vector<VkDescriptorBufferInfo>>(mDescriptorInfos[0]);
 
-            VulkanTexture* vkTex = static_cast<VulkanTexture*>(HwTexture::Magenta.get());
-            imageInfos[index] = vkTex->srv()->descriptorInfo();
-        }
+            bufferInfos[index] = {};            
 
-        for (auto& it : mDescriptorSets) {
-            it.second->bind(0, index, imageInfos[index]);
+            for (auto& it : mDescriptorSets) {
+                it.second->bind(0, index, bufferInfos[index]);
+            }
+        } else {
+            std::vector<VkDescriptorImageInfo>& imageInfos = std::get<std::vector<VkDescriptorImageInfo>>(mDescriptorInfos[0]);
+
+            if (HwTexture::Magenta) {
+                VulkanTexture* vkTex = static_cast<VulkanTexture*>(HwTexture::Magenta.get());
+                imageInfos[index] = vkTex->srv()->descriptorInfo();
+            }
+
+            for (auto& it : mDescriptorSets) {
+                it.second->bind(0, index, imageInfos[index]);
+            }
+
         }
 
         mFreeIndics.push_back(index);

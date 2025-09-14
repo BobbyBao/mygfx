@@ -9,7 +9,7 @@ namespace mygfx {
 class DescriptorSet;
 
 using DescriptorInfo = std::variant<VkDescriptorImageInfo, VkDescriptorBufferInfo,
-    VkBufferView, std::vector<VkDescriptorImageInfo>>;
+    VkBufferView, std::vector<VkDescriptorImageInfo>, std::vector<VkDescriptorBufferInfo>>;
 
 class DescriptorSet : public HwDescriptorSet, public VkHandleBase<VkDescriptorSet> {
 public:
