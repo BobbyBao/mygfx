@@ -4,6 +4,7 @@
 #include "GraphicsFwd.h"
 #include "utils/BitmaskEnum.h"
 #include <stdint.h>
+#include <map>
 
 namespace mygfx {
 
@@ -513,6 +514,16 @@ protected:
     friend class GraphicsDevice;
 };
 
+class DefineList : public std::map<const String, String> {
+public:
+
+    DefineList& add(const String& key, size_t val);
+    DefineList& add(const String& key, int val);
+    DefineList& add(const String& key, const String& val = "");
+
+    DefineList operator+(const DefineList& def2);
+    DefineList& operator+=(const DefineList& def2);
+};
 }
 
 template <>

@@ -2,14 +2,14 @@
 #include "GraphicsDevice.h"
 #include <deque>
 #include <mutex>
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #include <memory_resource>
 #endif
 namespace mygfx {
 
 static std::recursive_mutex mLock;
 static std::deque<std::pair<HwObject*, int>> mDisposables;
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 static size_t max_blocks_per_chunk = 1024;
 static size_t largest_required_pool_block = 1024;
 static std::pmr::synchronized_pool_resource sPool { std::pmr::pool_options { max_blocks_per_chunk, largest_required_pool_block } };
@@ -48,7 +48,7 @@ void HwObject::gc(bool force)
     std::lock_guard<std::recursive_mutex> locker(mLock);
     while (!mDisposables.empty()) {
         auto& f = mDisposables.front();
-        if (f.second == 0 || force) {            
+        if (f.second == 0 || force) {
             delete f.first;
             mDisposables.pop_front();
         } else {
@@ -168,6 +168,39 @@ HwRenderPrimitive::HwRenderPrimitive(VertexData* geo, const DrawPrimitiveCommand
     : mGeometry(geo)
     , drawArgs(primitive)
 {
+}
+
+DefineList& DefineList::add(const String& key, size_t val)
+{
+    insert_or_assign(key, std::to_string(val));
+    return *this;
+}
+
+DefineList& DefineList::add(const String& key, int val)
+{
+    insert_or_assign(key, std::to_string(val));
+    return *this;
+}
+
+DefineList& DefineList::add(const String& key, const String& val)
+{
+    insert_or_assign(key, val);
+    return *this;
+}
+
+DefineList DefineList::operator+(const DefineList& def2)
+{
+    DefineList ret(*this);
+    ret += def2;
+    return ret;
+}
+
+DefineList& DefineList::operator+=(const DefineList& def2)
+{
+    for (auto it = def2.begin(); it != def2.end(); it++) {
+        insert_or_assign(it->first, it->second);
+    }
+    return *this;
 }
 
 }

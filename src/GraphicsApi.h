@@ -33,10 +33,10 @@ public:
         return createBuffer(usage, memoryUsage, count * sizeof(T), sizeof(T), (void*)data);
     }
 
-    template <typename T>
-    Ref<HwBuffer> createBuffer1(BufferUsage usage, MemoryUsage memoryUsage, const std::span<T>& data)
+    template <DataBlock T>
+    Ref<HwBuffer> createBuffer1(BufferUsage usage, MemoryUsage memoryUsage, const T& data)
     {
-        return createBuffer(usage, memoryUsage, data.size() * sizeof(T), sizeof(T), (void*)data.data());
+        return createBuffer(usage, memoryUsage, data.size() * sizeof(T::value_type), sizeof(T::value_type), (void*)data.data());
     }
 
     GraphicsApi& updateDescriptorSet(HwDescriptorSet* descriptorSet, uint32_t dstBinding, HwTextureView* texView)

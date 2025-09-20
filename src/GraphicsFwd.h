@@ -37,6 +37,13 @@ using Vector = std::vector<T>;
 
 using ByteArray = std::vector<uint8_t>;
 
+template <class T>
+concept DataBlock = requires(T t) {
+    t.data();
+    t.size();
+    typename T::value_type;
+};
+
 class HwBuffer;
 class HwTexture;
 class HwTextureView;
