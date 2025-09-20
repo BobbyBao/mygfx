@@ -2,7 +2,6 @@
 #include "GraphicsDefs.h"
 #include "utils/RefCounted.h"
 
-#include <map>
 #include <vector>
 
 namespace mygfx {
@@ -36,19 +35,6 @@ enum class UniformType : int8_t {
     BUFFER,
 };
 
-class DefineList : public std::map<const String, String> {
-public:
-    bool has(const std::string& str) const;
-
-    size_t hash(size_t result) const;
-
-    DefineList& add(const String& key, size_t val);
-    DefineList& add(const String& key, int val);
-    DefineList& add(const String& key, const String& val = "");
-
-    DefineList operator+(const DefineList& def2);
-    DefineList& operator+=(const DefineList& def2);
-};
 
 class ShaderStruct {
 public:

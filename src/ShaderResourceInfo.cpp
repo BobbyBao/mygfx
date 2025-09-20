@@ -3,52 +3,6 @@
 
 namespace mygfx {
 
-bool DefineList::has(const std::string& str) const
-{
-    return find(str) != end();
-}
-
-size_t DefineList::hash(size_t result) const
-{
-    for (auto it = begin(); it != end(); it++) {
-        utils::hash_combine(result, it->first);
-        utils::hash_combine(result, it->second);
-    }
-    return result;
-}
-
-DefineList& DefineList::add(const String& key, size_t val)
-{
-    (*this)[key] = std::to_string(val);
-    return *this;
-}
-
-DefineList& DefineList::add(const String& key, int val)
-{
-    (*this)[key] = std::to_string(val);
-    return *this;
-}
-
-DefineList& DefineList::add(const String& key, const String& val)
-{
-    (*this)[key] = val;
-    return *this;
-}
-
-DefineList DefineList::operator+(const DefineList& def2)
-{
-    DefineList ret(*this);
-    ret += def2;
-    return ret;
-}
-
-DefineList& DefineList::operator+=(const DefineList& def2)
-{
-    for (auto it = def2.begin(); it != def2.end(); it++)
-        (*this)[it->first] = it->second;
-    return *this;
-}
-
 const ShaderStruct* ShaderStruct::getMember(const String& name) const
 {
     for (int i = 0; i < members.size(); i++) {
